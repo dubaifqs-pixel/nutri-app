@@ -1,6 +1,6 @@
 'use client'
 
-import { Grade, GRADE_COLORS, GRADE_LABELS_AR } from '@/lib/types'
+import { Grade, GRADE_COLORS, GRADE_LABELS_EN, GRADE_LABELS_AR } from '@/lib/types'
 
 const ALL_GRADES: Grade[] = ['A', 'B', 'C', 'D', 'E']
 
@@ -12,7 +12,7 @@ export default function GradeBadge({ grade, score }: { grade: Grade; score: numb
         style={{ background: `linear-gradient(145deg, ${GRADE_COLORS[grade]}dd, ${GRADE_COLORS[grade]})` }}
       >
         <span className="text-6xl font-bold leading-none">{grade}</span>
-        <span className="text-sm mt-1">{GRADE_LABELS_AR[grade]}</span>
+        <span className="text-sm mt-1">{GRADE_LABELS_EN[grade]}</span>
       </div>
       <div className="flex rounded-lg overflow-hidden">
         {ALL_GRADES.map((g) => (
@@ -30,7 +30,10 @@ export default function GradeBadge({ grade, score }: { grade: Grade; score: numb
           </div>
         ))}
       </div>
-      <p className="text-sm text-gray-500">Score: {score}</p>
+      <div className="flex flex-col items-center gap-0.5">
+        <p className="text-sm text-gray-500">Score: {score}</p>
+        <p className="text-xs text-gray-400 font-arabic">{GRADE_LABELS_AR[grade]}</p>
+      </div>
     </div>
   )
 }

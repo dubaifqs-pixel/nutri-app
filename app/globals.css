@@ -21,6 +21,38 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Smooth transitions for interactive elements */
+button, a, input {
+  transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Better focus states */
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid #F1B12360;
+  outline-offset: 2px;
+}
+
+/* Subtle scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
 #scanner-region video {
   width: 100% !important;
   height: 100% !important;

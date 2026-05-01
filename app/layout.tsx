@@ -14,8 +14,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'DFQS — معايير دبي لجودة الغذاء',
-  description: 'Dubai Food Quality Standards — AI-powered food grading',
+  title: 'DFQS — Dubai Food Quality Standards',
+  description: 'AI-powered food grading based on Dubai Food Quality Standards',
   manifest: '/manifest.json',
 }
 
@@ -28,8 +28,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={`${arabic.variable} ${inter.variable}`}>
-      <body className="font-arabic antialiased bg-white text-gray-800 max-w-md mx-auto min-h-screen">
+    <html lang="en" dir="ltr" className={`${arabic.variable} ${inter.variable}`}>
+      <body className="font-inter antialiased bg-white text-gray-800 max-w-md mx-auto min-h-screen">
         {children}
       </body>
     </html>
