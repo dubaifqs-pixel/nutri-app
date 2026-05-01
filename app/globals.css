@@ -71,3 +71,15 @@ button:focus-visible {
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
+
+@keyframes scan-line {
+  0% { top: 10%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 90%; opacity: 0; }
+}
+
+.animate-scan-line {
+  position: absolute;
+  animation: scan-line 2s ease-in-out infinite;
+}

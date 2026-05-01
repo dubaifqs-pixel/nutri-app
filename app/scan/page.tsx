@@ -122,7 +122,24 @@ function ScanContent() {
       <button onClick={() => router.push('/')} className="absolute top-4 right-4 z-50 text-white bg-black/50 rounded-full w-10 h-10 flex items-center justify-center backdrop-blur transition-colors hover:bg-black/70">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>
-      <Scanner mode={mode} onBarcode={handleBarcode} onCapture={handleCapture} startManual={startManual} />
+      <Scanner
+        mode={mode}
+        onBarcode={handleBarcode}
+        onCapture={handleCapture}
+        onAutoDetect={mode === 'label' ? async (data: any) => {
+          setLoading(true)
+          setStatus('Label detected! Calculating grade...')
+          try {
+            const product = { product_name: data.product_name, nutrition: data.nutrition, source: data.source }
+            const gradeResult = await getGrade(product.nutrition)
+            goToResult(product, gradeResult)
+          } catch (err) {
+            setStatus(err instanceof Error ? err.message : 'Something went wrong')
+            setTimeout(() => setLoading(false), 3000)
+          }
+        } : undefined}
+        startManual={startManual}
+      />
     </div>
   )
 }
