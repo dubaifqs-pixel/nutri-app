@@ -58,9 +58,13 @@ function ChatContent() {
         }),
       })
       const data = await res.json()
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.response }])
-    } catch {
-      setMessages((prev) => [...prev, { role: 'assistant', content: 'حدث خطأ — حاول مرة أخرى' }])
+      if (data.error) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: `⚠️ ${data.error}` }])
+      } else {
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.response }])
+      }
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: `⚠️ حدث خطأ: ${err instanceof Error ? err.message : 'حاول مرة أخرى'}` }])
     } finally { setLoading(false) }
   }
 

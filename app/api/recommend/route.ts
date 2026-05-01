@@ -24,7 +24,10 @@ export async function POST(request: NextRequest) {
         const grade = calculateGrade(nutrition)
         return { product_name: p.product_name, image_url: p.image_small_url || null, grade: grade.grade, score: grade.score }
       })
-      .filter((p: any) => p.grade < current_grade)
+      .filter((p: any) => {
+        const gradeOrder = ['A', 'B', 'C', 'D', 'E']
+        return gradeOrder.indexOf(p.grade) < gradeOrder.indexOf(current_grade)
+      })
       .slice(0, 5)
     let summary = ''
     if (alternatives.length > 0) {
