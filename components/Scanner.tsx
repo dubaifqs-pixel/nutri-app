@@ -14,6 +14,7 @@ export default function Scanner({ onBarcode, onCapture, mode }: Props) {
   const streamRef = useRef<MediaStream | null>(null)
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [videoReady, setVideoReady] = useState(false)
 
   const stopCamera = useCallback(() => {
     if (scannerRef.current) {
@@ -38,34 +39,45 @@ export default function Scanner({ onBarcode, onCapture, mode }: Props) {
       ).catch(() => setError('تعذر الوصول للكاميرا'))
     } else {
       navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then((stream) => { streamRef.current = stream; if (videoRef.current) videoRef.current.srcObject = stream })
+        .then((stream) => {
+          streamRef.current = stream
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream
+            videoRef.current.onloadedmetadata = () => setVideoReady(true)
+          }
+        })
         .catch(() => setError('تعذر الوصول للكاميرا'))
     }
     return stopCamera
   }, [mode, onBarcode, stopCamera])
 
   const capturePhoto = () => {
-    if (!videoRef.current) return
+    if (!videoRef.current || !videoReady) return
+    const video = videoRef.current
     const canvas = document.createElement('canvas')
-    canvas.width = videoRef.current.videoWidth
-    canvas.height = videoRef.current.videoHeight
+    canvas.width = video.videoWidth || 640
+    canvas.height = video.videoHeight || 480
     const ctx = canvas.getContext('2d')!
-    ctx.drawImage(videoRef.current, 0, 0)
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
     const base64 = canvas.toDataURL('image/jpeg', 0.8)
     stopCamera()
     onCapture(base64)
   }
 
   if (error) return <div className="flex items-center justify-center h-full text-white text-center p-8"><p>{error}</p></div>
-  if (mode === 'barcode') return <div id="scanner-region" className="w-full h-full" />
+  if (mode === 'barcode') return <div id="scanner-region" className="w-full" style={{ height: '100vh' }} />
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center">
+    <div className="relative w-full flex flex-col items-center justify-center" style={{ height: '100vh' }}>
       <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-64 h-48 border-2 border-yellow-400 rounded-xl" />
       </div>
-      <button onClick={capturePhoto} className="absolute bottom-8 w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center">
-        <div className="w-12 h-12 bg-yellow-400 rounded-full" />
+      <button
+        onClick={capturePhoto}
+        disabled={!videoReady}
+        className="absolute bottom-8 w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center z-10 disabled:opacity-50"
+      >
+        <div className="w-16 h-16 bg-yellow-400 rounded-full border-4 border-white" />
       </button>
       <p className="absolute bottom-28 text-white text-sm" dir="rtl">وجّه الكاميرا نحو الملصق الغذائي</p>
     </div>
