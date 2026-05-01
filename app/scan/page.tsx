@@ -50,8 +50,9 @@ function ScanContent() {
         body: JSON.stringify({ image: imageBase64 }),
       })
       if (!res.ok) {
-        setStatus('تعذر قراءة الملصق — حاول مرة أخرى بإضاءة أفضل')
-        setLoading(false)
+        const errData = await res.json().catch(() => ({ error: 'Unknown error' }))
+        setStatus(`تعذر قراءة الملصق: ${errData.error || res.status}`)
+        setTimeout(() => { setLoading(false) }, 3000)
         return
       }
       const product = await res.json()
@@ -63,9 +64,9 @@ function ScanContent() {
       const gradeResult = await gradeRes.json()
       sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
       router.push('/result')
-    } catch {
-      setStatus('حدث خطأ — حاول مرة أخرى')
-      setLoading(false)
+    } catch (err) {
+      setStatus(`حدث خطأ: ${err instanceof Error ? err.message : 'حاول مرة أخرى'}`)
+      setTimeout(() => { setLoading(false) }, 3000)
     }
   }
 

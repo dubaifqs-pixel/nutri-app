@@ -38,7 +38,16 @@ export default function Scanner({ onBarcode, onCapture, mode, startManual = fals
       scannerRef.current = scanner
       scanner.start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 150 } },
+        {
+          fps: 10,
+          qrbox: { width: 280, height: 160 },
+          aspectRatio: 1.777,
+          videoConstraints: {
+            facingMode: 'environment',
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
+        },
         (decodedText) => { scanner.stop().catch(() => {}); onBarcode(decodedText) },
         () => {}
       ).catch(() => setError('تعذر الوصول للكاميرا'))
@@ -52,7 +61,6 @@ export default function Scanner({ onBarcode, onCapture, mode, startManual = fals
               height: { ideal: 1080 },
             }
           })
-          // Try enabling continuous autofocus
           const track = stream.getVideoTracks()[0]
           try {
             const caps = track.getCapabilities?.() as any
@@ -77,12 +85,16 @@ export default function Scanner({ onBarcode, onCapture, mode, startManual = fals
   const capturePhoto = () => {
     if (!videoRef.current || !videoReady) return
     const video = videoRef.current
+
+    // Resize to max 1280px wide to keep under Vercel's 4.5MB body limit
+    const maxWidth = 1280
+    const scale = video.videoWidth > maxWidth ? maxWidth / video.videoWidth : 1
     const canvas = document.createElement('canvas')
-    canvas.width = video.videoWidth || 1920
-    canvas.height = video.videoHeight || 1080
+    canvas.width = Math.round(video.videoWidth * scale)
+    canvas.height = Math.round(video.videoHeight * scale)
     const ctx = canvas.getContext('2d')!
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-    const base64 = canvas.toDataURL('image/jpeg', 0.95)
+    const base64 = canvas.toDataURL('image/jpeg', 0.85)
     stopCamera()
     onCapture(base64)
   }
@@ -110,8 +122,7 @@ export default function Scanner({ onBarcode, onCapture, mode, startManual = fals
     )
   }
 
-  // Manual barcode entry
-  if (showManual || (mode === 'barcode' && showManual)) {
+  if (showManual) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 p-8" style={{ height: '100vh' }}>
         <div className="text-white text-center mb-4" dir="rtl">
