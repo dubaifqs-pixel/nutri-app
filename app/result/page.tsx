@@ -29,7 +29,7 @@ export default function ResultPage() {
     try {
       const res = await fetch('/api/recommend', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: product.product_name, current_grade: gradeResult.grade, product_name: product.product_name }),
+        body: JSON.stringify({ current_grade: gradeResult.grade, product_name: product.product_name, nutrition: product.nutrition }),
       })
       const data = await res.json()
       if (data.error) {
