@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation'
 import GradeBadge from '@/components/GradeBadge'
 import NutritionBreakdown from '@/components/NutritionBreakdown'
 import type { ProductData, GradeResult } from '@/lib/types'
+import { GRADE_LABELS_EN } from '@/lib/types'
 
 export default function ResultPage() {
   const router = useRouter()
   const [product, setProduct] = useState<ProductData | null>(null)
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null)
   const [loadingRec, setLoadingRec] = useState(false)
+  const [shareState, setShareState] = useState<'idle' | 'copied'>('idle')
 
   useEffect(() => {
     const productData = sessionStorage.getItem('dfqs_product')
@@ -22,6 +24,27 @@ export default function ResultPage() {
 
   if (!product || !gradeResult) {
     return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" /></div>
+  }
+
+  const handleShare = async () => {
+    const label = GRADE_LABELS_EN[gradeResult!.grade]
+    const text = `I scanned ${product!.product_name} on DFQS and it got a grade ${gradeResult!.grade} (${label})! Try it: https://dfqs.vercel.app`
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ text })
+      } catch {
+        // user cancelled share
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(text)
+        setShareState('copied')
+        setTimeout(() => setShareState('idle'), 2000)
+      } catch {
+        // clipboard API unavailable
+      }
+    }
   }
 
   const handleRecommend = async () => {
@@ -88,6 +111,19 @@ export default function ResultPage() {
       <button onClick={() => router.push('/')} className="w-full py-3 rounded-xl border border-gray-200 text-gray-500 text-sm flex items-center justify-center gap-2 transition-all hover:border-gray-300 hover:text-gray-600 active:scale-[0.98]">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
         Scan another product
+      </button>
+      <button onClick={handleShare} className="w-full py-3 rounded-xl border border-gray-200 text-gray-500 text-sm flex items-center justify-center gap-2 transition-all hover:border-gray-300 hover:text-gray-600 active:scale-[0.98]">
+        {shareState === 'copied' ? (
+          <>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            Copied!
+          </>
+        ) : (
+          <>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Share result
+          </>
+        )}
       </button>
     </div>
   )

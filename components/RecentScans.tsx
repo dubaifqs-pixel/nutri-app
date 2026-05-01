@@ -1,0 +1,105 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { getHistory, clearHistory, type HistoryEntry } from '@/lib/history'
+import { GRADE_COLORS, type Grade } from '@/lib/types'
+
+function timeAgo(iso: string): string {
+  const now = Date.now()
+  const then = new Date(iso).getTime()
+  const diff = Math.max(0, now - then)
+
+  const seconds = Math.floor(diff / 1000)
+  if (seconds < 60) return 'just now'
+
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes} min ago`
+
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`
+
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`
+
+  const weeks = Math.floor(days / 7)
+  return `${weeks} week${weeks > 1 ? 's' : ''} ago`
+}
+
+export default function RecentScans() {
+  const router = useRouter()
+  const [history, setHistory] = useState<HistoryEntry[]>([])
+
+  useEffect(() => {
+    setHistory(getHistory())
+  }, [])
+
+  if (history.length === 0) return null
+
+  const handleEntryClick = (entry: HistoryEntry) => {
+    sessionStorage.setItem(
+      'dfqs_product',
+      JSON.stringify({
+        product_name: entry.product_name,
+        nutrition: {},
+        source: entry.source,
+      })
+    )
+    sessionStorage.setItem(
+      'dfqs_grade',
+      JSON.stringify({
+        grade: entry.grade,
+        score: entry.score,
+        negative_points: { energy: 0, sugars: 0, saturated_fat: 0, sodium: 0, total: 0 },
+        positive_points: { fruits_veg: 0, fiber: 0, protein: 0, total: 0 },
+        protein_counted: true,
+        partial_data: true,
+      })
+    )
+    router.push('/result')
+  }
+
+  const handleClear = () => {
+    clearHistory()
+    setHistory([])
+  }
+
+  return (
+    <div className="w-full mt-8">
+      <div className="flex items-center gap-2 mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide" style={{ fontFamily: 'var(--font-inter)', letterSpacing: '0.05em' }}>Recent Scans</h2>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {history.map((entry, i) => (
+          <button
+            key={`${entry.scanned_at}-${i}`}
+            onClick={() => handleEntryClick(entry)}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50/80 rounded-xl border border-gray-100 text-left transition-all hover:border-gray-200 hover:bg-gray-50 active:scale-[0.99]"
+          >
+            <span
+              className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+              style={{ backgroundColor: GRADE_COLORS[entry.grade as Grade] }}
+            >
+              {entry.grade}
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-[#3A3F57] truncate">{entry.product_name}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{timeAgo(entry.scanned_at)}</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300 shrink-0"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        ))}
+      </div>
+
+      <button
+        onClick={handleClear}
+        className="flex items-center gap-1.5 mx-auto mt-3 text-xs text-gray-400 transition-colors hover:text-gray-500"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        Clear history
+      </button>
+    </div>
+  )
+}

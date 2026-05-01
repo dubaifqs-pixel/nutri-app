@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useState, Suspense } from 'react'
 import Scanner from '@/components/Scanner'
+import { addToHistory } from '@/lib/history'
 
 function ScanContent() {
   const searchParams = useSearchParams()
@@ -34,6 +35,7 @@ function ScanContent() {
   }
 
   const goToResult = (product: any, gradeResult: any) => {
+    addToHistory(product, gradeResult)
     sessionStorage.setItem('dfqs_product', JSON.stringify(product))
     sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
     router.push('/result')

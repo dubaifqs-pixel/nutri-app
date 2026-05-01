@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import RecentScans from '@/components/RecentScans'
 
 export default function Home() {
   return (
@@ -23,6 +24,7 @@ export default function Home() {
           Enter Barcode Manually
         </Link>
       </div>
+      <RecentScans />
       <p className="text-xs text-gray-400 mt-12" style={{ fontFamily: 'var(--font-inter)' }}>Powered by AI</p>
     </div>
   )
