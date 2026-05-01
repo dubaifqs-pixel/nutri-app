@@ -7,14 +7,17 @@ interface Props {
   onBarcode: (barcode: string) => void
   onCapture: (imageBase64: string) => void
   mode: 'barcode' | 'label'
+  startManual?: boolean
 }
 
-export default function Scanner({ onBarcode, onCapture, mode }: Props) {
+export default function Scanner({ onBarcode, onCapture, mode, startManual = false }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [videoReady, setVideoReady] = useState(false)
+  const [manualBarcode, setManualBarcode] = useState('')
+  const [showManual, setShowManual] = useState(startManual)
 
   const stopCamera = useCallback(() => {
     if (scannerRef.current) {
@@ -28,6 +31,8 @@ export default function Scanner({ onBarcode, onCapture, mode }: Props) {
   }, [])
 
   useEffect(() => {
+    if (showManual) return
+
     if (mode === 'barcode') {
       const scanner = new Html5Qrcode('scanner-region')
       scannerRef.current = scanner
@@ -38,39 +43,127 @@ export default function Scanner({ onBarcode, onCapture, mode }: Props) {
         () => {}
       ).catch(() => setError('تعذر الوصول للكاميرا'))
     } else {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then((stream) => {
+      const startCamera = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: 'environment',
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+            }
+          })
+          // Try enabling continuous autofocus
+          const track = stream.getVideoTracks()[0]
+          try {
+            const caps = track.getCapabilities?.() as any
+            if (caps?.focusMode?.includes('continuous')) {
+              await track.applyConstraints({ advanced: [{ focusMode: 'continuous' } as any] })
+            }
+          } catch {}
           streamRef.current = stream
           if (videoRef.current) {
             videoRef.current.srcObject = stream
             videoRef.current.onloadedmetadata = () => setVideoReady(true)
           }
-        })
-        .catch(() => setError('تعذر الوصول للكاميرا'))
+        } catch {
+          setError('تعذر الوصول للكاميرا')
+        }
+      }
+      startCamera()
     }
     return stopCamera
-  }, [mode, onBarcode, stopCamera])
+  }, [mode, onBarcode, stopCamera, showManual])
 
   const capturePhoto = () => {
     if (!videoRef.current || !videoReady) return
     const video = videoRef.current
     const canvas = document.createElement('canvas')
-    canvas.width = video.videoWidth || 640
-    canvas.height = video.videoHeight || 480
+    canvas.width = video.videoWidth || 1920
+    canvas.height = video.videoHeight || 1080
     const ctx = canvas.getContext('2d')!
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-    const base64 = canvas.toDataURL('image/jpeg', 0.8)
+    const base64 = canvas.toDataURL('image/jpeg', 0.95)
     stopCamera()
     onCapture(base64)
   }
 
-  if (error) return <div className="flex items-center justify-center h-full text-white text-center p-8"><p>{error}</p></div>
-  if (mode === 'barcode') return <div id="scanner-region" className="w-full" style={{ height: '100vh' }} />
+  const handleManualSubmit = () => {
+    const trimmed = manualBarcode.trim()
+    if (trimmed.length >= 8) {
+      onBarcode(trimmed)
+    }
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-white text-center p-8 gap-4">
+        <p>{error}</p>
+        {mode === 'barcode' && (
+          <button
+            onClick={() => { setError(null); setShowManual(true) }}
+            className="bg-white/20 text-white px-4 py-2 rounded-lg text-sm"
+          >
+            أدخل الباركود يدوياً
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  // Manual barcode entry
+  if (showManual || (mode === 'barcode' && showManual)) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 p-8" style={{ height: '100vh' }}>
+        <div className="text-white text-center mb-4" dir="rtl">
+          <p className="text-lg font-semibold">أدخل رقم الباركود</p>
+          <p className="text-sm text-white/60 mt-1">أدخل الرقم الموجود أسفل الباركود</p>
+        </div>
+        <input
+          type="tel"
+          value={manualBarcode}
+          onChange={(e) => setManualBarcode(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
+          placeholder="مثال: 6281100120018"
+          className="w-full max-w-xs bg-white/10 text-white text-center text-xl px-4 py-4 rounded-xl border border-white/20 outline-none placeholder:text-white/30 tracking-widest"
+          dir="ltr"
+          autoFocus
+        />
+        <button
+          onClick={handleManualSubmit}
+          disabled={manualBarcode.trim().length < 8}
+          className="w-full max-w-xs py-3 rounded-xl bg-yellow-500 text-white font-semibold disabled:opacity-40"
+        >
+          بحث
+        </button>
+        <button
+          onClick={() => { setShowManual(false); setManualBarcode('') }}
+          className="text-white/50 text-sm mt-2"
+        >
+          العودة للكاميرا
+        </button>
+      </div>
+    )
+  }
+
+  if (mode === 'barcode') {
+    return (
+      <div className="relative w-full" style={{ height: '100vh' }}>
+        <div id="scanner-region" className="w-full h-full" />
+        <button
+          onClick={() => { stopCamera(); setShowManual(true) }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white/20 backdrop-blur text-white px-5 py-3 rounded-xl text-sm font-medium z-10"
+        >
+          ⌨️ أدخل الباركود يدوياً
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="relative w-full flex flex-col items-center justify-center" style={{ height: '100vh' }}>
       <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-64 h-48 border-2 border-yellow-400 rounded-xl" />
+        <div className="w-72 h-52 border-2 border-yellow-400 rounded-xl" />
       </div>
       <button
         onClick={capturePhoto}
@@ -79,7 +172,9 @@ export default function Scanner({ onBarcode, onCapture, mode }: Props) {
       >
         <div className="w-16 h-16 bg-yellow-400 rounded-full border-4 border-white" />
       </button>
-      <p className="absolute bottom-28 text-white text-sm" dir="rtl">وجّه الكاميرا نحو الملصق الغذائي</p>
+      <p className="absolute bottom-32 text-white text-sm bg-black/40 px-3 py-1 rounded-full" dir="rtl">
+        {videoReady ? 'وجّه الكاميرا نحو الملصق الغذائي' : 'جارٍ تشغيل الكاميرا...'}
+      </p>
     </div>
   )
 }

@@ -8,6 +8,7 @@ function ScanContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const mode = (searchParams.get('mode') as 'barcode' | 'label') || 'label'
+  const startManual = searchParams.get('manual') === '1'
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState('')
 
@@ -80,7 +81,7 @@ function ScanContent() {
   return (
     <div className="min-h-screen bg-black relative">
       <button onClick={() => router.push('/')} className="absolute top-4 right-4 z-50 text-white bg-black/50 rounded-full w-10 h-10 flex items-center justify-center backdrop-blur">✕</button>
-      <Scanner mode={mode} onBarcode={handleBarcode} onCapture={handleCapture} />
+      <Scanner mode={mode} onBarcode={handleBarcode} onCapture={handleCapture} startManual={startManual} />
     </div>
   )
 }

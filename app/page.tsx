@@ -15,6 +15,9 @@ export default function Home() {
         <Link href="/scan?mode=barcode" className="flex items-center justify-center gap-3 w-full py-4 px-6 rounded-2xl bg-gray-800 text-white font-semibold text-base shadow-lg active:scale-[0.98] transition-transform">
           ⬛ امسح الباركود
         </Link>
+        <Link href="/scan?mode=barcode&manual=1" className="flex items-center justify-center gap-3 w-full py-3 px-6 rounded-2xl border border-gray-200 text-gray-600 text-sm active:scale-[0.98] transition-transform">
+          ⌨️ أدخل الباركود يدوياً
+        </Link>
       </div>
       <p className="text-xs text-gray-400 mt-12">مدعوم بالذكاء الاصطناعي</p>
     </div>
