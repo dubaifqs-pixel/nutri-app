@@ -10,6 +10,8 @@ function ScanContent() {
   const router = useRouter()
   const mode = (searchParams.get('mode') as 'barcode' | 'label') || 'label'
   const startManual = searchParams.get('manual') === '1'
+  const returnTo = searchParams.get('return')
+  const slot = searchParams.get('slot')
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState('')
 
@@ -36,6 +38,12 @@ function ScanContent() {
 
   const goToResult = (product: any, gradeResult: any) => {
     addToHistory(product, gradeResult)
+    if (returnTo === 'compare' && (slot === '1' || slot === '2')) {
+      sessionStorage.setItem(`dfqs_compare_${slot}`, JSON.stringify(product))
+      sessionStorage.setItem(`dfqs_compare_${slot}_grade`, JSON.stringify(gradeResult))
+      router.push('/compare')
+      return
+    }
     sessionStorage.setItem('dfqs_product', JSON.stringify(product))
     sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
     router.push('/result')

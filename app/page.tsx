@@ -24,6 +24,16 @@ export default function Home() {
           Enter Barcode Manually
         </Link>
       </div>
+      <div className="w-full flex flex-col gap-3 mt-4">
+        <Link href="/compare" className="flex items-center justify-center gap-3 w-full py-3 px-6 rounded-2xl border border-gray-200 text-gray-500 text-sm active:scale-[0.98] transition-all hover:border-gray-300 hover:text-gray-600">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
+          Compare Products
+        </Link>
+        <Link href="/browse" className="flex items-center justify-center gap-3 w-full py-3 px-6 rounded-2xl border border-gray-200 text-gray-500 text-sm active:scale-[0.98] transition-all hover:border-gray-300 hover:text-gray-600">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+          Browse Categories
+        </Link>
+      </div>
       <RecentScans />
       <p className="text-xs text-gray-400 mt-12" style={{ fontFamily: 'var(--font-inter)' }}>Powered by AI</p>
     </div>

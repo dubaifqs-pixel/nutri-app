@@ -1,4 +1,4 @@
-import type { Grade, ProductData, GradeResult } from './types'
+import type { Grade, NutritionData, ProductData, GradeResult } from './types'
 
 export interface HistoryEntry {
   product_name: string
@@ -6,6 +6,9 @@ export interface HistoryEntry {
   score: number
   source: ProductData['source']
   scanned_at: string
+  nutrition?: NutritionData
+  image_url?: string
+  barcode?: string
 }
 
 const STORAGE_KEY = 'dfqs_history'
@@ -20,6 +23,9 @@ export function addToHistory(product: ProductData, gradeResult: GradeResult): vo
     score: gradeResult.score,
     source: product.source,
     scanned_at: new Date().toISOString(),
+    nutrition: product.nutrition,
+    image_url: product.image_url,
+    barcode: product.barcode,
   }
 
   const existing = getHistory()
