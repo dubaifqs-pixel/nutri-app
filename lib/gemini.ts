@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
 export const geminiFlash = genAI.getGenerativeModel({
-  model: 'gemini-2.0-flash',
+  model: 'gemini-2.5-flash',
 })
 
 export const VISION_PROMPT = `Extract all nutrition facts from this food label image. Return ONLY valid JSON with these fields (use null if not visible):
