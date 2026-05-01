@@ -11,7 +11,6 @@ export default function ResultPage() {
   const router = useRouter()
   const [product, setProduct] = useState<ProductData | null>(null)
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null)
-  const [loadingRec, setLoadingRec] = useState(false)
   const [shareState, setShareState] = useState<'idle' | 'copied'>('idle')
 
   useEffect(() => {
@@ -47,28 +46,6 @@ export default function ResultPage() {
     }
   }
 
-  const handleRecommend = async () => {
-    setLoadingRec(true)
-    try {
-      const res = await fetch('/api/recommend', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ current_grade: gradeResult.grade, product_name: product.product_name, nutrition: product.nutrition }),
-      })
-      const data = await res.json()
-      if (data.error) {
-        sessionStorage.setItem('dfqs_recommendations', JSON.stringify({ alternatives: [], summary: data.error }))
-      } else {
-        sessionStorage.setItem('dfqs_recommendations', JSON.stringify(data))
-      }
-      router.push('/chat?tab=recommend')
-    } catch {
-      sessionStorage.setItem('dfqs_recommendations', JSON.stringify({ alternatives: [], summary: 'Could not find alternatives -- please try again' }))
-      router.push('/chat?tab=recommend')
-    } finally {
-      setLoadingRec(false)
-    }
-  }
-
   return (
     <div className="min-h-screen px-6 py-8 flex flex-col gap-6">
       <div className="text-center">
@@ -91,21 +68,11 @@ export default function ResultPage() {
           Ask AI
         </button>
         <button
-          onClick={handleRecommend}
-          disabled={loadingRec}
-          className="flex-1 py-3 rounded-xl bg-[#3A3F57] text-white font-semibold text-sm shadow-lg disabled:opacity-60 flex items-center justify-center gap-2 transition-all hover:shadow-xl active:scale-[0.98]"
+          onClick={() => router.push('/alternatives')}
+          className="flex-1 py-3 rounded-xl bg-[#3A3F57] text-white font-semibold text-sm shadow-lg flex items-center justify-center gap-2 transition-all hover:shadow-xl active:scale-[0.98]"
         >
-          {loadingRec ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              Searching...
-            </>
-          ) : (
-            <>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              Alternatives
-            </>
-          )}
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          Alternatives
         </button>
       </div>
       <button onClick={() => router.push('/')} className="w-full py-3 rounded-xl border border-gray-200 text-gray-500 text-sm flex items-center justify-center gap-2 transition-all hover:border-gray-300 hover:text-gray-600 active:scale-[0.98]">
