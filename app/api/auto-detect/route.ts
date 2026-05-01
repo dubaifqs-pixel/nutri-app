@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { geminiFlash } from '@/lib/gemini'
 
-const AUTO_DETECT_PROMPT = `Look at this image. Is there a nutrition facts label/table clearly visible and readable?
+const AUTO_DETECT_PROMPT = `Can you see and read a nutrition facts label or nutrition information table in this image?
 
-If YES — extract the nutrition values and return this JSON:
+If you CAN read nutrition values, extract them and return:
 {"detected":true,"product_name":"string or null","energy_kcal":number or null,"sugars_g":number or null,"saturated_fat_g":number or null,"sodium_mg":number or null,"protein_g":number or null,"fiber_g":number or null,"fruits_veg_percent":number or null}
 
-If NO (blurry, too far, no label visible, or cannot read values) — return:
-{"detected":false}
+If you CANNOT read any nutrition values, return exactly: {"detected":false}
 
-Rules:
-- All values must be per 100g (convert from per-serving if needed)
-- If sodium is shown as salt, convert: sodium_mg = salt_g × 400
-- If energy is in kJ, convert: energy_kcal = energy_kJ / 4.184
-- Only return detected:true if you can read at least 3 nutrition values clearly
-- Return ONLY the raw JSON, no markdown, no code fences`
+Important:
+- All values per 100g. Convert from per-serving using serving size if needed.
+- Sodium from salt: sodium_mg = salt_g × 400
+- Energy from kJ: energy_kcal = energy_kJ / 4.184
+- Use null for values you can't read. It's OK to have some nulls.
+- The label may be in English, Arabic, or any language — read whatever you can see.
+- Return ONLY raw JSON, no markdown, no explanation.`
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,10 +42,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ detected: false })
     }
 
-    // Verify we got enough data (at least 3 non-null nutrition values)
+    // Verify we got enough data (at least 2 non-null nutrition values)
     const values = [parsed.energy_kcal, parsed.sugars_g, parsed.saturated_fat_g, parsed.sodium_mg, parsed.protein_g, parsed.fiber_g]
     const filledCount = values.filter((v: any) => v !== null && v !== undefined).length
-    if (filledCount < 3) {
+    if (filledCount < 2) {
       return NextResponse.json({ detected: false })
     }
 

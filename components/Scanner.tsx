@@ -81,16 +81,16 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
       busyRef.current = true
 
       try {
-        // Capture a low-res frame
+        // Capture a higher quality frame for better label reading
         const video = videoRef.current
-        const maxW = 800
+        const maxW = 1024
         const scale = video.videoWidth > maxW ? maxW / video.videoWidth : 1
         const canvas = document.createElement('canvas')
         canvas.width = Math.round(video.videoWidth * scale)
         canvas.height = Math.round(video.videoHeight * scale)
         const ctx = canvas.getContext('2d')!
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-        const frame = canvas.toDataURL('image/jpeg', 0.7)
+        const frame = canvas.toDataURL('image/jpeg', 0.8)
 
         const res = await fetch('/api/auto-detect', {
           method: 'POST',
@@ -119,9 +119,9 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
     }
 
     // Run first detection after a short delay to ensure video is playing
-    const startTimeout = setTimeout(runDetection, 1500)
-    // Then every 3.5 seconds (gives time for API response)
-    const interval = setInterval(runDetection, 3500)
+    const startTimeout = setTimeout(runDetection, 1000)
+    // Then every 2.5 seconds
+    const interval = setInterval(runDetection, 2500)
 
     return () => {
       scanningRef.current = false
@@ -217,8 +217,12 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
       borderColor = 'border-green-400'
     } else if (scanAttempts === 0) {
       guideText = 'Scanning for nutrition label...'
+    } else if (scanAttempts <= 3) {
+      guideText = 'Hold steady, reading label...'
+    } else if (scanAttempts <= 6) {
+      guideText = 'Move closer to the label'
     } else {
-      guideText = `Scanning... hold steady (${scanAttempts})`
+      guideText = 'Try better lighting or tap to capture'
     }
   } else {
     guideText = mode === 'barcode' ? 'Point camera at barcode' : 'Point camera at nutrition label'
