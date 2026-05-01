@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { getDemoProductCount } from '@/lib/demo-products'
 
 const CATEGORIES = [
   {
@@ -93,6 +94,12 @@ export default function BrowsePage() {
             <div className="text-[#3A3F57]">{cat.icon}</div>
             <span className="text-sm font-semibold text-[#3A3F57]">{cat.name}</span>
             <span className="text-xs text-gray-400 text-center">{cat.description}</span>
+            {getDemoProductCount(cat.id) > 0 && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-[#D89A0E] bg-[#F1B123]/10 px-2 py-0.5 rounded-full mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                {getDemoProductCount(cat.id)} curated
+              </span>
+            )}
           </button>
         ))}
       </div>

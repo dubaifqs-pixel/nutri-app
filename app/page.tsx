@@ -33,9 +33,13 @@ export default function Home() {
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
           Browse Categories
         </Link>
+        <p className="text-[10px] text-gray-400 text-center mt-1" style={{ fontFamily: 'var(--font-inter)' }}>Curated UAE products included</p>
       </div>
       <RecentScans />
-      <p className="text-xs text-gray-400 mt-12" style={{ fontFamily: 'var(--font-inter)' }}>Powered by AI</p>
+      <div className="flex flex-col items-center gap-2 mt-12">
+        <p className="text-xs text-gray-400" style={{ fontFamily: 'var(--font-inter)' }}>Powered by AI</p>
+        <Link href="/landing" className="text-[11px] text-gray-400 hover:text-[#F1B123] transition-colors" style={{ fontFamily: 'var(--font-inter)' }}>About DFQS</Link>
+      </div>
     </div>
   )
 }
