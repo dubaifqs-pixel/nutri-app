@@ -17,16 +17,12 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
   const [videoReady, setVideoReady] = useState(false)
   const [manualBarcode, setManualBarcode] = useState('')
   const [showManual, setShowManual] = useState(startManual)
-  const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'detected' | 'error'>('idle')
+  const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'detected'>('idle')
   const [scanAttempts, setScanAttempts] = useState(0)
   const scanningRef = useRef(false)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const busyRef = useRef(false)
 
   const stopCamera = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
     scanningRef.current = false
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop())
@@ -34,75 +30,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
     }
   }, [])
 
-  const captureFrame = useCallback((maxWidth: number, quality: number) => {
-    if (!videoRef.current) return null
-    const video = videoRef.current
-    if (video.videoWidth === 0) return null
-    const scale = video.videoWidth > maxWidth ? maxWidth / video.videoWidth : 1
-    const canvas = document.createElement('canvas')
-    canvas.width = Math.round(video.videoWidth * scale)
-    canvas.height = Math.round(video.videoHeight * scale)
-    const ctx = canvas.getContext('2d')!
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-    return canvas.toDataURL('image/jpeg', quality)
-  }, [])
-
-  // Auto-detect loop for label mode
-  useEffect(() => {
-    if (mode !== 'label' || !videoReady || showManual || !onAutoDetect) return
-
-    scanningRef.current = true
-    setScanStatus('scanning')
-
-    const runDetection = async () => {
-      if (!scanningRef.current || !videoRef.current) return
-
-      const frame = captureFrame(800, 0.7) // Low-res for speed
-      if (!frame) return
-
-      try {
-        const res = await fetch('/api/auto-detect', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: frame }),
-        })
-        const data = await res.json()
-
-        if (!scanningRef.current) return
-
-        if (data.detected) {
-          setScanStatus('detected')
-          scanningRef.current = false
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current)
-            intervalRef.current = null
-          }
-          // Small delay for the user to see "detected" state
-          setTimeout(() => {
-            stopCamera()
-            onAutoDetect(data)
-          }, 600)
-        } else {
-          setScanAttempts(prev => prev + 1)
-        }
-      } catch {
-        // Silent fail, keep scanning
-      }
-    }
-
-    // Start scanning every 3 seconds
-    runDetection()
-    intervalRef.current = setInterval(runDetection, 3000)
-
-    return () => {
-      scanningRef.current = false
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
-    }
-  }, [mode, videoReady, showManual, onAutoDetect, captureFrame, stopCamera])
-
+  // Start camera
   useEffect(() => {
     if (showManual) return
 
@@ -125,7 +53,10 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
         streamRef.current = stream
         if (videoRef.current) {
           videoRef.current.srcObject = stream
-          videoRef.current.onloadedmetadata = () => setVideoReady(true)
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current?.play()
+            setVideoReady(true)
+          }
         }
       } catch {
         setError('Could not access camera')
@@ -135,10 +66,83 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
     return stopCamera
   }, [stopCamera, showManual])
 
+  // Auto-detect loop
+  useEffect(() => {
+    if (mode !== 'label' || !videoReady || showManual || !onAutoDetect) return
+
+    scanningRef.current = true
+    setScanStatus('scanning')
+
+    const runDetection = async () => {
+      // Skip if not scanning or already processing a request
+      if (!scanningRef.current || busyRef.current) return
+      if (!videoRef.current || videoRef.current.videoWidth === 0) return
+
+      busyRef.current = true
+
+      try {
+        // Capture a low-res frame
+        const video = videoRef.current
+        const maxW = 800
+        const scale = video.videoWidth > maxW ? maxW / video.videoWidth : 1
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.round(video.videoWidth * scale)
+        canvas.height = Math.round(video.videoHeight * scale)
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+        const frame = canvas.toDataURL('image/jpeg', 0.7)
+
+        const res = await fetch('/api/auto-detect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: frame }),
+        })
+        const data = await res.json()
+
+        if (!scanningRef.current) return
+
+        if (data.detected) {
+          setScanStatus('detected')
+          scanningRef.current = false
+          setTimeout(() => {
+            stopCamera()
+            onAutoDetect(data)
+          }, 600)
+        } else {
+          setScanAttempts(prev => prev + 1)
+        }
+      } catch {
+        // Silent fail, keep scanning
+      } finally {
+        busyRef.current = false
+      }
+    }
+
+    // Run first detection after a short delay to ensure video is playing
+    const startTimeout = setTimeout(runDetection, 1500)
+    // Then every 3.5 seconds (gives time for API response)
+    const interval = setInterval(runDetection, 3500)
+
+    return () => {
+      scanningRef.current = false
+      clearTimeout(startTimeout)
+      clearInterval(interval)
+    }
+  }, [mode, videoReady, showManual, onAutoDetect, stopCamera])
+
   const capturePhoto = () => {
     if (!videoRef.current || !videoReady) return
-    const base64 = captureFrame(1280, 0.85)
-    if (!base64) return
+    const video = videoRef.current
+    if (video.videoWidth === 0) return
+    scanningRef.current = false
+    const maxWidth = 1280
+    const scale = video.videoWidth > maxWidth ? maxWidth / video.videoWidth : 1
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(video.videoWidth * scale)
+    canvas.height = Math.round(video.videoHeight * scale)
+    const ctx = canvas.getContext('2d')!
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    const base64 = canvas.toDataURL('image/jpeg', 0.85)
     stopCamera()
     onCapture(base64)
   }
@@ -200,8 +204,8 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
     )
   }
 
-  // Determine guide text and scan indicator
-  const isAutoScanning = mode === 'label' && onAutoDetect
+  // Status text & colors
+  const isAutoScanning = mode === 'label' && !!onAutoDetect
   let guideText = ''
   let borderColor = 'border-yellow-400'
 
@@ -211,8 +215,10 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
     if (scanStatus === 'detected') {
       guideText = 'Label detected!'
       borderColor = 'border-green-400'
+    } else if (scanAttempts === 0) {
+      guideText = 'Scanning for nutrition label...'
     } else {
-      guideText = scanAttempts === 0 ? 'Scanning for nutrition label...' : `Scanning... hold steady`
+      guideText = `Scanning... hold steady (${scanAttempts})`
     }
   } else {
     guideText = mode === 'barcode' ? 'Point camera at barcode' : 'Point camera at nutrition label'
@@ -225,7 +231,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
       {/* Scan frame */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div
-          className={`rounded-xl transition-all duration-300 ${borderColor}`}
+          className={`rounded-xl relative transition-all duration-300 ${borderColor}`}
           style={{
             width: mode === 'barcode' ? '280px' : '300px',
             height: mode === 'barcode' ? '140px' : '220px',
@@ -233,53 +239,45 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
             boxShadow: scanStatus === 'detected'
               ? '0 0 30px rgba(74, 222, 128, 0.4), inset 0 0 30px rgba(74, 222, 128, 0.1)'
               : isAutoScanning && scanStatus === 'scanning'
-                ? '0 0 20px rgba(250, 204, 21, 0.2), inset 0 0 20px rgba(250, 204, 21, 0.05)'
+                ? '0 0 20px rgba(250, 204, 21, 0.3)'
                 : 'none',
           }}
         >
-          {/* Corner markers */}
-          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 rounded-tl-xl" style={{ borderColor: 'inherit' }} />
-          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 rounded-tr-xl" style={{ borderColor: 'inherit' }} />
-          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 rounded-bl-xl" style={{ borderColor: 'inherit' }} />
-          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 rounded-br-xl" style={{ borderColor: 'inherit' }} />
-
           {/* Scanning line animation */}
-          {isAutoScanning && scanStatus === 'scanning' && (
-            <div className="absolute inset-x-4 h-0.5 bg-gradient-to-r from-transparent via-[#F1B123] to-transparent animate-scan-line" />
+          {isAutoScanning && scanStatus === 'scanning' && videoReady && (
+            <div className="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-[#F1B123] to-transparent animate-scan-line" />
           )}
         </div>
       </div>
 
-      {/* Status indicator */}
-      <div className="absolute bottom-32 flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">
-        {isAutoScanning && scanStatus === 'scanning' && (
-          <div className="w-2 h-2 bg-[#F1B123] rounded-full animate-pulse" />
+      {/* Status */}
+      <div className="absolute bottom-32 flex items-center gap-2 bg-black/60 px-4 py-2 rounded-full backdrop-blur-sm">
+        {isAutoScanning && scanStatus === 'scanning' && videoReady && (
+          <div className="w-2.5 h-2.5 bg-[#F1B123] rounded-full animate-pulse" />
         )}
         {scanStatus === 'detected' && (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
         )}
         <p className="text-white text-sm">{guideText}</p>
       </div>
 
-      {/* Manual capture button - always available as fallback */}
+      {/* Capture button */}
       <button
         onClick={capturePhoto}
         disabled={!videoReady}
         className="absolute bottom-8 w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center z-10 disabled:opacity-50 transition-all"
-        title={isAutoScanning ? 'Tap to capture manually' : 'Capture'}
+        title="Tap to capture manually"
       >
         <div
           className="w-16 h-16 rounded-full border-4 border-white transition-colors"
-          style={{
-            backgroundColor: scanStatus === 'detected' ? '#4ade80' : '#F1B123',
-          }}
+          style={{ backgroundColor: scanStatus === 'detected' ? '#4ade80' : '#F1B123' }}
         />
       </button>
 
-      {/* Auto-scan hint */}
+      {/* Hints */}
       {isAutoScanning && videoReady && scanStatus === 'scanning' && (
         <p className="absolute bottom-2 text-white/40 text-xs">
-          Auto-scanning every 3s — or tap to capture manually
+          Auto-scanning -- or tap button to capture manually
         </p>
       )}
 
