@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Html5Qrcode } from 'html5-qrcode'
 
 interface Props {
   onBarcode: (barcode: string) => void
@@ -13,17 +12,12 @@ interface Props {
 export default function Scanner({ onBarcode, onCapture, mode, startManual = false }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
-  const scannerRef = useRef<Html5Qrcode | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [videoReady, setVideoReady] = useState(false)
   const [manualBarcode, setManualBarcode] = useState('')
   const [showManual, setShowManual] = useState(startManual)
 
   const stopCamera = useCallback(() => {
-    if (scannerRef.current) {
-      scannerRef.current.stop().catch(() => {})
-      scannerRef.current = null
-    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop())
       streamRef.current = null
@@ -33,60 +27,38 @@ export default function Scanner({ onBarcode, onCapture, mode, startManual = fals
   useEffect(() => {
     if (showManual) return
 
-    if (mode === 'barcode') {
-      const scanner = new Html5Qrcode('scanner-region')
-      scannerRef.current = scanner
-      scanner.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 280, height: 160 },
-          aspectRatio: 1.777,
-          videoConstraints: {
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
             facingMode: 'environment',
             width: { ideal: 1920 },
             height: { ideal: 1080 },
-          },
-        },
-        (decodedText) => { scanner.stop().catch(() => {}); onBarcode(decodedText) },
-        () => {}
-      ).catch(() => setError('تعذر الوصول للكاميرا'))
-    } else {
-      const startCamera = async () => {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: 'environment',
-              width: { ideal: 1920 },
-              height: { ideal: 1080 },
-            }
-          })
-          const track = stream.getVideoTracks()[0]
-          try {
-            const caps = track.getCapabilities?.() as any
-            if (caps?.focusMode?.includes('continuous')) {
-              await track.applyConstraints({ advanced: [{ focusMode: 'continuous' } as any] })
-            }
-          } catch {}
-          streamRef.current = stream
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream
-            videoRef.current.onloadedmetadata = () => setVideoReady(true)
           }
-        } catch {
-          setError('تعذر الوصول للكاميرا')
+        })
+        const track = stream.getVideoTracks()[0]
+        try {
+          const caps = track.getCapabilities?.() as any
+          if (caps?.focusMode?.includes('continuous')) {
+            await track.applyConstraints({ advanced: [{ focusMode: 'continuous' } as any] })
+          }
+        } catch {}
+        streamRef.current = stream
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          videoRef.current.onloadedmetadata = () => setVideoReady(true)
         }
+      } catch {
+        setError('تعذر الوصول للكاميرا')
       }
-      startCamera()
     }
+    startCamera()
     return stopCamera
-  }, [mode, onBarcode, stopCamera, showManual])
+  }, [stopCamera, showManual])
 
   const capturePhoto = () => {
     if (!videoRef.current || !videoReady) return
     const video = videoRef.current
-
-    // Resize to max 1280px wide to keep under Vercel's 4.5MB body limit
     const maxWidth = 1280
     const scale = video.videoWidth > maxWidth ? maxWidth / video.videoWidth : 1
     const canvas = document.createElement('canvas')
@@ -156,25 +128,21 @@ export default function Scanner({ onBarcode, onCapture, mode, startManual = fals
     )
   }
 
-  if (mode === 'barcode') {
-    return (
-      <div className="relative w-full" style={{ height: '100vh' }}>
-        <div id="scanner-region" className="w-full h-full" />
-        <button
-          onClick={() => { stopCamera(); setShowManual(true) }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white/20 backdrop-blur text-white px-5 py-3 rounded-xl text-sm font-medium z-10"
-        >
-          ⌨️ أدخل الباركود يدوياً
-        </button>
-      </div>
-    )
-  }
+  const guideText = mode === 'barcode'
+    ? 'صوّر الباركود'
+    : 'صوّر الملصق الغذائي'
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center" style={{ height: '100vh' }}>
       <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-72 h-52 border-2 border-yellow-400 rounded-xl" />
+        <div
+          className="border-2 border-yellow-400 rounded-xl"
+          style={{
+            width: mode === 'barcode' ? '280px' : '288px',
+            height: mode === 'barcode' ? '140px' : '208px',
+          }}
+        />
       </div>
       <button
         onClick={capturePhoto}
@@ -184,8 +152,16 @@ export default function Scanner({ onBarcode, onCapture, mode, startManual = fals
         <div className="w-16 h-16 bg-yellow-400 rounded-full border-4 border-white" />
       </button>
       <p className="absolute bottom-32 text-white text-sm bg-black/40 px-3 py-1 rounded-full" dir="rtl">
-        {videoReady ? 'وجّه الكاميرا نحو الملصق الغذائي' : 'جارٍ تشغيل الكاميرا...'}
+        {videoReady ? guideText : 'جارٍ تشغيل الكاميرا...'}
       </p>
+      {mode === 'barcode' && (
+        <button
+          onClick={() => { stopCamera(); setShowManual(true) }}
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-xs z-10"
+        >
+          ⌨️ أدخل يدوياً
+        </button>
+      )}
     </div>
   )
 }

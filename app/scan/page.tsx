@@ -12,69 +12,99 @@ function ScanContent() {
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState('')
 
+  const lookupBarcode = async (barcode: string) => {
+    setStatus(`جارٍ البحث عن المنتج: ${barcode}...`)
+    const res = await fetch('/api/barcode', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ barcode }),
+    })
+    if (!res.ok) {
+      throw new Error('المنتج غير موجود في قاعدة البيانات')
+    }
+    return await res.json()
+  }
+
+  const getGrade = async (nutrition: any) => {
+    setStatus('جارٍ حساب التقييم...')
+    const gradeRes = await fetch('/api/grade', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nutrition }),
+    })
+    return await gradeRes.json()
+  }
+
+  const goToResult = (product: any, gradeResult: any) => {
+    sessionStorage.setItem('dfqs_product', JSON.stringify(product))
+    sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
+    router.push('/result')
+  }
+
   const handleBarcode = async (barcode: string) => {
     setLoading(true)
-    setStatus('جارٍ البحث عن المنتج...')
     try {
-      const res = await fetch('/api/barcode', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ barcode }),
-      })
-      if (!res.ok) {
-        setStatus('المنتج غير موجود — جرّب مسح الملصق الغذائي')
-        setLoading(false)
-        setTimeout(() => router.push('/scan?mode=label'), 2000)
-        return
-      }
-      const product = await res.json()
-      sessionStorage.setItem('dfqs_product', JSON.stringify(product))
-      const gradeRes = await fetch('/api/grade', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nutrition: product.nutrition }),
-      })
-      const gradeResult = await gradeRes.json()
-      sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
-      router.push('/result')
-    } catch {
-      setStatus('حدث خطأ — حاول مرة أخرى')
-      setLoading(false)
+      const product = await lookupBarcode(barcode)
+      const gradeResult = await getGrade(product.nutrition)
+      goToResult(product, gradeResult)
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'حدث خطأ')
+      setTimeout(() => setLoading(false), 3000)
     }
   }
 
   const handleCapture = async (imageBase64: string) => {
     setLoading(true)
-    setStatus('جارٍ التحليل بالذكاء الاصطناعي...')
-    try {
-      const res = await fetch('/api/scan-label', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageBase64 }),
-      })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({ error: 'Unknown error' }))
-        setStatus(`تعذر قراءة الملصق: ${errData.error || res.status}`)
-        setTimeout(() => { setLoading(false) }, 3000)
-        return
+
+    if (mode === 'barcode') {
+      // Use AI to read barcode from photo, then look up product
+      setStatus('جارٍ قراءة الباركود بالذكاء الاصطناعي...')
+      try {
+        const barcodeRes = await fetch('/api/scan-barcode', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: imageBase64 }),
+        })
+        if (!barcodeRes.ok) {
+          const err = await barcodeRes.json().catch(() => ({}))
+          setStatus(err.error || 'تعذر قراءة الباركود — جرّب الإدخال اليدوي')
+          setTimeout(() => setLoading(false), 3000)
+          return
+        }
+        const { barcode } = await barcodeRes.json()
+        const product = await lookupBarcode(barcode)
+        const gradeResult = await getGrade(product.nutrition)
+        goToResult(product, gradeResult)
+      } catch (err) {
+        setStatus(err instanceof Error ? err.message : 'حدث خطأ — جرّب الإدخال اليدوي')
+        setTimeout(() => setLoading(false), 3000)
       }
-      const product = await res.json()
-      sessionStorage.setItem('dfqs_product', JSON.stringify(product))
-      const gradeRes = await fetch('/api/grade', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nutrition: product.nutrition }),
-      })
-      const gradeResult = await gradeRes.json()
-      sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
-      router.push('/result')
-    } catch (err) {
-      setStatus(`حدث خطأ: ${err instanceof Error ? err.message : 'حاول مرة أخرى'}`)
-      setTimeout(() => { setLoading(false) }, 3000)
+    } else {
+      // Use AI to read nutrition label directly
+      setStatus('جارٍ تحليل الملصق الغذائي...')
+      try {
+        const res = await fetch('/api/scan-label', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: imageBase64 }),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          setStatus(err.error || 'تعذر قراءة الملصق — حاول بإضاءة أفضل')
+          setTimeout(() => setLoading(false), 3000)
+          return
+        }
+        const product = await res.json()
+        const gradeResult = await getGrade(product.nutrition)
+        goToResult(product, gradeResult)
+      } catch (err) {
+        setStatus(err instanceof Error ? err.message : 'حدث خطأ — حاول مرة أخرى')
+        setTimeout(() => setLoading(false), 3000)
+      }
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4">
-        <div className="w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
-        <p className="text-white text-sm" dir="rtl">{status}</p>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4 px-8">
+        <div className="w-10 h-10 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+        <p className="text-white text-sm text-center" dir="rtl">{status}</p>
       </div>
     )
   }
