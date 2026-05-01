@@ -1,0 +1,17 @@
+{
+  "name": "DFQS — معايير دبي لجودة الغذاء",
+  "short_name": "DFQS",
+  "description": "Dubai Food Quality Standards — AI-powered food grading",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#3A3F57",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
