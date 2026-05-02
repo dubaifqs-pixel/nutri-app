@@ -19,6 +19,8 @@ export async function POST(request: NextRequest) {
       image_url: result.image_url,
       barcode,
       source: 'barcode',
+      data_source: result.data_source || (result.source === 'ai_knowledge' ? 'AI Knowledge' : 'Open Food Facts'),
+      confidence: result.confidence,
     })
   } catch (error) {
     console.error('Barcode lookup error:', error)

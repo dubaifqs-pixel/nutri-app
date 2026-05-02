@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { geminiFlash } from '@/lib/gemini'
 import { calculateGrade } from '@/lib/scoring'
-import { searchProducts } from '@/lib/food-api'
+import { searchAlternatives } from '@/lib/food-api'
 import { DEMO_PRODUCTS } from '@/lib/demo-products'
 
 export async function POST(request: NextRequest) {
@@ -35,47 +35,29 @@ export async function POST(request: NextRequest) {
       // Category detection failed, continue without it
     }
 
-    // Build search query: translate name + use category
-    let searchQuery = product_name
-    try {
-      const translateResult = await geminiFlash.generateContent(
-        `Translate this food product name to a short English search term (1-3 words only, no quotes): "${product_name}"`
-      )
-      searchQuery = translateResult.response.text().trim()
-    } catch {
-      // Use original name if translation fails
-    }
-
-    // Search with translated term, then category, then fallback to original
-    let { products } = await searchProducts(searchQuery)
-    if (products.length < 5 && category) {
-      const categoryResult = await searchProducts(category)
-      // Merge category results, deduplicate by name
-      const seenNames = new Set(products.map(p => p.product_name.toLowerCase()))
-      for (const p of categoryResult.products) {
-        if (!seenNames.has(p.product_name.toLowerCase())) {
-          seenNames.add(p.product_name.toLowerCase())
-          products.push(p)
-        }
-      }
-    }
-    if (products.length === 0 && searchQuery !== product_name) {
-      const fallback = await searchProducts(product_name)
-      products = fallback.products
-    }
-
     interface AlternativeResult {
       product_name: string
       brand: string
       image_url: string | null
       grade: string
       score: number
-      nutrition: typeof products[0]['nutrition']
-      source: 'usda' | 'openfoodfacts' | 'demo'
+      nutrition: {
+        energy_kcal: number | null
+        sugars_g: number | null
+        saturated_fat_g: number | null
+        sodium_mg: number | null
+        protein_g: number | null
+        fiber_g: number | null
+        fruits_veg_percent: number | null
+      }
+      source: 'usda' | 'openfoodfacts' | 'manual' | 'ai_knowledge'
+      data_source?: string
     }
 
-    // Grade and filter API alternatives
-    const apiAlternatives: AlternativeResult[] = products
+    // Ask Gemini for healthier alternatives commonly available in UAE
+    const geminiAlts = await searchAlternatives(product_name, category, current_grade)
+
+    const geminiAlternatives: AlternativeResult[] = geminiAlts
       .map((p) => {
         const grade = calculateGrade(p.nutrition)
         return {
@@ -85,7 +67,8 @@ export async function POST(request: NextRequest) {
           grade: grade.grade,
           score: grade.score,
           nutrition: p.nutrition,
-          source: p.source as 'usda' | 'openfoodfacts',
+          source: 'ai_knowledge' as const,
+          data_source: 'AI Knowledge',
         }
       })
       .filter((p) => gradeOrder.indexOf(p.grade) < currentIndex)
@@ -108,15 +91,15 @@ export async function POST(request: NextRequest) {
             grade: grade.grade,
             score: grade.score,
             nutrition: dp.nutrition,
-            source: 'demo' as const,
+            source: 'manual' as const,
           })
         }
       }
     }
 
-    // Merge and deduplicate, sort by grade then score
+    // Merge and deduplicate: Gemini alternatives first, then demo
     const seenNames = new Set<string>()
-    const allAlternatives = [...apiAlternatives, ...demoAlternatives]
+    const allAlternatives = [...geminiAlternatives, ...demoAlternatives]
       .filter(a => {
         const key = a.product_name.toLowerCase()
         if (seenNames.has(key)) return false

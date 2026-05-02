@@ -1,4 +1,5 @@
 import type { NutritionData } from './types'
+import { geminiFlash } from './gemini'
 
 // Unified interface for food data from any source
 export interface FoodSearchResult {
@@ -6,7 +7,9 @@ export interface FoodSearchResult {
   image_url: string | null
   nutrition: NutritionData
   barcode: string | null
-  source: 'usda' | 'openfoodfacts' | 'manual'
+  source: 'usda' | 'openfoodfacts' | 'manual' | 'ai_knowledge'
+  confidence?: 'high' | 'medium' | 'low'
+  data_source?: string
 }
 
 // --- Timeout helper ---
@@ -21,6 +24,200 @@ async function fetchWithTimeout(url: string, options?: RequestInit, timeoutMs = 
     })
   } finally {
     clearTimeout(timeout)
+  }
+}
+
+// --- Gemini AI Knowledge ---
+
+const GEMINI_PRODUCT_PROMPT = `You are a food nutrition database with extensive knowledge of products sold worldwide, especially in UAE, Middle East, and global brands.
+
+For the given product, return ONLY valid JSON (no markdown):
+{
+  "product_name": "Full product name",
+  "brand": "Brand name",
+  "nutrition": {
+    "energy_kcal": number,
+    "sugars_g": number,
+    "saturated_fat_g": number,
+    "sodium_mg": number,
+    "protein_g": number,
+    "fiber_g": number,
+    "fruits_veg_percent": null
+  },
+  "confidence": "high" | "medium" | "low",
+  "source": "AI Knowledge"
+}
+
+Rules:
+- Values must be per 100g
+- Use your training knowledge for accurate values
+- If you're not confident about a product, set confidence to "low"
+- If you don't know the product at all, return {"unknown": true}`
+
+function buildCategorySearchPrompt(category: string): string {
+  return `List 15 ${category} products commonly found in UAE supermarkets (Carrefour, Lulu, Spinneys, Choithrams). Include both local (Al Ain, Almarai, Al Rawabi, IFFCO) and international brands.
+
+Return ONLY valid JSON array (no markdown):
+[
+  {
+    "product_name": "Full name",
+    "brand": "Brand",
+    "nutrition": {
+      "energy_kcal": number,
+      "sugars_g": number,
+      "saturated_fat_g": number,
+      "sodium_mg": number,
+      "protein_g": number,
+      "fiber_g": number,
+      "fruits_veg_percent": null
+    }
+  }
+]
+
+Rules:
+- All values per 100g
+- Include a mix of healthy (A/B grade) and unhealthy (D/E grade) products
+- Include REAL products with accurate nutrition values
+- Focus on products actually available in UAE`
+}
+
+interface GeminiProductResult {
+  product_name?: string
+  brand?: string
+  nutrition?: {
+    energy_kcal?: number | null
+    sugars_g?: number | null
+    saturated_fat_g?: number | null
+    sodium_mg?: number | null
+    protein_g?: number | null
+    fiber_g?: number | null
+    fruits_veg_percent?: number | null
+  }
+  confidence?: 'high' | 'medium' | 'low'
+  source?: string
+  unknown?: boolean
+}
+
+interface GeminiCategoryProduct {
+  product_name?: string
+  brand?: string
+  nutrition?: {
+    energy_kcal?: number | null
+    sugars_g?: number | null
+    saturated_fat_g?: number | null
+    sodium_mg?: number | null
+    protein_g?: number | null
+    fiber_g?: number | null
+    fruits_veg_percent?: number | null
+  }
+}
+
+function parseGeminiNutrition(n: GeminiCategoryProduct['nutrition']): NutritionData {
+  if (!n) {
+    return {
+      energy_kcal: null, sugars_g: null, saturated_fat_g: null,
+      sodium_mg: null, protein_g: null, fiber_g: null, fruits_veg_percent: null,
+    }
+  }
+  return {
+    energy_kcal: typeof n.energy_kcal === 'number' ? n.energy_kcal : null,
+    sugars_g: typeof n.sugars_g === 'number' ? n.sugars_g : null,
+    saturated_fat_g: typeof n.saturated_fat_g === 'number' ? n.saturated_fat_g : null,
+    sodium_mg: typeof n.sodium_mg === 'number' ? n.sodium_mg : null,
+    protein_g: typeof n.protein_g === 'number' ? n.protein_g : null,
+    fiber_g: typeof n.fiber_g === 'number' ? n.fiber_g : null,
+    fruits_veg_percent: typeof n.fruits_veg_percent === 'number' ? n.fruits_veg_percent : null,
+  }
+}
+
+function cleanJsonResponse(text: string): string {
+  // Strip markdown code fences if present
+  let cleaned = text.trim()
+  if (cleaned.startsWith('```json')) {
+    cleaned = cleaned.slice(7)
+  } else if (cleaned.startsWith('```')) {
+    cleaned = cleaned.slice(3)
+  }
+  if (cleaned.endsWith('```')) {
+    cleaned = cleaned.slice(0, -3)
+  }
+  return cleaned.trim()
+}
+
+async function askGeminiForProduct(query: string): Promise<FoodSearchResult | null> {
+  try {
+    const result = await geminiFlash.generateContent(
+      `${GEMINI_PRODUCT_PROMPT}\n\nProduct: ${query}`
+    )
+    const text = cleanJsonResponse(result.response.text())
+    const parsed: GeminiProductResult = JSON.parse(text)
+
+    if (parsed.unknown || !parsed.product_name || !parsed.nutrition) {
+      return null
+    }
+
+    return {
+      product_name: parsed.product_name,
+      image_url: null,
+      nutrition: parseGeminiNutrition(parsed.nutrition),
+      barcode: null,
+      source: 'ai_knowledge',
+      confidence: parsed.confidence || 'medium',
+      data_source: 'AI Knowledge',
+    }
+  } catch {
+    return null
+  }
+}
+
+async function askGeminiForBarcode(barcode: string): Promise<FoodSearchResult | null> {
+  try {
+    const result = await geminiFlash.generateContent(
+      `${GEMINI_PRODUCT_PROMPT}\n\nWhat product has barcode ${barcode}? Provide the product name, brand, and nutrition facts per 100g.`
+    )
+    const text = cleanJsonResponse(result.response.text())
+    const parsed: GeminiProductResult = JSON.parse(text)
+
+    if (parsed.unknown || !parsed.product_name || !parsed.nutrition) {
+      return null
+    }
+
+    return {
+      product_name: parsed.product_name,
+      image_url: null,
+      nutrition: parseGeminiNutrition(parsed.nutrition),
+      barcode,
+      source: 'ai_knowledge',
+      confidence: parsed.confidence || 'medium',
+      data_source: 'AI Knowledge',
+    }
+  } catch {
+    return null
+  }
+}
+
+async function askGeminiForCategory(category: string): Promise<FoodSearchResult[]> {
+  try {
+    const prompt = buildCategorySearchPrompt(category)
+    const result = await geminiFlash.generateContent(prompt)
+    const text = cleanJsonResponse(result.response.text())
+    const parsed: GeminiCategoryProduct[] = JSON.parse(text)
+
+    if (!Array.isArray(parsed)) return []
+
+    return parsed
+      .filter((p) => p.product_name && p.nutrition)
+      .map((p) => ({
+        product_name: p.product_name!,
+        image_url: null,
+        nutrition: parseGeminiNutrition(p.nutrition),
+        barcode: null,
+        source: 'ai_knowledge' as const,
+        confidence: 'medium' as const,
+        data_source: 'AI Knowledge',
+      }))
+  } catch {
+    return []
   }
 }
 
@@ -85,6 +282,7 @@ function usdaFoodToResult(food: USDAFood): FoodSearchResult {
     nutrition: mapUSDANutrition(food.foodNutrients),
     barcode: food.gtinUpc || null,
     source: 'usda',
+    data_source: 'USDA',
   }
 }
 
@@ -136,6 +334,7 @@ function offProductToResult(p: OFFProduct): FoodSearchResult {
     nutrition: mapOFFNutrition(p.nutriments || {}),
     barcode: p.code || null,
     source: 'openfoodfacts',
+    data_source: 'Open Food Facts',
   }
 }
 
@@ -177,6 +376,7 @@ async function lookupOFFBarcode(barcode: string): Promise<FoodSearchResult | nul
       nutrition: mapOFFNutrition(p.nutriments || {}),
       barcode,
       source: 'openfoodfacts',
+      data_source: 'Open Food Facts',
     }
   } catch {
     return null
@@ -187,51 +387,46 @@ async function lookupOFFBarcode(barcode: string): Promise<FoodSearchResult | nul
 
 /**
  * Search products by text query.
- * Tries USDA first (more reliable uptime), then Open Food Facts.
- * Merges results if both succeed, deduplicating by product name.
+ * AI-first: Ask Gemini first for UAE-relevant results, then USDA as supplementary.
+ * Merges and deduplicates results (Gemini first).
  */
 export async function searchProducts(
   query: string,
   page = 1
 ): Promise<{ products: FoodSearchResult[]; total: number }> {
-  // Run both searches in parallel
-  const [usdaResult, offResult] = await Promise.all([
+  // Run Gemini and USDA in parallel
+  const [geminiResults, usdaResult] = await Promise.all([
+    askGeminiForCategory(query),
     searchUSDA(query, 20),
-    searchOFF(query, page, 20),
   ])
 
-  // If both returned results, merge them (USDA first, then OFF)
-  if (usdaResult.products.length > 0 && offResult.products.length > 0) {
-    const seenNames = new Set<string>()
-    const merged: FoodSearchResult[] = []
+  const seenNames = new Set<string>()
+  const merged: FoodSearchResult[] = []
 
-    // Add USDA results first (more reliable)
-    for (const p of usdaResult.products) {
-      const key = p.product_name.toLowerCase()
-      if (!seenNames.has(key)) {
-        seenNames.add(key)
-        merged.push(p)
-      }
-    }
-
-    // Add OFF results that aren't duplicates
-    for (const p of offResult.products) {
-      const key = p.product_name.toLowerCase()
-      if (!seenNames.has(key)) {
-        seenNames.add(key)
-        merged.push(p)
-      }
-    }
-
-    return {
-      products: merged.slice(0, 30), // Cap at 30 for merged results
-      total: usdaResult.total + offResult.total,
+  // Add Gemini results first (AI-first, UAE-focused)
+  for (const p of geminiResults) {
+    const key = p.product_name.toLowerCase()
+    if (!seenNames.has(key)) {
+      seenNames.add(key)
+      merged.push(p)
     }
   }
 
-  // If only one succeeded, use that
-  if (usdaResult.products.length > 0) return usdaResult
-  if (offResult.products.length > 0) return offResult
+  // Add USDA results as supplementary
+  for (const p of usdaResult.products) {
+    const key = p.product_name.toLowerCase()
+    if (!seenNames.has(key)) {
+      seenNames.add(key)
+      merged.push(p)
+    }
+  }
+
+  if (merged.length > 0) {
+    return {
+      products: merged.slice(0, 30),
+      total: geminiResults.length + usdaResult.total,
+    }
+  }
 
   // Both failed
   return { products: [], total: 0 }
@@ -239,18 +434,84 @@ export async function searchProducts(
 
 /**
  * Lookup a product by barcode.
- * Tries Open Food Facts first (better barcode coverage), then falls back to USDA search.
+ * 1. Try Open Food Facts barcode API (fast, specific)
+ * 2. If not found -> Ask Gemini AI
+ * 3. If Gemini doesn't know -> return null
  */
 export async function lookupBarcode(barcode: string): Promise<FoodSearchResult | null> {
-  // Try Open Food Facts barcode API first
+  // Try Open Food Facts barcode API first (fast, specific)
   const offResult = await lookupOFFBarcode(barcode)
   if (offResult) return offResult
 
-  // Fallback: search USDA with the barcode number
-  const usdaResult = await searchUSDA(barcode, 5)
-  if (usdaResult.products.length > 0) {
-    return usdaResult.products[0]
-  }
+  // Fallback: Ask Gemini for barcode knowledge
+  const geminiResult = await askGeminiForBarcode(barcode)
+  if (geminiResult) return geminiResult
 
   return null
+}
+
+/**
+ * Recognize a product by name using AI knowledge.
+ * Used when AI Vision reads a product name but couldn't read all nutrition values.
+ */
+export async function recognizeProduct(name: string): Promise<FoodSearchResult | null> {
+  return askGeminiForProduct(name)
+}
+
+/**
+ * Search for healthier alternatives using Gemini AI knowledge.
+ * Returns products commonly available in UAE supermarkets.
+ */
+export async function searchAlternatives(
+  productName: string,
+  category: string | null,
+  currentGrade: string
+): Promise<FoodSearchResult[]> {
+  try {
+    const prompt = `Suggest 10 healthier alternatives to "${productName}" (currently grade ${currentGrade}) available in UAE supermarkets (Carrefour, Lulu, Spinneys, Choithrams). Include both local and international brands.
+${category ? `Category: ${category}` : ''}
+
+Return ONLY valid JSON array (no markdown):
+[
+  {
+    "product_name": "Full name",
+    "brand": "Brand",
+    "nutrition": {
+      "energy_kcal": number,
+      "sugars_g": number,
+      "saturated_fat_g": number,
+      "sodium_mg": number,
+      "protein_g": number,
+      "fiber_g": number,
+      "fruits_veg_percent": null
+    }
+  }
+]
+
+Rules:
+- All values per 100g
+- Focus on products with BETTER nutrition (lower sugar, less saturated fat, less sodium)
+- Include REAL products with accurate nutrition values
+- Products must be commonly available in UAE`
+
+    const result = await geminiFlash.generateContent(prompt)
+    const text = cleanJsonResponse(result.response.text())
+    const parsed: GeminiCategoryProduct[] = JSON.parse(text)
+
+    if (!Array.isArray(parsed)) return []
+
+    return parsed
+      .filter((p) => p.product_name && p.nutrition)
+      .map((p) => ({
+        product_name: p.product_name!,
+        image_url: null,
+        nutrition: parseGeminiNutrition(p.nutrition),
+        barcode: null,
+        source: 'ai_knowledge' as const,
+        confidence: 'medium' as const,
+        data_source: 'AI Knowledge',
+      }))
+  } catch {
+    return []
+  }
 }

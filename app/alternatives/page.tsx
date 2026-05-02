@@ -12,7 +12,8 @@ interface Alternative {
   grade: Grade
   score: number
   nutrition: NutritionData
-  source: 'usda' | 'openfoodfacts' | 'demo'
+  source: 'usda' | 'openfoodfacts' | 'manual' | 'ai_knowledge'
+  data_source?: string
 }
 
 interface RecommendResponse {
@@ -52,7 +53,8 @@ function passesFilter(nutrition: NutritionData, filter: FilterKey): boolean {
 const SOURCE_LABELS: Record<string, string> = {
   usda: 'USDA',
   openfoodfacts: 'OpenFoodFacts',
-  demo: 'Curated',
+  manual: 'Curated',
+  ai_knowledge: 'AI Knowledge',
 }
 
 function formatVal(val: number | null): string {
@@ -309,8 +311,8 @@ function AlternativeCard({
             <span
               className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
               style={{
-                background: alt.source === 'demo' ? 'rgba(241, 177, 35, 0.1)' : 'rgba(26, 29, 46, 0.05)',
-                color: alt.source === 'demo' ? '#D89A0E' : '#6B7194',
+                background: (alt.source === 'ai_knowledge' || alt.source === 'manual') ? 'rgba(241, 177, 35, 0.1)' : 'rgba(26, 29, 46, 0.05)',
+                color: (alt.source === 'ai_knowledge' || alt.source === 'manual') ? '#D89A0E' : '#6B7194',
               }}
             >
               {SOURCE_LABELS[alt.source] || alt.source}

@@ -63,12 +63,56 @@ export default function ResultPage() {
       {/* Product Name */}
       <div className="text-center animate-slide-up stagger-1">
         <h1 className="text-xl font-bold text-[#1A1D2E]">{product.product_name}</h1>
-        {product.source === 'vision' && (
-          <span className="inline-flex items-center gap-1.5 text-xs text-[#D89A0E] glass-subtle px-3 py-1.5 rounded-full mt-3" style={{ borderColor: 'rgba(241, 177, 35, 0.2)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-            Analyzed by AI
-          </span>
-        )}
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
+          {product.source === 'vision' && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-[#D89A0E] glass-subtle px-3 py-1.5 rounded-full" style={{ borderColor: 'rgba(241, 177, 35, 0.2)' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+              Analyzed by AI
+            </span>
+          )}
+          {product.data_source && (
+            <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full glass-subtle ${
+              product.data_source === 'AI Knowledge'
+                ? 'text-[#D89A0E]'
+                : product.data_source === 'Open Food Facts'
+                ? 'text-[#3B82F6]'
+                : product.data_source === 'USDA'
+                ? 'text-[#059669]'
+                : product.data_source === 'Label Scan'
+                ? 'text-[#8B5CF6]'
+                : 'text-[#6B7194]'
+            }`} style={{ borderColor: product.data_source === 'AI Knowledge'
+                ? 'rgba(241, 177, 35, 0.2)'
+                : product.data_source === 'Open Food Facts'
+                ? 'rgba(59, 130, 246, 0.2)'
+                : product.data_source === 'USDA'
+                ? 'rgba(5, 150, 105, 0.2)'
+                : product.data_source === 'Label Scan'
+                ? 'rgba(139, 92, 246, 0.2)'
+                : 'rgba(107, 113, 148, 0.2)'
+            }}>
+              {product.data_source === 'AI Knowledge' && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+              )}
+              {product.data_source === 'Open Food Facts' && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+              )}
+              {product.data_source === 'USDA' && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              )}
+              {product.data_source === 'Label Scan' && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              )}
+              {product.data_source}
+            </span>
+          )}
+          {product.confidence === 'low' && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-[#EA580C] glass-subtle px-3 py-1.5 rounded-full" style={{ borderColor: 'rgba(234, 88, 12, 0.2)' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              Verify data
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Grade Badge */}

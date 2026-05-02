@@ -36,6 +36,8 @@ export interface ProductData {
   image_url?: string
   barcode?: string
   source: 'barcode' | 'vision' | 'manual'
+  confidence?: 'high' | 'medium' | 'low'
+  data_source?: string // e.g., "Open Food Facts", "USDA", "AI Knowledge", "Label Scan"
 }
 
 export interface ChatMessage {
