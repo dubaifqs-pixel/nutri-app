@@ -8,6 +8,10 @@ const BADGE_STYLES: Record<string, { bg: string; text: string; border: string }>
   MODERATE: { bg: 'rgba(217, 119, 6, 0.08)', text: '#D97706', border: 'rgba(217, 119, 6, 0.2)' },
   GOOD: { bg: 'rgba(101, 163, 13, 0.08)', text: '#65A30D', border: 'rgba(101, 163, 13, 0.2)' },
   EXCELLENT: { bg: 'rgba(5, 150, 105, 0.08)', text: '#059669', border: 'rgba(5, 150, 105, 0.2)' },
+  SAFE: { bg: 'rgba(5, 150, 105, 0.08)', text: '#059669', border: 'rgba(5, 150, 105, 0.2)' },
+  OK: { bg: 'rgba(101, 163, 13, 0.08)', text: '#65A30D', border: 'rgba(101, 163, 13, 0.2)' },
+  LIMIT: { bg: 'rgba(217, 119, 6, 0.08)', text: '#D97706', border: 'rgba(217, 119, 6, 0.2)' },
+  AVOID: { bg: 'rgba(220, 38, 38, 0.08)', text: '#DC2626', border: 'rgba(220, 38, 38, 0.2)' },
 }
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -65,11 +69,16 @@ function RichResponse({ content }: { content: string }) {
       {parsed.sections.map((section: any, i: number) => {
         switch (section.type) {
           case 'verdict':
+          case 'answer':
             return <VerdictBadge key={i} section={section} />
           case 'concerns':
             return <ConcernsSection key={i} section={section} />
           case 'positives':
             return <PositivesSection key={i} section={section} />
+          case 'detail':
+            return <DetailSection key={i} section={section} />
+          case 'calculation':
+            return <CalculationSection key={i} section={section} />
           case 'advice':
             return <AdviceSection key={i} section={section} />
           case 'tip':
@@ -170,6 +179,68 @@ function PositivesSection({ section }: { section: any }) {
           </div>
         )
       })}
+    </div>
+  )
+}
+
+function DetailSection({ section }: { section: any }) {
+  if (!section.points?.length) return null
+  return (
+    <div className="flex flex-col gap-2 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+      <div className="flex items-center gap-1.5 px-1">
+        <span style={{ color: '#1A1D2E' }}><ShieldIcon /></span>
+        <span className="text-xs font-semibold text-[#1A1D2E] uppercase tracking-wider">{section.title_en || 'Details'}</span>
+      </div>
+      <div className="glass-subtle rounded-2xl p-3" style={{ borderColor: 'rgba(26, 29, 46, 0.08)' }}>
+        <div className="flex flex-col gap-2.5">
+          {section.points.map((point: any, i: number) => (
+            <div key={i} className="flex items-start gap-2.5">
+              <div
+                className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5"
+                style={{
+                  background: point.highlight ? 'rgba(241, 177, 35, 0.12)' : 'rgba(26, 29, 46, 0.06)',
+                  color: point.highlight ? '#D89A0E' : '#6B7194',
+                }}
+              >
+                {point.highlight ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/></svg>
+                )}
+              </div>
+              <div className="flex-1">
+                <p className={`text-sm leading-relaxed ${point.highlight ? 'text-[#1A1D2E] font-medium' : 'text-[#3A3F57]'}`}>{point.text_en}</p>
+                <p className="text-xs text-[#6B7194] mt-0.5" dir="rtl">{point.text_ar}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CalculationSection({ section }: { section: any }) {
+  return (
+    <div
+      className="rounded-2xl p-4 animate-scale-in"
+      style={{
+        animationDelay: '0.3s',
+        background: 'linear-gradient(135deg, rgba(241, 177, 35, 0.08), rgba(241, 177, 35, 0.03))',
+        border: '1px solid rgba(241, 177, 35, 0.18)',
+      }}
+    >
+      <div className="flex items-center gap-1.5 mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D89A0E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><path d="M8 10h8"/><path d="M8 14h4"/><path d="M12 8v8"/></svg>
+        <span className="text-xs font-semibold text-[#D89A0E] uppercase tracking-wider">{section.label_en || 'Recommended Amount'}</span>
+      </div>
+      <div className="flex items-center gap-3 mb-2">
+        <div className="text-2xl font-bold text-[#1A1D2E]" style={{ fontFamily: 'var(--font-inter)' }}>{section.value}</div>
+      </div>
+      <div className="text-sm font-medium text-[#6B7194] mb-2" dir="rtl">{section.value_ar}</div>
+      <div className="h-px w-full my-2" style={{ background: 'rgba(241, 177, 35, 0.15)' }} />
+      <p className="text-xs text-[#6B7194] leading-relaxed">{section.note_en}</p>
+      <p className="text-xs text-[#6B7194] leading-relaxed mt-1" dir="rtl">{section.note_ar}</p>
     </div>
   )
 }
