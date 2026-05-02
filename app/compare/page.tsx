@@ -91,13 +91,15 @@ export default function ComparePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Compare these two products and tell me which is healthier and why. Be concise (3-4 sentences).
+          message: `Compare these two products and tell me which is healthier and why:
 
 Product 1: ${p1.product_name} (Grade ${p1.grade}, Score ${p1.score})
 Nutrition per 100g: ${JSON.stringify(p1.nutrition)}
 
 Product 2: ${p2.product_name} (Grade ${p2.grade}, Score ${p2.score})
-Nutrition per 100g: ${JSON.stringify(p2.nutrition)}`,
+Nutrition per 100g: ${JSON.stringify(p2.nutrition)}
+
+Use your structured JSON response format with verdict/answer, detail points comparing key nutrients, advice, and tip sections.`,
         }),
       })
       if (!res.ok) {
