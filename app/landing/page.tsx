@@ -84,6 +84,16 @@ const STEPS = [
 export default function LandingPage() {
   return (
     <div className="landing-fullwidth">
+      {/* Back to App */}
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-100 px-6 py-3">
+        <div className="max-w-4xl mx-auto">
+          <Link href="/" className="text-gray-400 text-sm flex items-center gap-1 transition-colors hover:text-gray-600 min-h-[44px] w-fit">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            Back to App
+          </Link>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #3A3F57 0%, #2a2f47 50%, #1a1f37 100%)' }}>
         <div className="absolute inset-0 opacity-10">

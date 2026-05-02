@@ -40,9 +40,10 @@ function ChatContent() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
-  const sendMessage = async () => {
-    if (!input.trim() || loading) return
-    const userMessage: ChatMessage = { role: 'user', content: input.trim() }
+  const sendMessage = async (directMessage?: string) => {
+    const text = directMessage || input.trim()
+    if (!text || loading) return
+    const userMessage: ChatMessage = { role: 'user', content: text }
     setMessages((prev) => [...prev, userMessage])
     setInput('')
     setLoading(true)
@@ -57,6 +58,11 @@ function ChatContent() {
           } : undefined,
         }),
       })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        setMessages((prev) => [...prev, { role: 'assistant', content: errData.error || 'Something went wrong. Please try again.' }])
+        return
+      }
       const data = await res.json()
       if (data.error) {
         setMessages((prev) => [...prev, { role: 'assistant', content: data.error }])
@@ -69,9 +75,9 @@ function ChatContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-dvh flex flex-col">
       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-        <button onClick={() => router.push('/result')} className="text-gray-400 text-sm flex items-center gap-1 transition-colors hover:text-gray-600">
+        <button onClick={() => router.push('/result')} className="text-gray-400 text-sm flex items-center gap-1 transition-colors hover:text-gray-600 min-w-[44px] min-h-[44px] -ml-2 pl-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           Back
         </button>
@@ -87,7 +93,7 @@ function ChatContent() {
             <p>Ask any question about this product</p>
             <div className="flex flex-wrap gap-2 justify-center mt-4">
               {['Is this good for diabetics?', 'What are the harmful ingredients?', 'Give me better alternatives'].map((q) => (
-                <button key={q} onClick={() => setInput(q)} className="text-xs bg-gray-50 text-gray-500 px-3 py-2 rounded-full border border-gray-100 transition-colors hover:bg-gray-100 hover:text-gray-600">{q}</button>
+                <button key={q} onClick={() => sendMessage(q)} className="text-xs bg-gray-50 text-gray-500 px-3 py-2 rounded-full border border-gray-100 transition-colors hover:bg-gray-100 hover:text-gray-600 min-h-[44px]">{q}</button>
               ))}
             </div>
           </div>
@@ -107,8 +113,8 @@ function ChatContent() {
         <div ref={messagesEndRef} />
       </div>
       <div className="px-4 py-3 border-t border-gray-100 flex gap-2">
-        <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMessage()} placeholder="Ask a question..." className="flex-1 bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-100 focus:border-[#F1B123]/40 transition-colors" />
-        <button onClick={sendMessage} disabled={loading || !input.trim()} className="w-10 h-10 bg-[#F1B123] rounded-xl flex items-center justify-center text-white disabled:opacity-40 transition-all hover:bg-[#D89A0E] active:scale-95">
+        <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendMessage() }} placeholder="Ask a question..." className="flex-1 bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-100 focus:border-[#F1B123]/40 transition-colors" />
+        <button onClick={() => sendMessage()} disabled={loading || !input.trim()} className="w-11 h-11 bg-[#F1B123] rounded-xl flex items-center justify-center text-white disabled:opacity-40 transition-all hover:bg-[#D89A0E] active:scale-95 shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
         </button>
       </div>

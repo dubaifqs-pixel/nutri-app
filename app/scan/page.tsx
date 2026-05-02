@@ -119,7 +119,7 @@ function ScanContent() {
 
   return (
     <div className="min-h-screen bg-black relative">
-      <button onClick={() => router.push('/')} className="absolute top-4 right-4 z-50 text-white bg-black/50 rounded-full w-10 h-10 flex items-center justify-center backdrop-blur transition-colors hover:bg-black/70">
+      <button onClick={() => router.push('/')} className="absolute top-4 right-4 z-50 text-white bg-black/50 rounded-full w-11 h-11 flex items-center justify-center backdrop-blur transition-colors hover:bg-black/70">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>
       <Scanner

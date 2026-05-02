@@ -91,7 +91,10 @@ export default function AlternativesPage() {
         nutrition: p.nutrition,
       }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error('Request failed')
+        return res.json()
+      })
       .then((result) => {
         setData(result)
         setLoading(false)
@@ -141,7 +144,7 @@ export default function AlternativesPage() {
     <div className="min-h-screen px-6 py-8 flex flex-col gap-5">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => router.push('/result')} className="text-gray-400 transition-colors hover:text-gray-600">
+        <button onClick={() => router.push('/result')} className="text-gray-400 transition-colors hover:text-gray-600 min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <h1 className="text-lg font-bold text-[#3A3F57]">Healthier Alternatives</h1>
@@ -188,7 +191,7 @@ export default function AlternativesPage() {
           <button
             key={f.key}
             onClick={() => setActiveFilter(f.key)}
-            className="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap"
+            className="shrink-0 px-3.5 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap min-h-[44px] flex items-center"
             style={
               activeFilter === f.key
                 ? { backgroundColor: '#F1B123', color: '#fff' }
@@ -328,6 +331,7 @@ function AlternativeCard({
           <img
             src={alt.image_url}
             alt={alt.product_name}
+            loading="lazy"
             className="shrink-0 w-10 h-10 rounded-lg object-cover bg-gray-100"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
@@ -363,7 +367,7 @@ function AlternativeCard({
       {/* Compare button */}
       <button
         onClick={onCompare}
-        className="w-full mt-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-[#3A3F57] flex items-center justify-center gap-1.5 transition-all hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98]"
+        className="w-full mt-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-[#3A3F57] flex items-center justify-center gap-1.5 transition-all hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] min-h-[44px]"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
         Compare

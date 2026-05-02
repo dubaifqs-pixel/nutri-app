@@ -161,7 +161,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
         {mode === 'barcode' && (
           <button
             onClick={() => { setError(null); setShowManual(true) }}
-            className="bg-white/20 text-white px-4 py-2 rounded-lg text-sm transition-colors hover:bg-white/30"
+            className="bg-white/20 text-white px-4 py-3 rounded-lg text-sm transition-colors hover:bg-white/30 min-h-[44px]"
           >
             Enter barcode manually
           </button>
@@ -196,7 +196,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
         </button>
         <button
           onClick={() => { setShowManual(false); setManualBarcode('') }}
-          className="text-white/50 text-sm mt-2 transition-colors hover:text-white/70"
+          className="text-white/50 text-sm mt-2 transition-colors hover:text-white/70 min-h-[44px] px-4"
         >
           Back to camera
         </button>
@@ -288,7 +288,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
       {mode === 'barcode' && (
         <button
           onClick={() => { stopCamera(); setShowManual(true) }}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-xs z-10 flex items-center gap-1.5 transition-colors hover:text-white/80"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-xs z-10 flex items-center gap-1.5 transition-colors hover:text-white/80 min-h-[44px] px-4"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M6 12h.01"/><path d="M10 12h.01"/><path d="M14 12h.01"/><path d="M18 12h.01"/><path d="M8 16h8"/></svg>
           Enter manually

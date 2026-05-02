@@ -144,7 +144,7 @@ export default function CategoryPage() {
     <div className="min-h-screen px-6 py-8 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => router.push('/browse')} className="text-gray-400 transition-colors hover:text-gray-600">
+        <button onClick={() => router.push('/browse')} className="text-gray-400 transition-colors hover:text-gray-600 min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <h1 className="text-lg font-bold text-[#3A3F57]">{categoryName}</h1>
@@ -231,6 +231,7 @@ export default function CategoryPage() {
                 <img
                   src={product.image_url}
                   alt=""
+                  loading="lazy"
                   className="w-12 h-12 rounded-lg object-cover bg-white shrink-0"
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                 />
