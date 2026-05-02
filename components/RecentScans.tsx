@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getHistory, clearHistory, type HistoryEntry } from '@/lib/history'
-import { GRADE_COLORS, type Grade } from '@/lib/types'
+import { GRADE_COLORS, GRADE_GRADIENTS, type Grade } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
 
 function timeAgo(iso: string): string {
@@ -52,7 +52,6 @@ export default function RecentScans() {
         source: entry.source,
       })
     )
-    // Recalculate grade from saved nutrition for accurate breakdown
     if (entry.nutrition) {
       const gradeResult = calculateGrade(entry.nutrition)
       sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
@@ -80,35 +79,35 @@ export default function RecentScans() {
   return (
     <div className="w-full mt-8">
       <div className="flex items-center gap-2 mb-3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide" style={{ fontFamily: 'var(--font-inter)', letterSpacing: '0.05em' }}>Recent Scans</h2>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <h2 className="text-xs font-semibold text-[#6B7194] uppercase tracking-[0.08em]" style={{ fontFamily: 'var(--font-inter)' }}>Recent Scans</h2>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="glass-card p-1.5 flex flex-col gap-1" style={{ borderRadius: '20px' }}>
         {history.map((entry, i) => (
           <button
             key={`${entry.scanned_at}-${i}`}
             onClick={() => handleEntryClick(entry)}
-            className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50/80 rounded-xl border border-gray-100 text-left transition-all hover:border-gray-200 hover:bg-gray-50 active:scale-[0.99]"
+            className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[16px] text-left transition-all hover:bg-[#1A1D2E]/[0.03] active:scale-[0.99]"
           >
             <span
-              className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold"
-              style={{ backgroundColor: GRADE_COLORS[entry.grade as Grade] }}
+              className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold"
+              style={{ background: GRADE_GRADIENTS[entry.grade as Grade] }}
             >
               {entry.grade}
             </span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[#3A3F57] truncate">{entry.product_name}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{timeAgo(entry.scanned_at)}</p>
+              <p className="text-sm font-medium text-[#1A1D2E] truncate">{entry.product_name}</p>
+              <p className="text-[11px] text-[#6B7194]/60 mt-0.5">{timeAgo(entry.scanned_at)}</p>
             </div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300 shrink-0"><path d="m9 18 6-6-6-6"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-30 shrink-0"><path d="m9 18 6-6-6-6"/></svg>
           </button>
         ))}
       </div>
 
       <button
         onClick={handleClear}
-        className="flex items-center gap-1.5 mx-auto mt-3 text-xs text-gray-400 transition-colors hover:text-gray-500 min-h-[44px] px-3"
+        className="flex items-center gap-1.5 mx-auto mt-3 text-xs text-[#6B7194]/50 transition-colors hover:text-red-400 min-h-[44px] px-3"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
         Clear history

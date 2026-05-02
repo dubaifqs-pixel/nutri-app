@@ -1,38 +1,63 @@
 'use client'
 
-import { Grade, GRADE_COLORS, GRADE_LABELS_EN, GRADE_LABELS_AR } from '@/lib/types'
+import { Grade, GRADE_COLORS, GRADE_GRADIENTS, GRADE_GLOWS, GRADE_LABELS_EN, GRADE_LABELS_AR } from '@/lib/types'
 
 const ALL_GRADES: Grade[] = ['A', 'B', 'C', 'D', 'E']
 
 export default function GradeBadge({ grade, score }: { grade: Grade; score: number }) {
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div
-        className="w-28 h-28 rounded-3xl flex flex-col items-center justify-center text-white shadow-lg"
-        style={{ background: `linear-gradient(145deg, ${GRADE_COLORS[grade]}dd, ${GRADE_COLORS[grade]})` }}
-      >
-        <span className="text-6xl font-bold leading-none">{grade}</span>
-        <span className="text-sm mt-1">{GRADE_LABELS_EN[grade]}</span>
+    <div className="flex flex-col items-center gap-5">
+      {/* Main Grade Badge with Pulse Ring */}
+      <div className="relative animate-grade-reveal">
+        {/* Outer pulsing ring */}
+        <div
+          className="absolute inset-0 rounded-[32px]"
+          style={{
+            background: GRADE_GRADIENTS[grade],
+            animation: 'pulse-ring 2s ease-in-out infinite',
+          }}
+        />
+        {/* Badge */}
+        <div
+          className="relative w-[140px] h-[140px] rounded-[32px] flex flex-col items-center justify-center text-white"
+          style={{
+            background: GRADE_GRADIENTS[grade],
+            boxShadow: GRADE_GLOWS[grade],
+          }}
+        >
+          <span className="text-7xl font-bold leading-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>{grade}</span>
+          <span className="text-sm mt-1.5 font-medium opacity-90">{GRADE_LABELS_EN[grade]}</span>
+        </div>
       </div>
-      <div className="flex rounded-lg overflow-hidden">
-        {ALL_GRADES.map((g) => (
-          <div
-            key={g}
-            className="px-3 py-2 text-white font-bold text-sm transition-all"
-            style={{
-              backgroundColor: GRADE_COLORS[g],
-              opacity: g === grade ? 1 : 0.3,
-              fontSize: g === grade ? '18px' : '13px',
-              padding: g === grade ? '8px 16px' : '8px 10px',
-            }}
-          >
-            {g}
-          </div>
-        ))}
+
+      {/* A-E Grade Bar */}
+      <div className="flex gap-1.5 items-end">
+        {ALL_GRADES.map((g) => {
+          const isActive = g === grade
+          return (
+            <div
+              key={g}
+              className="flex items-center justify-center text-white font-bold transition-all duration-300"
+              style={{
+                background: isActive ? GRADE_GRADIENTS[g] : GRADE_COLORS[g],
+                opacity: isActive ? 1 : 0.25,
+                fontSize: isActive ? '16px' : '12px',
+                padding: isActive ? '8px 18px' : '6px 10px',
+                borderRadius: '12px',
+                boxShadow: isActive ? GRADE_GLOWS[g] : 'none',
+                transform: isActive ? 'scale(1.1)' : 'scale(1)',
+              }}
+            >
+              {g}
+            </div>
+          )
+        })}
       </div>
-      <div className="flex flex-col items-center gap-0.5">
-        <p className="text-sm text-gray-500">Score: {score}</p>
-        <p className="text-xs text-gray-400 font-arabic">{GRADE_LABELS_AR[grade]}</p>
+
+      {/* Score Pill */}
+      <div className="glass-subtle flex flex-col items-center gap-1 px-5 py-2.5 rounded-2xl">
+        <p className="text-sm font-semibold text-[#3A3F57]">Score: {score}</p>
+        <p className="text-xs text-[#6B7194] font-arabic">{GRADE_LABELS_AR[grade]}</p>
       </div>
     </div>
   )

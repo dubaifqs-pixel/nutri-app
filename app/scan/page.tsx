@@ -110,16 +110,19 @@ function ScanContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4 px-8">
-        <div className="w-10 h-10 border-2 border-[#F1B123] border-t-transparent rounded-full animate-spin" />
-        <p className="text-white text-sm text-center">{status}</p>
+      <div className="min-h-screen bg-[#1A1D2E] flex flex-col items-center justify-center gap-5 px-8">
+        <div className="relative">
+          <div className="w-12 h-12 border-2 border-[#F1B123] border-t-transparent rounded-full animate-spin" />
+          <div className="absolute inset-0 w-12 h-12 rounded-full" style={{ boxShadow: '0 0 20px rgba(241, 177, 35, 0.3)' }} />
+        </div>
+        <p className="text-white/70 text-sm text-center">{status}</p>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-black relative">
-      <button onClick={() => router.push('/')} className="absolute top-4 right-4 z-50 text-white bg-black/50 rounded-full w-11 h-11 flex items-center justify-center backdrop-blur transition-colors hover:bg-black/70">
+      <button onClick={() => router.push('/')} className="absolute top-4 right-4 z-50 glass-dark text-white rounded-full w-11 h-11 flex items-center justify-center transition-all hover:bg-white/20">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>
       <Scanner
@@ -146,7 +149,7 @@ function ScanContent() {
 
 export default function ScanPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#F1B123] border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#1A1D2E] flex items-center justify-center"><div className="w-10 h-10 border-2 border-[#F1B123] border-t-transparent rounded-full animate-spin" /></div>}>
       <ScanContent />
     </Suspense>
   )

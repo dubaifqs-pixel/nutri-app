@@ -22,7 +22,11 @@ export default function ResultPage() {
   }, [router])
 
   if (!product || !gradeResult) {
-    return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" /></div>
+    return (
+      <div className="min-h-screen flex items-center justify-center mesh-bg">
+        <div className="w-10 h-10 border-2 border-[#F1B123] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
   }
 
   const handleShare = async () => {
@@ -47,47 +51,60 @@ export default function ResultPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-8 flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <button onClick={() => router.push('/')} className="text-gray-400 transition-colors hover:text-gray-600 min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2">
+    <div className="min-h-screen px-6 py-8 flex flex-col gap-6 mesh-bg">
+      {/* Header */}
+      <div className="flex items-center gap-3 animate-fade-in">
+        <button onClick={() => router.push('/')} className="text-[#6B7194] transition-colors hover:text-[#1A1D2E] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#1A1D2E]/5">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <p className="text-sm text-gray-400 uppercase tracking-wide flex-1" style={{ fontFamily: 'var(--font-inter)', letterSpacing: '0.05em' }}>Scan Result</p>
+        <p className="text-xs text-[#6B7194]/60 uppercase tracking-[0.1em] flex-1" style={{ fontFamily: 'var(--font-inter)' }}>Scan Result</p>
       </div>
-      <div className="text-center">
-        <h1 className="text-xl font-bold text-[#3A3F57]">{product.product_name}</h1>
+
+      {/* Product Name */}
+      <div className="text-center animate-slide-up stagger-1">
+        <h1 className="text-xl font-bold text-[#1A1D2E]">{product.product_name}</h1>
         {product.source === 'vision' && (
-          <span className="inline-flex items-center gap-1.5 text-xs text-[#D89A0E] bg-yellow-50 px-2.5 py-1 rounded-full mt-2 border border-yellow-100">
+          <span className="inline-flex items-center gap-1.5 text-xs text-[#D89A0E] glass-subtle px-3 py-1.5 rounded-full mt-3" style={{ borderColor: 'rgba(241, 177, 35, 0.2)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
             Analyzed by AI
           </span>
         )}
       </div>
-      <GradeBadge grade={gradeResult.grade} score={gradeResult.score} />
-      <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
+
+      {/* Grade Badge */}
+      <div className="animate-scale-in stagger-2">
+        <GradeBadge grade={gradeResult.grade} score={gradeResult.score} />
+      </div>
+
+      {/* Nutrition Breakdown */}
+      <div className="glass-card p-5 animate-slide-up stagger-3" style={{ borderRadius: '24px' }}>
         <NutritionBreakdown gradeResult={gradeResult} nutrition={product.nutrition} />
       </div>
-      <div className="flex gap-3 mt-2">
-        <button onClick={() => router.push('/chat')} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#F1B123] to-[#D89A0E] text-white font-semibold text-sm shadow-lg shadow-yellow-500/20 flex items-center justify-center gap-2 transition-all hover:shadow-xl active:scale-[0.98]">
+
+      {/* Action Buttons */}
+      <div className="flex gap-3 mt-2 animate-slide-up stagger-4">
+        <button onClick={() => router.push('/chat')} className="flex-1 py-3.5 rounded-2xl btn-gold text-sm flex items-center justify-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Ask AI
         </button>
         <button
           onClick={() => router.push('/alternatives')}
-          className="flex-1 py-3 rounded-xl bg-[#3A3F57] text-white font-semibold text-sm shadow-lg flex items-center justify-center gap-2 transition-all hover:shadow-xl active:scale-[0.98]"
+          className="flex-1 py-3.5 rounded-2xl btn-ink text-sm flex items-center justify-center gap-2"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           Alternatives
         </button>
       </div>
-      <button onClick={() => router.push('/')} className="w-full py-3 rounded-xl border border-gray-200 text-gray-500 text-sm flex items-center justify-center gap-2 transition-all hover:border-gray-300 hover:text-gray-600 active:scale-[0.98]">
+
+      <button onClick={() => router.push('/')} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-5">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
         Scan another product
       </button>
-      <button onClick={handleShare} className="w-full py-3 rounded-xl border border-gray-200 text-gray-500 text-sm flex items-center justify-center gap-2 transition-all hover:border-gray-300 hover:text-gray-600 active:scale-[0.98]">
+
+      <button onClick={handleShare} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-6">
         {shareState === 'copied' ? (
           <>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             Copied!
           </>
         ) : (

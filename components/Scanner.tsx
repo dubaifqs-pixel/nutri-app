@@ -74,14 +74,12 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
     setScanStatus('scanning')
 
     const runDetection = async () => {
-      // Skip if not scanning or already processing a request
       if (!scanningRef.current || busyRef.current) return
       if (!videoRef.current || videoRef.current.videoWidth === 0) return
 
       busyRef.current = true
 
       try {
-        // Capture a higher quality frame for better label reading
         const video = videoRef.current
         const maxW = 1024
         const scale = video.videoWidth > maxW ? maxW / video.videoWidth : 1
@@ -118,9 +116,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
       }
     }
 
-    // Run first detection after a short delay to ensure video is playing
     const startTimeout = setTimeout(runDetection, 1000)
-    // Then every 2.5 seconds
     const interval = setInterval(runDetection, 2500)
 
     return () => {
@@ -161,7 +157,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
         {mode === 'barcode' && (
           <button
             onClick={() => { setError(null); setShowManual(true) }}
-            className="bg-white/20 text-white px-4 py-3 rounded-lg text-sm transition-colors hover:bg-white/30 min-h-[44px]"
+            className="glass-dark text-white px-5 py-3.5 rounded-2xl text-sm transition-all hover:bg-white/20 min-h-[44px]"
           >
             Enter barcode manually
           </button>
@@ -172,10 +168,10 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
 
   if (showManual) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 p-8" style={{ height: '100vh' }}>
+      <div className="flex flex-col items-center justify-center gap-5 p-8" style={{ height: '100vh' }}>
         <div className="text-white text-center mb-4">
           <p className="text-lg font-semibold">Enter Barcode Number</p>
-          <p className="text-sm text-white/60 mt-1">Type the number below the barcode</p>
+          <p className="text-sm text-white/50 mt-1.5">Type the number below the barcode</p>
         </div>
         <input
           type="tel"
@@ -183,20 +179,20 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
           onChange={(e) => setManualBarcode(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
           placeholder="e.g. 6281100120018"
-          className="w-full max-w-xs bg-white/10 text-white text-center text-xl px-4 py-4 rounded-xl border border-white/20 outline-none placeholder:text-white/30 tracking-widest focus:border-[#F1B123]/60 transition-colors"
+          className="w-full max-w-xs glass-dark text-white text-center text-xl px-5 py-4 rounded-2xl outline-none placeholder:text-white/25 tracking-widest focus:ring-2 focus:ring-[#F1B123]/40 transition-all"
           dir="ltr"
           autoFocus
         />
         <button
           onClick={handleManualSubmit}
           disabled={manualBarcode.trim().length < 8}
-          className="w-full max-w-xs py-3 rounded-xl bg-[#F1B123] text-white font-semibold disabled:opacity-40 transition-opacity"
+          className="w-full max-w-xs py-3.5 rounded-2xl btn-gold disabled:opacity-40 transition-all text-sm"
         >
           Search
         </button>
         <button
           onClick={() => { setShowManual(false); setManualBarcode('') }}
-          className="text-white/50 text-sm mt-2 transition-colors hover:text-white/70 min-h-[44px] px-4"
+          className="text-white/40 text-sm mt-2 transition-colors hover:text-white/70 min-h-[44px] px-4"
         >
           Back to camera
         </button>
@@ -207,14 +203,12 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
   // Status text & colors
   const isAutoScanning = mode === 'label' && !!onAutoDetect
   let guideText = ''
-  let borderColor = 'border-yellow-400'
 
   if (!videoReady) {
     guideText = 'Starting camera...'
   } else if (isAutoScanning) {
     if (scanStatus === 'detected') {
       guideText = 'Label detected!'
-      borderColor = 'border-green-400'
     } else if (scanAttempts === 0) {
       guideText = 'Scanning for nutrition label...'
     } else if (scanAttempts <= 3) {
@@ -228,59 +222,92 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
     guideText = mode === 'barcode' ? 'Point camera at barcode' : 'Point camera at nutrition label'
   }
 
+  const frameW = mode === 'barcode' ? 280 : 300
+  const frameH = mode === 'barcode' ? 140 : 220
+  const cornerSize = 24
+  const cornerThickness = 3
+  const cornerColor = scanStatus === 'detected' ? '#34D399' : '#F1B123'
+
   return (
     <div className="relative w-full flex flex-col items-center justify-center" style={{ height: '100vh' }}>
       <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
 
-      {/* Scan frame */}
+      {/* Scan frame with animated corners */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div
-          className={`rounded-xl relative transition-all duration-300 ${borderColor}`}
-          style={{
-            width: mode === 'barcode' ? '280px' : '300px',
-            height: mode === 'barcode' ? '140px' : '220px',
-            borderWidth: scanStatus === 'detected' ? '3px' : '2px',
-            boxShadow: scanStatus === 'detected'
-              ? '0 0 30px rgba(74, 222, 128, 0.4), inset 0 0 30px rgba(74, 222, 128, 0.1)'
-              : isAutoScanning && scanStatus === 'scanning'
-                ? '0 0 20px rgba(250, 204, 21, 0.3)'
-                : 'none',
-          }}
+          className="relative"
+          style={{ width: `${frameW}px`, height: `${frameH}px` }}
         >
+          {/* Corner brackets */}
+          {/* Top-left */}
+          <div className="absolute top-0 left-0" style={{ width: cornerSize, height: cornerThickness, background: cornerColor, borderRadius: 2, animation: 'corner-pulse 2s ease-in-out infinite' }} />
+          <div className="absolute top-0 left-0" style={{ width: cornerThickness, height: cornerSize, background: cornerColor, borderRadius: 2, animation: 'corner-pulse 2s ease-in-out infinite' }} />
+          {/* Top-right */}
+          <div className="absolute top-0 right-0" style={{ width: cornerSize, height: cornerThickness, background: cornerColor, borderRadius: 2, animation: 'corner-pulse 2s ease-in-out infinite 0.2s' }} />
+          <div className="absolute top-0 right-0" style={{ width: cornerThickness, height: cornerSize, background: cornerColor, borderRadius: 2, animation: 'corner-pulse 2s ease-in-out infinite 0.2s' }} />
+          {/* Bottom-left */}
+          <div className="absolute bottom-0 left-0" style={{ width: cornerSize, height: cornerThickness, background: cornerColor, borderRadius: 2, animation: 'corner-pulse 2s ease-in-out infinite 0.4s' }} />
+          <div className="absolute bottom-0 left-0" style={{ width: cornerThickness, height: cornerSize, background: cornerColor, borderRadius: 2, animation: 'corner-pulse 2s ease-in-out infinite 0.4s' }} />
+          {/* Bottom-right */}
+          <div className="absolute bottom-0 right-0" style={{ width: cornerSize, height: cornerThickness, background: cornerColor, borderRadius: 2, animation: 'corner-pulse 2s ease-in-out infinite 0.6s' }} />
+          <div className="absolute bottom-0 right-0" style={{ width: cornerThickness, height: cornerSize, background: cornerColor, borderRadius: 2, animation: 'corner-pulse 2s ease-in-out infinite 0.6s' }} />
+
+          {/* Glow effect */}
+          {scanStatus === 'detected' && (
+            <div className="absolute -inset-2 rounded-2xl" style={{ boxShadow: '0 0 40px rgba(52, 211, 153, 0.4), inset 0 0 40px rgba(52, 211, 153, 0.1)' }} />
+          )}
+          {isAutoScanning && scanStatus === 'scanning' && videoReady && (
+            <div className="absolute -inset-1 rounded-xl" style={{ boxShadow: '0 0 25px rgba(241, 177, 35, 0.2)' }} />
+          )}
+
           {/* Scanning line animation */}
           {isAutoScanning && scanStatus === 'scanning' && videoReady && (
-            <div className="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-[#F1B123] to-transparent animate-scan-line" />
+            <div className="absolute inset-x-3 h-0.5 bg-gradient-to-r from-transparent via-[#F1B123] to-transparent animate-scan-line" style={{ boxShadow: '0 0 8px rgba(241, 177, 35, 0.6)' }} />
           )}
         </div>
       </div>
 
-      {/* Status */}
-      <div className="absolute bottom-32 flex items-center gap-2 bg-black/60 px-4 py-2 rounded-full backdrop-blur-sm">
+      {/* Status pill */}
+      <div className="absolute bottom-32 glass-dark px-5 py-2.5 rounded-full flex items-center gap-2.5">
         {isAutoScanning && scanStatus === 'scanning' && videoReady && (
-          <div className="w-2.5 h-2.5 bg-[#F1B123] rounded-full animate-pulse" />
+          <div className="w-2 h-2 bg-[#F1B123] rounded-full animate-gold-pulse" />
         )}
         {scanStatus === 'detected' && (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
         )}
         <p className="text-white text-sm">{guideText}</p>
       </div>
 
-      {/* Capture button */}
+      {/* Capture button with concentric rings */}
       <button
         onClick={capturePhoto}
         disabled={!videoReady}
-        className="absolute bottom-8 w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center z-10 disabled:opacity-50 transition-all"
+        className="absolute bottom-8 z-10 disabled:opacity-50 transition-all active:scale-95"
         title="Tap to capture manually"
       >
-        <div
-          className="w-16 h-16 rounded-full border-4 border-white transition-colors"
-          style={{ backgroundColor: scanStatus === 'detected' ? '#4ade80' : '#F1B123' }}
-        />
+        <div className="relative w-20 h-20 flex items-center justify-center">
+          {/* Outer ring */}
+          <div className="absolute inset-0 rounded-full border-[3px] border-white/60" />
+          {/* Middle ring (pulsing) */}
+          <div className="absolute inset-1.5 rounded-full border-2 border-white/30" style={{ animation: isAutoScanning && scanStatus === 'scanning' ? 'pulse-ring 2s ease-in-out infinite' : 'none' }} />
+          {/* Inner fill */}
+          <div
+            className="w-14 h-14 rounded-full shadow-lg transition-colors"
+            style={{
+              background: scanStatus === 'detected'
+                ? 'linear-gradient(135deg, #34D399, #059669)'
+                : 'linear-gradient(135deg, #F1B123, #D89A0E)',
+              boxShadow: scanStatus === 'detected'
+                ? '0 4px 20px rgba(52, 211, 153, 0.4)'
+                : '0 4px 20px rgba(241, 177, 35, 0.4)',
+            }}
+          />
+        </div>
       </button>
 
       {/* Hints */}
       {isAutoScanning && videoReady && scanStatus === 'scanning' && (
-        <p className="absolute bottom-2 text-white/40 text-xs">
+        <p className="absolute bottom-2 text-white/30 text-xs">
           Auto-scanning -- or tap button to capture manually
         </p>
       )}
@@ -288,7 +315,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
       {mode === 'barcode' && (
         <button
           onClick={() => { stopCamera(); setShowManual(true) }}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-xs z-10 flex items-center gap-1.5 transition-colors hover:text-white/80 min-h-[44px] px-4"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-xs z-10 flex items-center gap-1.5 transition-colors hover:text-white/80 min-h-[44px] px-4"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M6 12h.01"/><path d="M10 12h.01"/><path d="M14 12h.01"/><path d="M18 12h.01"/><path d="M8 16h8"/></svg>
           Enter manually

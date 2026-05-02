@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { GRADE_COLORS, type Grade } from '@/lib/types'
+import { GRADE_COLORS, GRADE_GRADIENTS, type Grade } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
 import { addToHistory } from '@/lib/history'
 import { DEMO_PRODUCTS, type DemoProduct } from '@/lib/demo-products'
@@ -29,20 +29,20 @@ interface BrowseProduct {
 
 function ProductSkeleton() {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 bg-gray-50/80 rounded-xl border border-gray-100 animate-pulse">
-      <div className="w-12 h-12 bg-gray-200 rounded-lg shrink-0" />
-      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-        <div className="h-3.5 bg-gray-200 rounded w-3/4" />
-        <div className="h-3 bg-gray-200 rounded w-1/3" />
+    <div className="flex items-center gap-3 px-4 py-3.5 rounded-[16px] glass-card" style={{ borderRadius: '16px' }}>
+      <div className="w-12 h-12 rounded-xl shrink-0 shimmer-loading" />
+      <div className="flex-1 min-w-0 flex flex-col gap-2">
+        <div className="h-3.5 rounded-lg w-3/4 shimmer-loading" />
+        <div className="h-3 rounded-lg w-1/3 shimmer-loading" />
       </div>
-      <div className="w-8 h-8 bg-gray-200 rounded-lg shrink-0" />
+      <div className="w-9 h-9 rounded-xl shrink-0 shimmer-loading" />
     </div>
   )
 }
 
 function DemoBadge() {
   return (
-    <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-[#D89A0E] bg-[#F1B123]/10 px-1.5 py-0.5 rounded-full leading-none">
+    <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-[#D89A0E] px-1.5 py-0.5 rounded-full leading-none" style={{ background: 'rgba(241, 177, 35, 0.1)' }}>
       <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
       Curated
     </span>
@@ -141,41 +141,42 @@ export default function CategoryPage() {
   const hasMore = products.length < total
 
   return (
-    <div className="min-h-screen px-6 py-8 flex flex-col gap-6">
+    <div className="min-h-screen px-6 py-8 flex flex-col gap-6 mesh-bg">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => router.push('/browse')} className="text-gray-400 transition-colors hover:text-gray-600 min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2">
+      <div className="flex items-center gap-3 animate-fade-in">
+        <button onClick={() => router.push('/browse')} className="text-[#6B7194] transition-colors hover:text-[#1A1D2E] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#1A1D2E]/5">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <h1 className="text-lg font-bold text-[#3A3F57]">{categoryName}</h1>
+        <h1 className="text-lg font-bold text-[#1A1D2E]">{categoryName}</h1>
       </div>
 
       {/* Demo Products */}
       {demoGraded.length > 0 && (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 animate-slide-up stagger-1">
           <div className="flex items-center gap-2 px-1">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D89A0E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Curated UAE Products</span>
+            <span className="text-xs font-medium text-[#6B7194]/60 uppercase tracking-[0.08em]">Curated UAE Products</span>
           </div>
           {demoGraded.map((dp, i) => (
             <button
               key={`demo-${dp.product_name}-${i}`}
               onClick={() => handleDemoProductClick(dp)}
-              className="flex items-center gap-3 px-4 py-3 bg-gray-50/80 rounded-xl border border-gray-100 text-left transition-all hover:border-gray-200 hover:bg-gray-50 active:scale-[0.99]"
+              className="flex items-center gap-3 px-4 py-3.5 glass-card text-left animate-slide-up"
+              style={{ animationDelay: `${(i + 1) * 50}ms`, borderRadius: '16px' }}
             >
-              <div className="w-12 h-12 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              <div className="w-12 h-12 rounded-xl bg-[#F0F1F5] shrink-0 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-sm font-medium text-[#3A3F57] truncate">{dp.product_name}</p>
+                  <p className="text-sm font-medium text-[#1A1D2E] truncate">{dp.product_name}</p>
                   <DemoBadge />
                 </div>
-                <p className="text-xs text-gray-400 mt-0.5">{dp.brand} &middot; Score: {dp.score}</p>
+                <p className="text-[11px] text-[#6B7194] mt-0.5">{dp.brand} -- Score: {dp.score}</p>
               </div>
               <span
-                className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold"
-                style={{ backgroundColor: GRADE_COLORS[dp.grade] }}
+                className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold"
+                style={{ background: GRADE_GRADIENTS[dp.grade] }}
               >
                 {dp.grade}
               </span>
@@ -184,12 +185,12 @@ export default function CategoryPage() {
         </div>
       )}
 
-      {/* Divider between demo and API products */}
+      {/* Divider */}
       {demoGraded.length > 0 && !loading && products.length > 0 && (
         <div className="flex items-center gap-3 px-1">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-[10px] font-medium text-gray-300 uppercase tracking-wider">Database Results</span>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#1A1D2E]/10 to-transparent" />
+          <span className="text-[10px] font-medium text-[#6B7194]/30 uppercase tracking-[0.12em]">Database Results</span>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#1A1D2E]/10 to-transparent" />
         </div>
       )}
 
@@ -205,16 +206,16 @@ export default function CategoryPage() {
       {/* Error State */}
       {error && !loading && (
         <div className="text-center py-12">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-gray-300 mb-3"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-          <p className="text-sm text-gray-400">{error}</p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto opacity-30 mb-3"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <p className="text-sm text-[#6B7194]">{error}</p>
         </div>
       )}
 
-      {/* Empty State — only show if also no demo products */}
+      {/* Empty State */}
       {!loading && !error && products.length === 0 && demoGraded.length === 0 && (
         <div className="text-center py-12">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-gray-300 mb-3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <p className="text-sm text-gray-400">No products found in this category</p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto opacity-30 mb-3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <p className="text-sm text-[#6B7194]">No products found in this category</p>
         </div>
       )}
 
@@ -225,28 +226,29 @@ export default function CategoryPage() {
             <button
               key={`${product.barcode || product.product_name}-${i}`}
               onClick={() => handleProductClick(product)}
-              className="flex items-center gap-3 px-4 py-3 bg-gray-50/80 rounded-xl border border-gray-100 text-left transition-all hover:border-gray-200 hover:bg-gray-50 active:scale-[0.99]"
+              className="flex items-center gap-3 px-4 py-3.5 glass-card text-left animate-slide-up"
+              style={{ animationDelay: `${i * 40}ms`, borderRadius: '16px' }}
             >
               {product.image_url ? (
                 <img
                   src={product.image_url}
                   alt=""
                   loading="lazy"
-                  className="w-12 h-12 rounded-lg object-cover bg-white shrink-0"
+                  className="w-12 h-12 rounded-xl object-cover bg-white shrink-0"
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                 />
               ) : (
-                <div className="w-12 h-12 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                <div className="w-12 h-12 rounded-xl bg-[#F0F1F5] shrink-0 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#3A3F57] truncate">{product.product_name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">Score: {product.score}</p>
+                <p className="text-sm font-medium text-[#1A1D2E] truncate">{product.product_name}</p>
+                <p className="text-[11px] text-[#6B7194] mt-0.5">Score: {product.score}</p>
               </div>
               <span
-                className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold"
-                style={{ backgroundColor: GRADE_COLORS[product.grade] }}
+                className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold"
+                style={{ background: GRADE_GRADIENTS[product.grade] }}
               >
                 {product.grade}
               </span>
@@ -258,11 +260,11 @@ export default function CategoryPage() {
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="w-full py-3 rounded-xl border border-gray-200 text-gray-500 text-sm flex items-center justify-center gap-2 transition-all hover:border-gray-300 hover:text-gray-600 active:scale-[0.98] disabled:opacity-50"
+              className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loadingMore ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-[#6B7194] border-t-transparent rounded-full animate-spin" />
                   Loading...
                 </>
               ) : (

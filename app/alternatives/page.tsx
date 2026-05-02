@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { GRADE_COLORS, type Grade, type NutritionData, type ProductData, type GradeResult } from '@/lib/types'
+import { GRADE_COLORS, GRADE_GRADIENTS, type Grade, type NutritionData, type ProductData, type GradeResult } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
 
 interface Alternative {
@@ -81,7 +81,6 @@ export default function AlternativesPage() {
     setProduct(p)
     setGradeResult(g)
 
-    // Fetch alternatives
     fetch('/api/recommend', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -110,7 +109,6 @@ export default function AlternativesPage() {
   const handleCompare = (alt: Alternative) => {
     if (!product || !gradeResult) return
 
-    // Save original product as compare slot 1
     sessionStorage.setItem('dfqs_compare_1', JSON.stringify({
       product_name: product.product_name,
       nutrition: product.nutrition,
@@ -119,7 +117,6 @@ export default function AlternativesPage() {
     }))
     sessionStorage.setItem('dfqs_compare_1_grade', JSON.stringify(gradeResult))
 
-    // Save alternative as compare slot 2
     const altGradeResult = calculateGrade(alt.nutrition)
     sessionStorage.setItem('dfqs_compare_2', JSON.stringify({
       product_name: alt.product_name,
@@ -134,68 +131,62 @@ export default function AlternativesPage() {
 
   if (!product || !gradeResult) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center mesh-bg">
+        <div className="w-10 h-10 border-2 border-[#F1B123] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen px-6 py-8 flex flex-col gap-5">
+    <div className="min-h-screen px-6 py-8 flex flex-col gap-5 mesh-bg">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => router.push('/result')} className="text-gray-400 transition-colors hover:text-gray-600 min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2">
+      <div className="flex items-center gap-3 animate-fade-in">
+        <button onClick={() => router.push('/result')} className="text-[#6B7194] transition-colors hover:text-[#1A1D2E] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#1A1D2E]/5">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <h1 className="text-lg font-bold text-[#3A3F57]">Healthier Alternatives</h1>
+        <h1 className="text-lg font-bold text-[#1A1D2E]">Healthier Alternatives</h1>
       </div>
 
       {/* Original Product Card */}
-      <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-        <p className="text-xs text-gray-400 uppercase tracking-wide mb-2" style={{ fontFamily: 'var(--font-inter)', letterSpacing: '0.05em' }}>Your Product</p>
+      <div className="glass-card p-4 animate-slide-up stagger-1" style={{ borderRadius: '20px' }}>
+        <p className="text-[10px] text-[#6B7194]/60 uppercase tracking-[0.1em] mb-2.5" style={{ fontFamily: 'var(--font-inter)' }}>Your Product</p>
         <div className="flex items-center gap-3">
           <div
-            className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-sm"
-            style={{ background: `linear-gradient(145deg, ${GRADE_COLORS[gradeResult.grade]}dd, ${GRADE_COLORS[gradeResult.grade]})` }}
+            className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl font-bold"
+            style={{ background: GRADE_GRADIENTS[gradeResult.grade], boxShadow: `0 4px 12px ${GRADE_COLORS[gradeResult.grade]}40` }}
           >
             {gradeResult.grade}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[#3A3F57] truncate">{product.product_name}</p>
-            <p className="text-xs text-gray-400 mt-0.5">Score: {gradeResult.score}</p>
-          </div>
-          <div
-            className="shrink-0 px-3 py-1 rounded-full text-xs font-bold text-white"
-            style={{ backgroundColor: GRADE_COLORS[gradeResult.grade] }}
-          >
-            {gradeResult.grade}
+            <p className="text-sm font-semibold text-[#1A1D2E] truncate">{product.product_name}</p>
+            <p className="text-xs text-[#6B7194] mt-0.5">Score: {gradeResult.score}</p>
           </div>
         </div>
         {/* Key bad nutrients */}
-        <div className="flex gap-3 mt-3 text-xs text-gray-500">
+        <div className="flex gap-2 mt-3 text-xs flex-wrap">
           {product.nutrition.sugars_g !== null && product.nutrition.sugars_g > 9 && (
-            <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded-full">Sugar: {formatVal(product.nutrition.sugars_g)}g</span>
+            <span className="bg-red-50 text-red-500 px-2.5 py-1 rounded-full border border-red-100">Sugar: {formatVal(product.nutrition.sugars_g)}g</span>
           )}
           {product.nutrition.saturated_fat_g !== null && product.nutrition.saturated_fat_g > 3 && (
-            <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded-full">Sat Fat: {formatVal(product.nutrition.saturated_fat_g)}g</span>
+            <span className="bg-red-50 text-red-500 px-2.5 py-1 rounded-full border border-red-100">Sat Fat: {formatVal(product.nutrition.saturated_fat_g)}g</span>
           )}
           {product.nutrition.sodium_mg !== null && product.nutrition.sodium_mg > 360 && (
-            <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded-full">Sodium: {formatVal(product.nutrition.sodium_mg)}mg</span>
+            <span className="bg-red-50 text-red-500 px-2.5 py-1 rounded-full border border-red-100">Sodium: {formatVal(product.nutrition.sodium_mg)}mg</span>
           )}
         </div>
       </div>
 
       {/* Filter Pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 animate-slide-up stagger-2" style={{ scrollbarWidth: 'none' }}>
         {FILTERS.map((f) => (
           <button
             key={f.key}
             onClick={() => setActiveFilter(f.key)}
-            className="shrink-0 px-3.5 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap min-h-[44px] flex items-center"
+            className="shrink-0 px-4 py-2.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap min-h-[44px] flex items-center"
             style={
               activeFilter === f.key
-                ? { backgroundColor: '#F1B123', color: '#fff' }
-                : { backgroundColor: 'transparent', color: '#6B7280', border: '1px solid #D1D5DB' }
+                ? { background: 'linear-gradient(135deg, #F1B123, #D89A0E)', color: '#fff', boxShadow: '0 4px 12px rgba(241, 177, 35, 0.3)' }
+                : { background: 'rgba(255, 255, 255, 0.6)', color: '#6B7194', border: '1px solid rgba(26, 29, 46, 0.08)', backdropFilter: 'blur(10px)' }
             }
           >
             {f.label}
@@ -205,16 +196,16 @@ export default function AlternativesPage() {
 
       {/* Loading State */}
       {loading && (
-        <div className="flex flex-col items-center gap-3 py-12">
-          <div className="w-8 h-8 border-2 border-[#F1B123] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-400">Finding healthier alternatives...</p>
+        <div className="flex flex-col items-center gap-4 py-12">
+          <div className="w-10 h-10 border-2 border-[#F1B123] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[#6B7194]">Finding healthier alternatives...</p>
         </div>
       )}
 
       {/* Error State */}
       {error && !loading && (
         <div className="text-center py-12">
-          <p className="text-sm text-gray-500">{error}</p>
+          <p className="text-sm text-[#6B7194]">{error}</p>
           <button onClick={() => router.push('/result')} className="mt-4 text-sm text-[#F1B123] font-semibold">
             Go back
           </button>
@@ -232,13 +223,14 @@ export default function AlternativesPage() {
                   alt={alt}
                   originalNutrition={product.nutrition}
                   onCompare={() => handleCompare(alt)}
+                  delay={i}
                 />
               ))}
             </div>
           ) : (
             <div className="text-center py-12 flex flex-col items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <p className="text-sm text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <p className="text-sm text-[#6B7194]">
                 {activeFilter !== 'all'
                   ? 'No alternatives match this filter. Try a different filter.'
                   : 'No healthier alternatives found.'}
@@ -253,7 +245,7 @@ export default function AlternativesPage() {
               )}
               <button
                 onClick={() => router.push('/browse')}
-                className="mt-2 px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 transition-colors hover:border-gray-300"
+                className="mt-2 px-5 py-2.5 rounded-2xl btn-outline text-sm"
               >
                 Browse categories
               </button>
@@ -262,12 +254,12 @@ export default function AlternativesPage() {
 
           {/* AI Summary */}
           {data.summary && (
-            <div className="bg-gray-50/80 rounded-2xl border border-gray-100 p-4 mt-1">
+            <div className="glass-card p-4 mt-1" style={{ borderRadius: '20px', borderColor: 'rgba(241, 177, 35, 0.1)' }}>
               <div className="flex items-center gap-2 mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#F1B123]"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-                <h3 className="text-sm font-semibold text-[#3A3F57]">AI Summary</h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F1B123" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                <h3 className="text-sm font-semibold text-[#1A1D2E]">AI Summary</h3>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">{data.summary}</p>
+              <p className="text-sm text-[#3A3F57] leading-relaxed">{data.summary}</p>
             </div>
           )}
         </>
@@ -276,7 +268,7 @@ export default function AlternativesPage() {
       {/* Back button */}
       <button
         onClick={() => router.push('/result')}
-        className="w-full py-3 rounded-xl border border-gray-200 text-gray-500 text-sm flex items-center justify-center gap-2 transition-all hover:border-gray-300 hover:text-gray-600 active:scale-[0.98] mt-2"
+        className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 mt-2"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         Back to result
@@ -289,36 +281,36 @@ function AlternativeCard({
   alt,
   originalNutrition,
   onCompare,
+  delay,
 }: {
   alt: Alternative
   originalNutrition: NutritionData
   onCompare: () => void
+  delay: number
 }) {
   const comparisons = buildComparisons(alt.nutrition, originalNutrition)
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <div className="glass-card p-4 animate-slide-up" style={{ animationDelay: `${delay * 80}ms`, borderRadius: '20px' }}>
       <div className="flex items-start gap-3">
         {/* Grade badge */}
         <div
-          className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-sm"
-          style={{ background: `linear-gradient(145deg, ${GRADE_COLORS[alt.grade]}dd, ${GRADE_COLORS[alt.grade]})` }}
+          className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-white text-lg font-bold"
+          style={{ background: GRADE_GRADIENTS[alt.grade], boxShadow: `0 4px 12px ${GRADE_COLORS[alt.grade]}30` }}
         >
           {alt.grade}
         </div>
 
         {/* Product info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-[#3A3F57] truncate">{alt.product_name}</p>
-          </div>
+          <p className="text-sm font-semibold text-[#1A1D2E] truncate">{alt.product_name}</p>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-gray-400">Score: {alt.score}</span>
+            <span className="text-xs text-[#6B7194]">Score: {alt.score}</span>
             <span
-              className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+              className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
               style={{
-                backgroundColor: alt.source === 'demo' ? '#F1B12320' : '#3A3F5715',
-                color: alt.source === 'demo' ? '#D89A0E' : '#6B7280',
+                background: alt.source === 'demo' ? 'rgba(241, 177, 35, 0.1)' : 'rgba(26, 29, 46, 0.05)',
+                color: alt.source === 'demo' ? '#D89A0E' : '#6B7194',
               }}
             >
               {SOURCE_LABELS[alt.source] || alt.source}
@@ -326,20 +318,20 @@ function AlternativeCard({
           </div>
         </div>
 
-        {/* Thumbnail if available */}
+        {/* Thumbnail */}
         {alt.image_url && (
           <img
             src={alt.image_url}
             alt={alt.product_name}
             loading="lazy"
-            className="shrink-0 w-10 h-10 rounded-lg object-cover bg-gray-100"
+            className="shrink-0 w-10 h-10 rounded-xl object-cover bg-[#F0F1F5]"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
         )}
       </div>
 
       {/* Nutrition mini row */}
-      <div className="flex gap-3 mt-3 text-xs text-gray-500">
+      <div className="flex gap-3 mt-3 text-xs text-[#6B7194]">
         <span>{formatVal(alt.nutrition.energy_kcal)} kcal</span>
         <span>Sugar: {formatVal(alt.nutrition.sugars_g)}g</span>
         <span>Protein: {formatVal(alt.nutrition.protein_g)}g</span>
@@ -350,14 +342,14 @@ function AlternativeCard({
         <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2.5">
           {comparisons.map((c) => (
             <span key={c.label} className="flex items-center gap-1 text-xs">
-              <span className="text-gray-500">{c.label}:</span>
-              <span className="text-gray-400">{c.from}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-              <span className={c.improved ? 'text-green-600 font-medium' : 'text-red-500 font-medium'}>{c.to}</span>
+              <span className="text-[#6B7194]">{c.label}:</span>
+              <span className="text-[#6B7194]/60">{c.from}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <span className={c.improved ? 'text-emerald-600 font-medium' : 'text-red-500 font-medium'}>{c.to}</span>
               {c.improved ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><path d="m6 9 6 6 6-6"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400"><path d="m18 15-6-6-6 6"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
               )}
             </span>
           ))}
@@ -367,9 +359,10 @@ function AlternativeCard({
       {/* Compare button */}
       <button
         onClick={onCompare}
-        className="w-full mt-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-[#3A3F57] flex items-center justify-center gap-1.5 transition-all hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] min-h-[44px]"
+        className="w-full mt-3 py-2.5 rounded-xl text-xs font-semibold text-[#1A1D2E] flex items-center justify-center gap-1.5 btn-outline min-h-[44px]"
+        style={{ background: 'rgba(241, 177, 35, 0.06)', borderColor: 'rgba(241, 177, 35, 0.15)' }}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D89A0E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
         Compare
       </button>
     </div>
@@ -386,7 +379,6 @@ interface ComparisonItem {
 function buildComparisons(altNutrition: NutritionData, origNutrition: NutritionData): ComparisonItem[] {
   const items: ComparisonItem[] = []
 
-  // Sugar comparison (lower is better)
   if (origNutrition.sugars_g !== null && altNutrition.sugars_g !== null && origNutrition.sugars_g !== altNutrition.sugars_g) {
     items.push({
       label: 'Sugar',
@@ -396,7 +388,6 @@ function buildComparisons(altNutrition: NutritionData, origNutrition: NutritionD
     })
   }
 
-  // Calories comparison (lower is better)
   if (origNutrition.energy_kcal !== null && altNutrition.energy_kcal !== null && origNutrition.energy_kcal !== altNutrition.energy_kcal) {
     items.push({
       label: 'Calories',
@@ -406,7 +397,6 @@ function buildComparisons(altNutrition: NutritionData, origNutrition: NutritionD
     })
   }
 
-  // Saturated fat comparison (lower is better)
   if (origNutrition.saturated_fat_g !== null && altNutrition.saturated_fat_g !== null && origNutrition.saturated_fat_g !== altNutrition.saturated_fat_g) {
     items.push({
       label: 'Sat Fat',
@@ -416,6 +406,5 @@ function buildComparisons(altNutrition: NutritionData, origNutrition: NutritionD
     })
   }
 
-  // Show at most 3 comparisons to keep cards compact
   return items.slice(0, 3)
 }

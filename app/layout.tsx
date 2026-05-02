@@ -14,13 +14,13 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'DFQS — Dubai Food Quality Standards',
+  title: 'DFQS -- Dubai Food Quality Standards',
   description: 'AI-powered food grading based on Dubai Food Quality Standards',
   manifest: '/manifest.json',
 }
 
 export const viewport: Viewport = {
-  themeColor: '#3A3F57',
+  themeColor: '#1A1D2E',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -29,7 +29,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" dir="ltr" className={`${arabic.variable} ${inter.variable}`}>
-      <body className="font-inter antialiased bg-white text-gray-800 max-w-md mx-auto min-h-screen">
+      <body className="font-inter antialiased bg-white text-[#1A1D2E] max-w-md mx-auto min-h-screen">
         {children}
       </body>
     </html>

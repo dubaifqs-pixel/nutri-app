@@ -44,11 +44,27 @@ export interface ChatMessage {
 }
 
 export const GRADE_COLORS: Record<Grade, string> = {
-  A: '#1B5234',
-  B: '#7A9A2A',
-  C: '#D89A0E',
-  D: '#C65D3E',
-  E: '#8B3528',
+  A: '#059669',
+  B: '#65A30D',
+  C: '#D97706',
+  D: '#EA580C',
+  E: '#DC2626',
+}
+
+export const GRADE_GRADIENTS: Record<Grade, string> = {
+  A: 'linear-gradient(135deg, #34D399, #059669)',
+  B: 'linear-gradient(135deg, #A3E635, #65A30D)',
+  C: 'linear-gradient(135deg, #FBBF24, #D97706)',
+  D: 'linear-gradient(135deg, #FB923C, #EA580C)',
+  E: 'linear-gradient(135deg, #F87171, #DC2626)',
+}
+
+export const GRADE_GLOWS: Record<Grade, string> = {
+  A: '0 0 30px rgba(52, 211, 153, 0.3)',
+  B: '0 0 30px rgba(163, 230, 53, 0.3)',
+  C: '0 0 30px rgba(251, 191, 36, 0.3)',
+  D: '0 0 30px rgba(251, 146, 60, 0.3)',
+  E: '0 0 30px rgba(248, 113, 113, 0.3)',
 }
 
 export const GRADE_LABELS_AR: Record<Grade, string> = {
