@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { getHistory, type HistoryEntry } from '@/lib/history'
 import { GRADE_COLORS, GRADE_GRADIENTS, GRADE_GLOWS, type Grade, type NutritionData, type GradeResult } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
+import ChatMessage from '@/components/ChatMessage'
 
 interface CompareProduct {
   product_name: string
@@ -268,9 +269,9 @@ Nutrition per 100g: ${JSON.stringify(p2.nutrition)}`,
               <div className="w-4 h-4 border-2 border-[#F1B123] border-t-transparent rounded-full animate-spin" />
               <span className="text-sm text-[#6B7194]">Analyzing...</span>
             </div>
-          ) : (
-            <p className="text-sm text-[#3A3F57] leading-relaxed">{verdict}</p>
-          )}
+          ) : verdict ? (
+            <ChatMessage message={{ role: 'assistant', content: verdict }} />
+          ) : null}
         </div>
       )}
 
