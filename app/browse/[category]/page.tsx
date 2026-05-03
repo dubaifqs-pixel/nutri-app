@@ -6,6 +6,7 @@ import { GRADE_COLORS, GRADE_GRADIENTS, type Grade } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
 import { addToHistory } from '@/lib/history'
 import { DEMO_PRODUCTS, type DemoProduct } from '@/lib/demo-products'
+import EmptyState from '@/components/illustrations/EmptyState'
 
 const CATEGORY_NAMES: Record<string, string> = {
   dairy: 'Dairy',
@@ -213,9 +214,8 @@ export default function CategoryPage() {
 
       {/* Empty State */}
       {!loading && !error && products.length === 0 && demoGraded.length === 0 && (
-        <div className="text-center py-12">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto opacity-30 mb-3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <p className="text-sm text-[#6B7194]">No products found in this category</p>
+        <div className="flex justify-center py-8">
+          <EmptyState message="No products found in this category" size={160} />
         </div>
       )}
 

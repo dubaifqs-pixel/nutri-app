@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { GRADE_COLORS, GRADE_GRADIENTS, type Grade, type NutritionData, type ProductData, type GradeResult } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
+import EmptyState from '@/components/illustrations/EmptyState'
 
 interface Alternative {
   product_name: string
@@ -230,13 +231,15 @@ export default function AlternativesPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 flex flex-col items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <p className="text-sm text-[#6B7194]">
-                {activeFilter !== 'all'
-                  ? 'No alternatives match this filter. Try a different filter.'
-                  : 'No healthier alternatives found.'}
-              </p>
+            <div className="text-center py-8 flex flex-col items-center gap-3">
+              <EmptyState
+                message={
+                  activeFilter !== 'all'
+                    ? 'No alternatives match this filter. Try a different filter.'
+                    : 'No healthier alternatives found.'
+                }
+                size={160}
+              />
               {activeFilter !== 'all' && (
                 <button
                   onClick={() => setActiveFilter('all')}
