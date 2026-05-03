@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import GradeShield from '@/components/illustrations/GradeShield'
-import HealthMeter from '@/components/illustrations/HealthMeter'
-import { GradeEffect } from '@/components/illustrations/GradeEffects'
+import GradeBadge from '@/components/GradeBadge'
 import NutritionBreakdown from '@/components/NutritionBreakdown'
 import type { ProductData, GradeResult } from '@/lib/types'
-import { GRADE_LABELS_EN, GRADE_LABELS_AR } from '@/lib/types'
+import { GRADE_LABELS_EN } from '@/lib/types'
 
 export default function ResultPage() {
   const router = useRouter()
@@ -117,30 +115,18 @@ export default function ResultPage() {
         </div>
       </div>
 
-      {/* Grade Shield with Effects */}
-      <div className="relative flex flex-col items-center animate-scale-in stagger-2">
-        <GradeEffect grade={gradeResult.grade} />
-        <GradeShield grade={gradeResult.grade} size={140} />
-
-        {/* Grade label + arabic */}
-        <div className="glass-subtle flex flex-col items-center gap-1 px-5 py-2.5 rounded-2xl mt-4">
-          <p className="text-sm font-semibold text-[#3A3F57]">{GRADE_LABELS_EN[gradeResult.grade]} -- Score: {gradeResult.score}</p>
-          <p className="text-xs text-[#6B7194] font-arabic">{GRADE_LABELS_AR[gradeResult.grade]}</p>
-        </div>
-      </div>
-
-      {/* Health Meter */}
-      <div className="flex justify-center animate-slide-up stagger-3">
-        <HealthMeter score={gradeResult.score} size={240} />
+      {/* Grade Badge */}
+      <div className="animate-scale-in stagger-2">
+        <GradeBadge grade={gradeResult.grade} score={gradeResult.score} />
       </div>
 
       {/* Nutrition Breakdown */}
-      <div className="glass-card p-5 animate-slide-up stagger-4" style={{ borderRadius: '24px' }}>
+      <div className="glass-card p-5 animate-slide-up stagger-3" style={{ borderRadius: '24px' }}>
         <NutritionBreakdown gradeResult={gradeResult} nutrition={product.nutrition} />
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3 mt-2 animate-slide-up stagger-5">
+      <div className="flex gap-3 mt-2 animate-slide-up stagger-4">
         <button onClick={() => router.push('/chat')} className="flex-1 py-3.5 rounded-2xl btn-gold text-sm flex items-center justify-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Ask AI
@@ -154,12 +140,12 @@ export default function ResultPage() {
         </button>
       </div>
 
-      <button onClick={() => router.push('/')} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-6">
+      <button onClick={() => router.push('/')} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-5">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
         Scan another product
       </button>
 
-      <button onClick={handleShare} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-7">
+      <button onClick={handleShare} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-6">
         {shareState === 'copied' ? (
           <>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>

@@ -335,22 +335,3 @@ button:focus-visible {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
-/* ============================================ */
-/* 3D CARD EFFECT                               */
-/* ============================================ */
-
-.card-3d {
-  transform-style: preserve-3d;
-  perspective: 1000px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card-3d:hover {
-  transform: rotateY(-5deg) rotateX(5deg) translateY(-4px);
-  box-shadow: 12px 12px 32px rgba(0,0,0,0.08), -4px -4px 16px rgba(255,255,255,0.6);
-}
-
-.card-3d:active {
-  transform: rotateY(-2deg) rotateX(2deg) scale(0.97);
-}

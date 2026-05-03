@@ -4,7 +4,6 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useState, Suspense } from 'react'
 import Scanner from '@/components/Scanner'
 import { addToHistory } from '@/lib/history'
-import FoodScanIllustration from '@/components/illustrations/FoodScanIllustration'
 
 function ScanContent() {
   const searchParams = useSearchParams()
@@ -111,8 +110,11 @@ function ScanContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1A1D2E] flex flex-col items-center justify-center gap-6 px-8">
-        <FoodScanIllustration size={160} />
+      <div className="min-h-screen bg-[#1A1D2E] flex flex-col items-center justify-center gap-5 px-8">
+        <div className="relative">
+          <div className="w-12 h-12 border-2 border-[#F1B123] border-t-transparent rounded-full animate-spin" />
+          <div className="absolute inset-0 w-12 h-12 rounded-full" style={{ boxShadow: '0 0 20px rgba(241, 177, 35, 0.3)' }} />
+        </div>
         <p className="text-white/70 text-sm text-center">{status}</p>
       </div>
     )

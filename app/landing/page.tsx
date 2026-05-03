@@ -1,17 +1,13 @@
 import Link from 'next/link'
 import { GRADE_GRADIENTS, GRADE_GLOWS } from '@/lib/types'
-import type { Grade } from '@/lib/types'
-import FoodScanIllustration from '@/components/illustrations/FoodScanIllustration'
-import GradeShield from '@/components/illustrations/GradeShield'
-import AnimatedBackground from '@/components/illustrations/AnimatedBackground'
 
-const GRADES: { grade: Grade; label: string; range: string; description: string }[] = [
+const GRADES = [
   { grade: 'A', label: 'Excellent', range: '-15 to -1', description: 'Highest nutritional quality' },
   { grade: 'B', label: 'Good', range: '0 to 2', description: 'Good nutritional quality' },
   { grade: 'C', label: 'Average', range: '3 to 10', description: 'Moderate nutritional quality' },
   { grade: 'D', label: 'Poor', range: '11 to 18', description: 'Low nutritional quality' },
   { grade: 'E', label: 'Bad', range: '19 to 40', description: 'Lowest nutritional quality' },
-]
+] as const
 
 const FEATURES = [
   {
@@ -100,9 +96,15 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1A1D2E 0%, #2D3148 50%, #1A1D2E 100%)' }}>
-        <AnimatedBackground />
+        {/* Floating gold accent shapes */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-16 left-8 w-56 h-56 rounded-full opacity-[0.07]" style={{ background: 'radial-gradient(circle, #F1B123 0%, transparent 70%)' }} />
+          <div className="absolute top-40 right-16 w-32 h-32 rounded-full opacity-[0.05]" style={{ background: 'radial-gradient(circle, #F1B123 0%, transparent 70%)' }} />
+          <div className="absolute bottom-20 left-1/3 w-80 h-80 rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #F1B123 0%, transparent 70%)' }} />
+          <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, #8B5CF6 0%, transparent 70%)' }} />
+        </div>
 
-        <div className="relative max-w-4xl mx-auto px-6 py-24 md:py-36 text-center z-10">
+        <div className="relative max-w-4xl mx-auto px-6 py-24 md:py-36 text-center">
           <h1 className="text-6xl md:text-8xl font-bold text-white tracking-tight" style={{ fontFamily: 'var(--font-inter)' }}>
             DFQS
           </h1>
@@ -110,12 +112,6 @@ export default function LandingPage() {
             Dubai Food Quality Standards
           </p>
           <div className="gold-underline w-20 mx-auto mt-6 mb-6" />
-
-          {/* Hero Illustration */}
-          <div className="flex justify-center my-8 animate-float">
-            <FoodScanIllustration size={200} />
-          </div>
-
           <p className="text-base md:text-lg text-white/40 max-w-xl mx-auto leading-relaxed" style={{ fontFamily: 'var(--font-inter)' }}>
             Empowering consumers with AI-powered food quality grading
           </p>
@@ -157,18 +153,21 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Grading Scale - with GradeShield illustrations */}
-      <section className="py-20 md:py-28 mesh-bg relative">
+      {/* Grading Scale */}
+      <section className="py-20 md:py-28 mesh-bg">
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="text-2xl md:text-3xl font-bold text-[#1A1D2E] text-center" style={{ fontFamily: 'var(--font-inter)' }}>The Grading Scale</h2>
           <p className="text-sm text-[#6B7194] text-center mt-2">Based on the internationally recognized Nutri-Score algorithm</p>
 
           <div className="mt-14 flex flex-col gap-3 max-w-lg mx-auto">
             {GRADES.map((g) => (
-              <div key={g.grade} className="glass-card card-3d flex items-center gap-4 p-4" style={{ borderRadius: '16px' }}>
-                <div className="shrink-0">
-                  <GradeShield grade={g.grade} size={56} />
-                </div>
+              <div key={g.grade} className="glass-card flex items-center gap-4 p-4" style={{ borderRadius: '16px' }}>
+                <span
+                  className="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold"
+                  style={{ background: GRADE_GRADIENTS[g.grade], boxShadow: GRADE_GLOWS[g.grade] }}
+                >
+                  {g.grade}
+                </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-[#1A1D2E]">{g.label}</span>
@@ -190,7 +189,7 @@ export default function LandingPage() {
 
           <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {FEATURES.map((feature) => (
-              <div key={feature.title} className="glass-card card-3d flex flex-col p-6" style={{ borderRadius: '20px' }}>
+              <div key={feature.title} className="glass-card flex flex-col p-6" style={{ borderRadius: '20px' }}>
                 <div className="text-[#1A1D2E] mb-4">{feature.icon}</div>
                 <h3 className="text-sm font-bold text-[#1A1D2E]" style={{ fontFamily: 'var(--font-inter)' }}>{feature.title}</h3>
                 <p className="text-xs text-[#6B7194] mt-2 leading-relaxed">{feature.description}</p>
@@ -209,21 +208,21 @@ export default function LandingPage() {
           </p>
 
           <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-2xl mx-auto">
-            <div className="glass-card card-3d flex flex-col items-center p-6" style={{ borderRadius: '20px' }}>
+            <div className="glass-card flex flex-col items-center p-6" style={{ borderRadius: '20px' }}>
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: 'rgba(26, 29, 46, 0.05)' }}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A1D2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
               </div>
               <h3 className="text-sm font-bold text-[#1A1D2E]">Gemini AI</h3>
               <p className="text-xs text-[#6B7194] mt-1">Vision and language AI</p>
             </div>
-            <div className="glass-card card-3d flex flex-col items-center p-6" style={{ borderRadius: '20px' }}>
+            <div className="glass-card flex flex-col items-center p-6" style={{ borderRadius: '20px' }}>
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: 'rgba(26, 29, 46, 0.05)' }}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A1D2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>
               </div>
               <h3 className="text-sm font-bold text-[#1A1D2E]">Nutri-Score</h3>
               <p className="text-xs text-[#6B7194] mt-1">Proven grading algorithm</p>
             </div>
-            <div className="glass-card card-3d flex flex-col items-center p-6" style={{ borderRadius: '20px' }}>
+            <div className="glass-card flex flex-col items-center p-6" style={{ borderRadius: '20px' }}>
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: 'rgba(26, 29, 46, 0.05)' }}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A1D2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
               </div>
@@ -234,7 +233,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Call to Action */}
+      {/* Call to Action - Full width gold gradient bar */}
       <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #F1B123 0%, #D89A0E 100%)' }}>
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)' }} />
