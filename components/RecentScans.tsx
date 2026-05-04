@@ -77,37 +77,44 @@ export default function RecentScans() {
         </div>
       </div>
 
-      {/* Horizontal scroll cards */}
-      <div className="flex gap-3 overflow-x-auto hide-scrollbar px-6 pb-2">
+      {/* Full-width swipeable hero cards — Swipe Drinks style */}
+      <div className="flex gap-4 overflow-x-auto hide-scrollbar px-6 pb-4 snap-x snap-mandatory">
         {history.map((entry, i) => (
           <button
             key={`${entry.scanned_at}-${i}`}
             onClick={() => handleEntryClick(entry)}
-            className="shrink-0 w-[220px] relative rounded-3xl p-5 text-left transition-all hover:-translate-y-1 hover:shadow-lg active:scale-[0.98] bg-white"
-            style={{ border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', minHeight: '200px', overflow: 'visible' }}
+            className="shrink-0 relative rounded-[28px] p-6 text-left transition-all active:scale-[0.98] bg-white snap-center"
+            style={{
+              width: 'calc(100vw - 80px)',
+              maxWidth: '340px',
+              minHeight: '240px',
+              border: '1px solid rgba(0,0,0,0.04)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+              overflow: 'visible',
+            }}
           >
-            {/* Product name — bold, left side */}
-            <div className="flex flex-col gap-1 max-w-[55%]">
-              <p className="text-[18px] font-bold text-[#2D2A26] leading-tight">{entry.product_name}</p>
+            {/* Product name — large, bold, left side */}
+            <div className="max-w-[50%]">
+              <p className="text-[22px] font-bold text-[#2D2A26] leading-[1.15]">{entry.product_name}</p>
             </div>
 
-            {/* Category image — large, floating right, overlapping card edge */}
+            {/* Category image — massive, floating right, overlapping card */}
             <img
               src={getProductImage(entry.product_name, entry.grade)}
               alt=""
-              className="absolute -right-3 bottom-6 w-[130px] h-[130px] object-contain transition-transform duration-300 hover:scale-110 hover:-rotate-3"
-              style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.12))' }}
+              className="absolute right-[-16px] bottom-[-12px] w-[180px] h-[180px] object-contain pointer-events-none"
+              style={{ filter: 'drop-shadow(0 10px 24px rgba(0,0,0,0.12))' }}
             />
 
             {/* Grade badge + score at bottom left */}
-            <div className="flex items-center gap-2 mt-auto pt-12 relative z-10">
+            <div className="flex items-center gap-2 absolute bottom-6 left-6 z-10">
               <span
-                className="w-8 h-8 rounded-[10px] flex items-center justify-center text-white text-xs font-bold"
-                style={{ background: GRADE_GRADIENTS[entry.grade as Grade] }}
+                className="w-10 h-10 rounded-[12px] flex items-center justify-center text-white text-sm font-bold"
+                style={{ background: GRADE_GRADIENTS[entry.grade as Grade], boxShadow: '0 3px 10px rgba(0,0,0,0.12)' }}
               >
                 {entry.grade}
               </span>
-              <span className="text-[10px] text-[#9B8E82] bg-[#F5F3EF] px-2 py-1 rounded-full font-medium">Score: {entry.score}</span>
+              <span className="text-[11px] text-[#9B8E82] bg-[#F5F3EF] px-3 py-1.5 rounded-full font-medium">Score: {entry.score}</span>
             </div>
           </button>
         ))}
