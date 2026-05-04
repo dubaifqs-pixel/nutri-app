@@ -83,23 +83,24 @@ export default function RecentScans() {
           <button
             key={`${entry.scanned_at}-${i}`}
             onClick={() => handleEntryClick(entry)}
-            className="shrink-0 w-[200px] relative rounded-3xl p-4 text-left transition-all hover:-translate-y-1 hover:shadow-lg active:scale-[0.98] overflow-hidden bg-white"
-            style={{ border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}
+            className="shrink-0 w-[220px] relative rounded-3xl p-5 text-left transition-all hover:-translate-y-1 hover:shadow-lg active:scale-[0.98] bg-white"
+            style={{ border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', minHeight: '200px', overflow: 'visible' }}
           >
-            <div className="flex flex-col gap-1 pr-2 min-h-[80px]">
-              <p className="text-[16px] font-bold text-[#2D2A26] line-clamp-3 leading-snug">{entry.product_name}</p>
+            {/* Product name — bold, left side */}
+            <div className="flex flex-col gap-1 max-w-[55%]">
+              <p className="text-[18px] font-bold text-[#2D2A26] leading-tight">{entry.product_name}</p>
             </div>
 
-            {/* Category image — always shows */}
+            {/* Category image — large, floating right, overlapping card edge */}
             <img
               src={getProductImage(entry.product_name, entry.grade)}
               alt=""
-              className="absolute -right-2 -bottom-2 w-[100px] h-[100px] object-contain"
-              style={{ filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.1))' }}
+              className="absolute -right-3 bottom-6 w-[130px] h-[130px] object-contain transition-transform duration-300 hover:scale-110 hover:-rotate-3"
+              style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.12))' }}
             />
 
-            {/* Grade badge + score at bottom */}
-            <div className="flex items-center gap-2 mt-3 relative z-10">
+            {/* Grade badge + score at bottom left */}
+            <div className="flex items-center gap-2 mt-auto pt-12 relative z-10">
               <span
                 className="w-8 h-8 rounded-[10px] flex items-center justify-center text-white text-xs font-bold"
                 style={{ background: GRADE_GRADIENTS[entry.grade as Grade] }}
