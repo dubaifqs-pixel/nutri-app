@@ -11,7 +11,7 @@ export default function GradeBadge({ grade, score }: { grade: Grade; score: numb
       <div className="relative animate-grade-reveal">
         {/* Outer pulsing ring */}
         <div
-          className="absolute inset-0 rounded-[32px]"
+          className="absolute inset-0 rounded-[24px]"
           style={{
             background: GRADE_GRADIENTS[grade],
             animation: 'pulse-ring 2s ease-in-out infinite',
@@ -19,14 +19,14 @@ export default function GradeBadge({ grade, score }: { grade: Grade; score: numb
         />
         {/* Badge */}
         <div
-          className="relative w-[140px] h-[140px] rounded-[32px] flex flex-col items-center justify-center text-white"
+          className="relative w-[80px] h-[80px] rounded-[24px] flex flex-col items-center justify-center text-white"
           style={{
             background: GRADE_GRADIENTS[grade],
             boxShadow: GRADE_GLOWS[grade],
           }}
         >
-          <span className="text-7xl font-bold leading-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>{grade}</span>
-          <span className="text-sm mt-1.5 font-medium opacity-90">{GRADE_LABELS_EN[grade]}</span>
+          <span className="text-4xl font-bold leading-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>{grade}</span>
+          <span className="text-[10px] mt-1 font-medium opacity-90">{GRADE_LABELS_EN[grade]}</span>
         </div>
       </div>
 

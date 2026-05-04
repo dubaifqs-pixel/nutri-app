@@ -3,29 +3,16 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getHistory, clearHistory, type HistoryEntry } from '@/lib/history'
-import { GRADE_COLORS, GRADE_GRADIENTS, type Grade } from '@/lib/types'
-import { calculateGrade } from '@/lib/scoring'
+import { GRADE_GRADIENTS, type Grade } from '@/lib/types'
 
-function timeAgo(iso: string): string {
-  const now = Date.now()
-  const then = new Date(iso).getTime()
-  const diff = Math.max(0, now - then)
-
-  const seconds = Math.floor(diff / 1000)
-  if (seconds < 60) return 'just now'
-
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes} min ago`
-
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`
-
-  const days = Math.floor(hours / 24)
-  if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`
-
-  const weeks = Math.floor(days / 7)
-  return `${weeks} week${weeks > 1 ? 's' : ''} ago`
+const GRADE_BG_SOFT: Record<Grade, string> = {
+  A: '#E8F5E9',
+  B: '#F1F8E9',
+  C: '#FFF8E1',
+  D: '#FFF3E0',
+  E: '#FFEBEE',
 }
+import { calculateGrade } from '@/lib/scoring'
 
 export default function RecentScans() {
   const router = useRouter()
@@ -103,16 +90,18 @@ export default function RecentScans() {
           <button
             key={`${entry.scanned_at}-${i}`}
             onClick={() => handleEntryClick(entry)}
-            className="shrink-0 w-[200px] relative bg-white rounded-3xl p-4 text-left transition-all hover:-translate-y-1 hover:shadow-lg active:scale-[0.98] overflow-hidden"
-            style={{ border: '1px solid #EAE6E0' }}
+            className="shrink-0 w-[200px] relative rounded-3xl p-4 text-left transition-all hover:-translate-y-1 hover:shadow-lg active:scale-[0.98] overflow-hidden"
+            style={{
+              border: '1px solid #EAE6E0',
+              backgroundColor: entry.image_url ? '#FFFFFF' : GRADE_BG_SOFT[entry.grade as Grade],
+            }}
           >
             <div className="flex flex-col gap-1 pr-16 min-h-[80px]">
-              <p className="text-[15px] font-bold text-[#2D2A26] line-clamp-2 leading-tight">{entry.product_name}</p>
-              <p className="text-[10px] text-[#B0A89E] font-medium mt-auto">{timeAgo(entry.scanned_at)}</p>
+              <p className="text-[16px] font-bold text-[#2D2A26] line-clamp-3 leading-snug">{entry.product_name}</p>
             </div>
 
-            {/* Product image or grade badge as visual */}
-            {entry.image_url ? (
+            {/* Product image when available */}
+            {entry.image_url && (
               <img
                 src={entry.image_url}
                 alt=""
@@ -120,13 +109,6 @@ export default function RecentScans() {
                 style={{ filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.12))' }}
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
               />
-            ) : (
-              <div
-                className="absolute -right-1 top-1/2 -translate-y-1/2 w-[60px] h-[60px] rounded-2xl flex items-center justify-center text-white text-2xl font-bold"
-                style={{ background: GRADE_GRADIENTS[entry.grade as Grade], boxShadow: `0 8px 16px ${GRADE_COLORS[entry.grade as Grade]}30` }}
-              >
-                {entry.grade}
-              </div>
             )}
 
             {/* Grade badge + score at bottom */}

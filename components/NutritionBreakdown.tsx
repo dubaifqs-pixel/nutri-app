@@ -28,12 +28,12 @@ function NutrientRow({ label, value, unit, points, isPositive, delay, color }: {
     : Math.min((points / MAX_NEGATIVE_POINTS) * 100, 100)
 
   const barGradient = isPositive
-    ? (points > 0 ? 'linear-gradient(90deg, #6BBF59, #4A9E3F)' : 'linear-gradient(90deg, #D1D5DB, #9CA3AF)')
-    : (points > 5 ? 'linear-gradient(90deg, #F44336, #C62828)' : points > 2 ? 'linear-gradient(90deg, #FFC107, #F9A825)' : 'linear-gradient(90deg, #6BBF59, #4A9E3F)')
+    ? (points > 0 ? '#4CAF50' : '#9CA3AF')
+    : (points > 5 ? '#E53935' : points > 2 ? '#FF9800' : '#4CAF50')
 
   const textColor = isPositive
-    ? (points > 0 ? 'text-[#4A9E3F]' : 'text-[#9B8E82]')
-    : (points > 5 ? 'text-[#C62828]' : points > 2 ? 'text-[#F9A825]' : 'text-[#4A9E3F]')
+    ? (points > 0 ? 'text-[#2E7D32]' : 'text-[#9B8E82]')
+    : (points > 5 ? 'text-[#C62828]' : points > 2 ? 'text-[#E65100]' : 'text-[#2E7D32]')
 
   return (
     <div
@@ -48,19 +48,19 @@ function NutrientRow({ label, value, unit, points, isPositive, delay, color }: {
           <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
           <span className="text-sm font-medium text-[#2D2A26]">{label}</span>
         </div>
-        <span className={`text-sm font-semibold ${textColor}`}>{value}{unit}</span>
+        <span className={`text-sm font-bold ${textColor}`}>{value}{unit}</span>
       </div>
-      <div className="relative h-2 rounded-full overflow-hidden" style={{ background: 'rgba(45, 42, 38, 0.06)' }}>
+      <div className="relative h-2 rounded-full overflow-hidden" style={{ background: '#EDEDED' }}>
         <div
           className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out"
           style={{
             width: `${percentage}%`,
-            background: barGradient,
+            backgroundColor: barGradient,
           }}
         />
       </div>
       <div className="flex justify-end mt-1.5">
-        <span className={`text-[11px] font-medium ${textColor}`}>{points} pts</span>
+        <span className={`text-[11px] font-bold ${textColor}`}>{points} pts</span>
       </div>
     </div>
   )

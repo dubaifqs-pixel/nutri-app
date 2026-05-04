@@ -6,20 +6,24 @@ export const geminiFlash = genAI.getGenerativeModel({
   model: 'gemini-2.5-flash',
 })
 
-export const VISION_PROMPT = `You are analyzing a food product photo. Look carefully at the nutrition facts label / table in the image.
+export const VISION_PROMPT = `You are a precise nutrition label reader. Carefully examine every detail of this food product photo.
 
-Extract the nutrition values and return ONLY a valid JSON object. No markdown, no code fences, just the raw JSON.
+Step 1: Identify the product name and brand from the packaging text (any language).
+Step 2: Find the nutrition facts table/panel.
+Step 3: Read EACH value precisely — do not estimate or guess.
 
-Rules:
-- All values MUST be per 100g (or per 100ml for drinks)
-- If the label only shows "per serving", calculate per 100g using the serving size
-- If sodium is shown as salt, convert: sodium_mg = salt_g × 400
-- If energy is in kJ, convert: energy_kcal = energy_kJ / 4.184
-- Use null for any value you cannot find
-- Read the product name from the front of the package if visible
+Return ONLY valid JSON (no markdown, no code fences):
+{"product_name":"exact name from package","energy_kcal":number or null,"sugars_g":number or null,"saturated_fat_g":number or null,"sodium_mg":number or null,"protein_g":number or null,"fiber_g":number or null,"fruits_veg_percent":number or null}
 
-Return this exact JSON structure:
-{"product_name":"string or null","energy_kcal":number or null,"sugars_g":number or null,"saturated_fat_g":number or null,"sodium_mg":number or null,"protein_g":number or null,"fiber_g":number or null,"fruits_veg_percent":number or null}`
+Critical rules:
+- All values MUST be per 100g or per 100ml
+- If label shows "per serving", you MUST convert to per 100g using the serving size
+- Sodium from salt: sodium_mg = salt_g × 400
+- Energy from kJ: energy_kcal = energy_kJ / 4.184
+- Read the EXACT numbers, do not round or estimate
+- Product name: read what's printed on the package, in the original language
+- If you can read values in both English and Arabic, prefer the numerical values
+- Use null ONLY if a value is truly not visible`
 
 export const BARCODE_VISION_PROMPT = `Read the barcode number from this image. Return ONLY the barcode digits as a plain string, nothing else. If you see multiple barcodes, return the main product barcode (EAN-13 or UPC-A). If you cannot read any barcode, return "NONE".`
 

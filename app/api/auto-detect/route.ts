@@ -1,19 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { geminiFlash } from '@/lib/gemini'
 
-const AUTO_DETECT_PROMPT = `Can you see and read a nutrition facts label or nutrition information table in this image?
+const AUTO_DETECT_PROMPT = `You are a precise nutrition label reader. Carefully examine this food product photo.
 
-If you CAN read nutrition values, extract them and return:
-{"detected":true,"product_name":"string or null","energy_kcal":number or null,"sugars_g":number or null,"saturated_fat_g":number or null,"sodium_mg":number or null,"protein_g":number or null,"fiber_g":number or null,"fruits_veg_percent":number or null}
+Step 1: Check if there is a nutrition facts label or nutrition information table visible.
+Step 2: If yes, identify the product name and brand from the packaging text (any language).
+Step 3: Read EACH nutrition value precisely — do not estimate or guess.
+
+If you CAN read nutrition values, return:
+{"detected":true,"product_name":"exact name from package","energy_kcal":number or null,"sugars_g":number or null,"saturated_fat_g":number or null,"sodium_mg":number or null,"protein_g":number or null,"fiber_g":number or null,"fruits_veg_percent":number or null}
 
 If you CANNOT read any nutrition values, return exactly: {"detected":false}
 
-Important:
-- All values per 100g. Convert from per-serving using serving size if needed.
+Critical rules:
+- All values MUST be per 100g or per 100ml
+- If label shows "per serving", you MUST convert to per 100g using the serving size
 - Sodium from salt: sodium_mg = salt_g × 400
 - Energy from kJ: energy_kcal = energy_kJ / 4.184
-- Use null for values you can't read. It's OK to have some nulls.
-- The label may be in English, Arabic, or any language — read whatever you can see.
+- Read the EXACT numbers, do not round or estimate
+- Product name: read what's printed on the package, in the original language
+- If you can read values in both English and Arabic, prefer the numerical values
+- Use null ONLY if a value is truly not visible
 - Return ONLY raw JSON, no markdown, no explanation.`
 
 export async function POST(request: NextRequest) {
