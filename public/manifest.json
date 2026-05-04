@@ -1,11 +1,11 @@
 {
-  "name": "DFQS — معايير دبي لجودة الغذاء",
-  "short_name": "DFQS",
-  "description": "Dubai Food Quality Standards — AI-powered food grading",
+  "name": "Nutri -- Eat smarter.",
+  "short_name": "Nutri",
+  "description": "Eat smarter. AI-powered food grading.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFFFFF",
-  "theme_color": "#3A3F57",
+  "background_color": "#F5F3EF",
+  "theme_color": "#FF8C42",
   "orientation": "portrait",
   "icons": [
     {

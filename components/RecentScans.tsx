@@ -77,39 +77,77 @@ export default function RecentScans() {
   }
 
   return (
-    <div className="w-full mt-8">
-      <div className="flex items-center gap-2 mb-3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <h2 className="text-xs font-semibold text-[#6B7194] uppercase tracking-[0.08em]" style={{ fontFamily: 'var(--font-inter)' }}>Recent Scans</h2>
-      </div>
-
-      <div className="glass-card p-1.5 flex flex-col gap-1" style={{ borderRadius: '20px' }}>
-        {history.map((entry, i) => (
-          <button
-            key={`${entry.scanned_at}-${i}`}
-            onClick={() => handleEntryClick(entry)}
-            className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[16px] text-left transition-all hover:bg-[#1A1D2E]/[0.03] active:scale-[0.99]"
-          >
+    <div className="w-full">
+      {/* Stats row */}
+      <div className="flex items-center gap-4 px-6 mb-4">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-[38px] font-bold text-[#2D2A26] leading-none">{history.length}</span>
+          <span className="text-[11px] font-semibold text-[#B0A89E] uppercase tracking-wider">Scanned</span>
+        </div>
+        <div className="flex items-center gap-1 ml-2">
+          {history.slice(0, 5).map((entry, i) => (
             <span
-              className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold"
+              key={`${entry.scanned_at}-${i}`}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold"
               style={{ background: GRADE_GRADIENTS[entry.grade as Grade] }}
             >
               {entry.grade}
             </span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[#1A1D2E] truncate">{entry.product_name}</p>
-              <p className="text-[11px] text-[#6B7194]/60 mt-0.5">{timeAgo(entry.scanned_at)}</p>
+          ))}
+        </div>
+      </div>
+
+      {/* Horizontal scroll cards */}
+      <div className="flex gap-3 overflow-x-auto hide-scrollbar px-6 pb-2">
+        {history.map((entry, i) => (
+          <button
+            key={`${entry.scanned_at}-${i}`}
+            onClick={() => handleEntryClick(entry)}
+            className="shrink-0 w-[200px] relative bg-white rounded-3xl p-4 text-left transition-all hover:-translate-y-1 hover:shadow-lg active:scale-[0.98] overflow-hidden"
+            style={{ border: '1px solid #EAE6E0' }}
+          >
+            <div className="flex flex-col gap-1 pr-16 min-h-[80px]">
+              <p className="text-[15px] font-bold text-[#2D2A26] line-clamp-2 leading-tight">{entry.product_name}</p>
+              <p className="text-[10px] text-[#B0A89E] font-medium mt-auto">{timeAgo(entry.scanned_at)}</p>
             </div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-30 shrink-0"><path d="m9 18 6-6-6-6"/></svg>
+
+            {/* Product image or grade badge as visual */}
+            {entry.image_url ? (
+              <img
+                src={entry.image_url}
+                alt=""
+                className="absolute -right-2 top-1/2 -translate-y-1/2 w-[80px] h-[80px] object-contain"
+                style={{ filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.12))' }}
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+              />
+            ) : (
+              <div
+                className="absolute -right-1 top-1/2 -translate-y-1/2 w-[60px] h-[60px] rounded-2xl flex items-center justify-center text-white text-2xl font-bold"
+                style={{ background: GRADE_GRADIENTS[entry.grade as Grade], boxShadow: `0 8px 16px ${GRADE_COLORS[entry.grade as Grade]}30` }}
+              >
+                {entry.grade}
+              </div>
+            )}
+
+            {/* Grade badge + score at bottom */}
+            <div className="flex items-center gap-2 mt-3">
+              <span
+                className="w-8 h-8 rounded-[10px] flex items-center justify-center text-white text-xs font-bold"
+                style={{ background: GRADE_GRADIENTS[entry.grade as Grade] }}
+              >
+                {entry.grade}
+              </span>
+              <span className="text-[10px] text-[#9B8E82] bg-[#F5F3EF] px-2 py-1 rounded-full font-medium">Score: {entry.score}</span>
+            </div>
           </button>
         ))}
       </div>
 
       <button
         onClick={handleClear}
-        className="flex items-center gap-1.5 mx-auto mt-3 text-xs text-[#6B7194]/50 transition-colors hover:text-red-400 min-h-[44px] px-3"
+        className="flex items-center gap-1.5 mx-auto mt-3 text-xs text-[#B0A89E] transition-colors hover:text-red-400 min-h-[44px] px-3"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
         Clear history
       </button>
     </div>

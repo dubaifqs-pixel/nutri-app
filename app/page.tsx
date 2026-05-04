@@ -3,76 +3,100 @@ import RecentScans from '@/components/RecentScans'
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col items-center px-6 py-12 mesh-bg">
-      {/* Logo Section */}
-      <div className="text-center mb-10 animate-fade-in">
-        <h1 className="text-5xl font-bold text-[#1A1D2E] tracking-tight" style={{ fontFamily: 'var(--font-inter)' }}>DFQS</h1>
-        <div className="gold-underline w-16 mx-auto mt-3" />
-        <p className="text-sm text-[#6B7194] mt-3" style={{ fontFamily: 'var(--font-inter)' }}>Dubai Food Quality Standards</p>
-        <p className="text-xs text-[#6B7194]/60 mt-1 font-arabic">معايير دبي لجودة الغذاء</p>
-        <p className="text-[11px] text-[#6B7194]/50 mt-3 tracking-[0.15em] uppercase" style={{ fontFamily: 'var(--font-inter)' }}>AI-powered food grading</p>
+    <div className="min-h-screen flex flex-col mesh-bg pb-24">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 pt-8 pb-2 animate-fade-in">
+        <div>
+          <p className="text-[13px] text-[#9B8E82] font-medium">Welcome back</p>
+          <h1 className="text-[22px] font-bold text-[#2D2A26] tracking-tight">nutri</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link href="/landing" className="w-10 h-10 rounded-2xl flex items-center justify-center bg-[#FDFCFA] border border-[#EAE6E0] transition-colors hover:border-[#B0A89E]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9B8E82" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          </Link>
+          <button className="w-10 h-10 rounded-2xl flex items-center justify-center bg-[#FDFCFA] border border-[#EAE6E0] transition-colors hover:border-[#B0A89E]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9B8E82" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg>
+          </button>
+        </div>
       </div>
 
-      {/* Main Action Cards */}
-      <div className="w-full flex flex-col gap-3 animate-slide-up stagger-1">
-        <Link href="/scan?mode=label" className="glass-card flex items-center gap-4 w-full py-5 px-5 group" style={{ borderColor: 'rgba(241, 177, 35, 0.15)' }}>
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, rgba(241, 177, 35, 0.15), rgba(241, 177, 35, 0.05))' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F1B123" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          </div>
-          <div className="flex-1">
-            <p className="text-[15px] font-semibold text-[#1A1D2E]">Scan Label</p>
-            <p className="text-xs text-[#6B7194] mt-0.5">Point camera at nutrition facts</p>
-          </div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-40 group-hover:opacity-70 transition-opacity"><path d="m9 18 6-6-6-6"/></svg>
-        </Link>
+      {/* Hero text */}
+      <div className="px-6 mt-4 mb-6 animate-slide-up stagger-1">
+        <p className="text-[26px] leading-tight text-[#2D2A26]" style={{ fontWeight: 400 }}>
+          Scan your food<br/>
+          <span style={{ fontWeight: 700 }}>Eat smarter.</span>
+        </p>
+      </div>
 
-        <div className="flex items-center gap-3 px-4">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#1A1D2E]/10 to-transparent" />
-          <span className="text-[10px] text-[#6B7194]/50 uppercase tracking-widest">or</span>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#1A1D2E]/10 to-transparent" />
-        </div>
+      {/* Recent Scans (horizontal cards) */}
+      <div className="w-full animate-slide-up stagger-2">
+        <RecentScans />
+      </div>
 
-        <Link href="/scan?mode=barcode" className="glass-card flex items-center gap-4 w-full py-5 px-5 group">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, rgba(26, 29, 46, 0.08), rgba(26, 29, 46, 0.03))' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A3F57" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
+      {/* Scan CTA card */}
+      <div className="px-6 mt-6 animate-slide-up stagger-3">
+        <Link href="/scan?mode=label" className="flex items-center justify-between p-5 rounded-3xl bg-[#FDFCFA] border border-[#EAE6E0] transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]">
+          <div>
+            <p className="text-[17px] font-bold text-[#2D2A26]">Scan Now</p>
+            <p className="text-[13px] text-[#9B8E82] mt-1">Label or barcode</p>
           </div>
-          <div className="flex-1">
-            <p className="text-[15px] font-semibold text-[#1A1D2E]">Scan Barcode</p>
-            <p className="text-xs text-[#6B7194] mt-0.5">Scan or enter barcode number</p>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center btn-espresso">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           </div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7194" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-40 group-hover:opacity-70 transition-opacity"><path d="m9 18 6-6-6-6"/></svg>
         </Link>
       </div>
 
       {/* Enter Barcode Link */}
-      <Link href="/scan?mode=barcode&manual=1" className="text-[12px] text-[#6B7194]/60 mt-3 hover:text-[#F1B123] transition-colors animate-slide-up stagger-2" style={{ fontFamily: 'var(--font-inter)' }}>
+      <Link href="/scan?mode=barcode&manual=1" className="text-[12px] text-[#B0A89E] mt-3 hover:text-[#FF8C42] transition-colors animate-slide-up stagger-3 text-center">
         Enter barcode manually
       </Link>
 
       {/* Secondary Actions */}
-      <div className="w-full flex gap-3 mt-6 animate-slide-up stagger-3">
-        <Link href="/compare" className="flex-1 glass-card flex items-center justify-center gap-2 py-3.5 px-4 text-[13px] font-medium text-[#3A3F57]">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
+      <div className="px-6 flex gap-3 mt-6 animate-slide-up stagger-4">
+        <Link href="/compare" className="flex-1 glass-card flex items-center justify-center gap-2 py-3.5 px-4 text-[13px] font-medium text-[#4A4540]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
           Compare
         </Link>
-        <Link href="/browse" className="flex-1 glass-card flex items-center justify-center gap-2 py-3.5 px-4 text-[13px] font-medium text-[#3A3F57]">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+        <Link href="/browse" className="flex-1 glass-card flex items-center justify-center gap-2 py-3.5 px-4 text-[13px] font-medium text-[#4A4540]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
           Browse
         </Link>
       </div>
 
-      {/* History */}
-      <div className="w-full animate-slide-up stagger-4">
-        <RecentScans />
+      {/* Footer */}
+      <div className="flex flex-col items-center gap-2 mt-12 animate-fade-in stagger-5 px-6">
+        <div className="flex items-center gap-1.5 text-xs text-[#B0A89E]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+          <span>Powered by AI</span>
+        </div>
+        <Link href="/landing" className="text-[11px] text-[#B0A89E] hover:text-[#FF8C42] transition-colors">About nutri</Link>
       </div>
 
-      {/* Footer */}
-      <div className="flex flex-col items-center gap-2 mt-12 animate-fade-in stagger-5">
-        <div className="flex items-center gap-1.5 text-xs text-[#6B7194]/40">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-          <span style={{ fontFamily: 'var(--font-inter)' }}>Powered by AI</span>
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40">
+        <div className="glass px-4 py-2 flex items-center justify-around" style={{ borderTop: '1px solid #EAE6E0', borderRadius: 0 }}>
+          <Link href="/" className="flex flex-col items-center gap-0.5 py-1 min-w-[48px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D2A26" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span className="text-[10px] font-semibold text-[#2D2A26]">Home</span>
+          </Link>
+          <Link href="/browse" className="flex flex-col items-center gap-0.5 py-1 min-w-[48px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B0A89E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+            <span className="text-[10px] font-medium text-[#B0A89E]">Browse</span>
+          </Link>
+          <Link href="/scan?mode=label" className="flex items-center justify-center -mt-4">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #6BBF59, #4A9E3F)', boxShadow: '0 4px 20px rgba(107, 191, 89, 0.4)' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+          </Link>
+          <Link href="/compare" className="flex flex-col items-center gap-0.5 py-1 min-w-[48px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B0A89E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
+            <span className="text-[10px] font-medium text-[#B0A89E]">Compare</span>
+          </Link>
+          <Link href="/chat" className="flex flex-col items-center gap-0.5 py-1 min-w-[48px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B0A89E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span className="text-[10px] font-medium text-[#B0A89E]">AI Chat</span>
+          </Link>
         </div>
-        <Link href="/landing" className="text-[11px] text-[#6B7194]/40 hover:text-[#F1B123] transition-colors" style={{ fontFamily: 'var(--font-inter)' }}>About DFQS</Link>
       </div>
     </div>
   )

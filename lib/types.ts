@@ -46,27 +46,27 @@ export interface ChatMessage {
 }
 
 export const GRADE_COLORS: Record<Grade, string> = {
-  A: '#059669',
-  B: '#65A30D',
-  C: '#D97706',
-  D: '#EA580C',
-  E: '#DC2626',
+  A: '#2E7D32',
+  B: '#558B2F',
+  C: '#F9A825',
+  D: '#E65100',
+  E: '#C62828',
 }
 
 export const GRADE_GRADIENTS: Record<Grade, string> = {
-  A: 'linear-gradient(135deg, #34D399, #059669)',
-  B: 'linear-gradient(135deg, #A3E635, #65A30D)',
-  C: 'linear-gradient(135deg, #FBBF24, #D97706)',
-  D: 'linear-gradient(135deg, #FB923C, #EA580C)',
-  E: 'linear-gradient(135deg, #F87171, #DC2626)',
+  A: 'linear-gradient(135deg, #66BB6A, #2E7D32)',
+  B: 'linear-gradient(135deg, #8BC34A, #558B2F)',
+  C: 'linear-gradient(135deg, #FFC107, #F9A825)',
+  D: 'linear-gradient(135deg, #FF9800, #E65100)',
+  E: 'linear-gradient(135deg, #F44336, #C62828)',
 }
 
 export const GRADE_GLOWS: Record<Grade, string> = {
-  A: '0 0 30px rgba(52, 211, 153, 0.3)',
-  B: '0 0 30px rgba(163, 230, 53, 0.3)',
-  C: '0 0 30px rgba(251, 191, 36, 0.3)',
-  D: '0 0 30px rgba(251, 146, 60, 0.3)',
-  E: '0 0 30px rgba(248, 113, 113, 0.3)',
+  A: '0 0 30px rgba(102, 187, 106, 0.3)',
+  B: '0 0 30px rgba(139, 195, 74, 0.3)',
+  C: '0 0 30px rgba(255, 193, 7, 0.3)',
+  D: '0 0 30px rgba(255, 152, 0, 0.3)',
+  E: '0 0 30px rgba(244, 67, 54, 0.3)',
 }
 
 export const GRADE_LABELS_AR: Record<Grade, string> = {
@@ -78,9 +78,9 @@ export const GRADE_LABELS_AR: Record<Grade, string> = {
 }
 
 export const GRADE_LABELS_EN: Record<Grade, string> = {
-  A: 'Excellent',
+  A: 'Great',
   B: 'Good',
-  C: 'Average',
+  C: 'Okay',
   D: 'Poor',
   E: 'Bad',
 }

@@ -179,14 +179,14 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
           onChange={(e) => setManualBarcode(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
           placeholder="e.g. 6281100120018"
-          className="w-full max-w-xs glass-dark text-white text-center text-xl px-5 py-4 rounded-2xl outline-none placeholder:text-white/25 tracking-widest focus:ring-2 focus:ring-[#F1B123]/40 transition-all"
+          className="w-full max-w-xs glass-dark text-white text-center text-xl px-5 py-4 rounded-2xl outline-none placeholder:text-white/25 tracking-widest focus:ring-2 focus:ring-[#FF8C42]/40 transition-all"
           dir="ltr"
           autoFocus
         />
         <button
           onClick={handleManualSubmit}
           disabled={manualBarcode.trim().length < 8}
-          className="w-full max-w-xs py-3.5 rounded-2xl btn-gold disabled:opacity-40 transition-all text-sm"
+          className="w-full max-w-xs py-3.5 rounded-2xl btn-tangerine disabled:opacity-40 transition-all text-sm"
         >
           Search
         </button>
@@ -226,7 +226,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
   const frameH = mode === 'barcode' ? 140 : 220
   const cornerSize = 24
   const cornerThickness = 3
-  const cornerColor = scanStatus === 'detected' ? '#34D399' : '#F1B123'
+  const cornerColor = scanStatus === 'detected' ? '#6BBF59' : '#FF8C42'
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center" style={{ height: '100vh' }}>
@@ -254,15 +254,15 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
 
           {/* Glow effect */}
           {scanStatus === 'detected' && (
-            <div className="absolute -inset-2 rounded-2xl" style={{ boxShadow: '0 0 40px rgba(52, 211, 153, 0.4), inset 0 0 40px rgba(52, 211, 153, 0.1)' }} />
+            <div className="absolute -inset-2 rounded-2xl" style={{ boxShadow: '0 0 40px rgba(107, 191, 89, 0.4), inset 0 0 40px rgba(107, 191, 89, 0.1)' }} />
           )}
           {isAutoScanning && scanStatus === 'scanning' && videoReady && (
-            <div className="absolute -inset-1 rounded-xl" style={{ boxShadow: '0 0 25px rgba(241, 177, 35, 0.2)' }} />
+            <div className="absolute -inset-1 rounded-xl" style={{ boxShadow: '0 0 25px rgba(255, 140, 66, 0.2)' }} />
           )}
 
           {/* Scanning line animation */}
           {isAutoScanning && scanStatus === 'scanning' && videoReady && (
-            <div className="absolute inset-x-3 h-0.5 bg-gradient-to-r from-transparent via-[#F1B123] to-transparent animate-scan-line" style={{ boxShadow: '0 0 8px rgba(241, 177, 35, 0.6)' }} />
+            <div className="absolute inset-x-3 h-0.5 bg-gradient-to-r from-transparent via-[#FF8C42] to-transparent animate-scan-line" style={{ boxShadow: '0 0 8px rgba(255, 140, 66, 0.6)' }} />
           )}
         </div>
       </div>
@@ -270,10 +270,10 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
       {/* Status pill */}
       <div className="absolute bottom-32 glass-dark px-5 py-2.5 rounded-full flex items-center gap-2.5">
         {isAutoScanning && scanStatus === 'scanning' && videoReady && (
-          <div className="w-2 h-2 bg-[#F1B123] rounded-full animate-gold-pulse" />
+          <div className="w-2 h-2 bg-[#FF8C42] rounded-full animate-tangerine-pulse" />
         )}
         {scanStatus === 'detected' && (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6BBF59" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
         )}
         <p className="text-white text-sm">{guideText}</p>
       </div>
@@ -295,11 +295,11 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
             className="w-14 h-14 rounded-full shadow-lg transition-colors"
             style={{
               background: scanStatus === 'detected'
-                ? 'linear-gradient(135deg, #34D399, #059669)'
-                : 'linear-gradient(135deg, #F1B123, #D89A0E)',
+                ? 'linear-gradient(135deg, #6BBF59, #4A9E3F)'
+                : 'linear-gradient(135deg, #FF8C42, #E85D26)',
               boxShadow: scanStatus === 'detected'
-                ? '0 4px 20px rgba(52, 211, 153, 0.4)'
-                : '0 4px 20px rgba(241, 177, 35, 0.4)',
+                ? '0 4px 20px rgba(107, 191, 89, 0.4)'
+                : '0 4px 20px rgba(255, 140, 66, 0.4)',
             }}
           />
         </div>
@@ -317,7 +317,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
           onClick={() => { stopCamera(); setShowManual(true) }}
           className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-xs z-10 flex items-center gap-1.5 transition-colors hover:text-white/80 min-h-[44px] px-4"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M6 12h.01"/><path d="M10 12h.01"/><path d="M14 12h.01"/><path d="M18 12h.01"/><path d="M8 16h8"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M6 12h.01"/><path d="M10 12h.01"/><path d="M14 12h.01"/><path d="M18 12h.01"/><path d="M8 16h8"/></svg>
           Enter manually
         </button>
       )}

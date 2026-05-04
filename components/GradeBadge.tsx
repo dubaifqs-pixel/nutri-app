@@ -1,6 +1,6 @@
 'use client'
 
-import { Grade, GRADE_COLORS, GRADE_GRADIENTS, GRADE_GLOWS, GRADE_LABELS_EN, GRADE_LABELS_AR } from '@/lib/types'
+import { Grade, GRADE_COLORS, GRADE_GRADIENTS, GRADE_GLOWS, GRADE_LABELS_EN } from '@/lib/types'
 
 const ALL_GRADES: Grade[] = ['A', 'B', 'C', 'D', 'E']
 
@@ -56,8 +56,7 @@ export default function GradeBadge({ grade, score }: { grade: Grade; score: numb
 
       {/* Score Pill */}
       <div className="glass-subtle flex flex-col items-center gap-1 px-5 py-2.5 rounded-2xl">
-        <p className="text-sm font-semibold text-[#3A3F57]">Score: {score}</p>
-        <p className="text-xs text-[#6B7194] font-arabic">{GRADE_LABELS_AR[grade]}</p>
+        <p className="text-sm font-semibold text-[#4A4540]">Score: {score}</p>
       </div>
     </div>
   )

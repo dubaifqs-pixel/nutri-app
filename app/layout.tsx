@@ -1,26 +1,21 @@
 import type { Metadata, Viewport } from 'next'
-import { IBM_Plex_Sans_Arabic, Inter } from 'next/font/google'
+import { Quicksand } from 'next/font/google'
 import './globals.css'
 
-const arabic = IBM_Plex_Sans_Arabic({
-  subsets: ['arabic'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-arabic',
-})
-
-const inter = Inter({
+const quicksand = Quicksand({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-quicksand',
 })
 
 export const metadata: Metadata = {
-  title: 'DFQS -- Dubai Food Quality Standards',
-  description: 'AI-powered food grading based on Dubai Food Quality Standards',
+  title: 'nutri -- Eat smarter.',
+  description: 'Eat smarter. AI-powered food grading.',
   manifest: '/manifest.json',
 }
 
 export const viewport: Viewport = {
-  themeColor: '#1A1D2E',
+  themeColor: '#FF8C42',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -28,8 +23,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" dir="ltr" className={`${arabic.variable} ${inter.variable}`}>
-      <body className="font-inter antialiased bg-white text-[#1A1D2E] max-w-md mx-auto min-h-screen">
+    <html lang="en" dir="ltr" className={quicksand.variable}>
+      <body className="font-quicksand antialiased bg-[#F5F3EF] text-[#2D2A26] max-w-md mx-auto min-h-screen">
         {children}
       </body>
     </html>
