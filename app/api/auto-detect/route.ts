@@ -56,9 +56,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ detected: false })
     }
 
+    // If no product name detected, try to identify from nutrition values
+    let productName = parsed.product_name
+    if (!productName || productName === 'null' || productName === 'Unknown Product') {
+      try {
+        const identifyResult = await geminiFlash.generateContent([
+          `Look at this food product photo. What product is this? Read any visible text, brand name, or logo. Reply with ONLY the product name, nothing else.`,
+          { inlineData: { mimeType: 'image/jpeg', data: base64Data } },
+        ])
+        const name = identifyResult.response.text().trim().replace(/['"]/g, '')
+        if (name && name.length < 60 && name !== 'Unknown') {
+          productName = name
+        }
+      } catch {}
+    }
+
     return NextResponse.json({
       detected: true,
-      product_name: parsed.product_name || 'Unknown Product',
+      product_name: productName || 'Scanned Product',
       nutrition: {
         energy_kcal: parsed.energy_kcal ?? null,
         sugars_g: parsed.sugars_g ?? null,

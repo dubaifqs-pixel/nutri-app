@@ -18,8 +18,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Could not parse nutrition data from image' }, { status: 422 })
     }
     const nutrition = JSON.parse(jsonMatch[0])
+
+    // If product name is missing, ask AI to identify it from the nutrition profile
+    let productName = nutrition.product_name
+    if (!productName || productName === 'null' || productName === 'Unknown Product') {
+      try {
+        const identifyResult = await geminiFlash.generateContent(
+          `Based on this nutrition label photo and these values per 100g: Energy ${nutrition.energy_kcal}kcal, Sugar ${nutrition.sugars_g}g, Sat Fat ${nutrition.saturated_fat_g}g, Sodium ${nutrition.sodium_mg}mg, Protein ${nutrition.protein_g}g — what product is this most likely? Look at ANY visible text, brand logos, colors, or packaging clues in the image. Reply with ONLY the product name (e.g. "KitKat 4 Finger" or "Lay's Classic Chips"), nothing else.`
+        )
+        const name = identifyResult.response.text().trim().replace(/['"]/g, '')
+        if (name && name.length < 60 && name !== 'Unknown') {
+          productName = name
+        }
+      } catch {}
+    }
+
     return NextResponse.json({
-      product_name: nutrition.product_name || 'Unknown Product',
+      product_name: productName || 'Scanned Product',
       nutrition: {
         energy_kcal: nutrition.energy_kcal, sugars_g: nutrition.sugars_g,
         saturated_fat_g: nutrition.saturated_fat_g, sodium_mg: nutrition.sodium_mg,

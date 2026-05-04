@@ -8,7 +8,7 @@ export const geminiFlash = genAI.getGenerativeModel({
 
 export const VISION_PROMPT = `You are a precise nutrition label reader. Carefully examine every detail of this food product photo.
 
-Step 1: Identify the product name and brand from the packaging text (any language).
+Step 1: Identify the product name and brand. Look for ANY text on the packaging — brand name, product name, flavor, size. Read text in any language (English, Arabic, etc.). The name is CRITICAL — never return null for product_name if there is any text visible on the package.
 Step 2: Find the nutrition facts table/panel.
 Step 3: Read EACH value precisely — do not estimate or guess.
 
