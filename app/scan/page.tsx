@@ -86,18 +86,29 @@ function ScanContent() {
         setTimeout(() => setLoading(false), 3000)
       }
     } else {
-      setStatus('Analyzing nutrition label with AI...')
+      setStatus('Reading nutrition label...')
       try {
+        // Progress messages while waiting
+        const progressTimer = setTimeout(() => setStatus('Extracting nutrition values...'), 2000)
+        const progressTimer2 = setTimeout(() => setStatus('Identifying product...'), 4000)
+        const progressTimer3 = setTimeout(() => setStatus('Almost done...'), 6000)
+
         const res = await fetch('/api/scan-label', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: imageBase64 }),
         })
+
+        clearTimeout(progressTimer)
+        clearTimeout(progressTimer2)
+        clearTimeout(progressTimer3)
+
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
           setStatus(err.error || 'Could not read label -- try with better lighting')
           setTimeout(() => setLoading(false), 3000)
           return
         }
+        setStatus('Calculating grade...')
         const product = await res.json()
         const gradeResult = await getGrade(product.nutrition)
         goToResult(product, gradeResult)
@@ -110,12 +121,19 @@ function ScanContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#2D2A26] flex flex-col items-center justify-center gap-5 px-8">
-        <div className="relative">
-          <div className="w-12 h-12 border-2 border-[#FF8C42] border-t-transparent rounded-full animate-spin" />
-          <div className="absolute inset-0 w-12 h-12 rounded-full" style={{ boxShadow: '0 0 20px rgba(255, 140, 66, 0.3)' }} />
+      <div className="min-h-screen bg-[#2D2A26] flex flex-col items-center justify-center gap-6 px-8">
+        {/* Animated rings */}
+        <div className="relative w-20 h-20 flex items-center justify-center">
+          <div className="absolute inset-0 border-2 border-[#FF8C42]/20 rounded-full" />
+          <div className="absolute inset-0 border-2 border-[#FF8C42] border-t-transparent rounded-full animate-spin" />
+          <div className="absolute inset-2 border-2 border-[#6BBF59]/20 rounded-full" />
+          <div className="absolute inset-2 border-2 border-[#6BBF59] border-t-transparent rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF8C42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
         </div>
-        <p className="text-white/70 text-sm text-center">{status}</p>
+        <div className="text-center">
+          <p className="text-white text-sm font-medium">{status}</p>
+          <p className="text-white/40 text-xs mt-2">Powered by AI</p>
+        </div>
       </div>
     )
   }
