@@ -6,6 +6,7 @@ import GradeBadge from '@/components/GradeBadge'
 import NutritionBreakdown from '@/components/NutritionBreakdown'
 import type { ProductData, GradeResult } from '@/lib/types'
 import { GRADE_LABELS_EN } from '@/lib/types'
+import { getProductImage } from '@/lib/product-images'
 
 export default function ResultPage() {
   const router = useRouter()
@@ -60,20 +61,18 @@ export default function ResultPage() {
         <p className="text-xs text-[#B0A89E] uppercase tracking-[0.1em] flex-1">Scan Result</p>
       </div>
 
-      {/* Product Card */}
-      {product.image_url && (
-        <div className="flex justify-center animate-slide-up stagger-1">
-          <div className="w-[160px] h-[160px] rounded-3xl bg-white border border-[#EAE6E0] flex items-center justify-center overflow-hidden p-4">
-            <img
-              src={product.image_url}
-              alt={product.product_name}
-              className="max-w-full max-h-full object-contain"
-              style={{ filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.1))' }}
-              onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none' }}
-            />
-          </div>
+      {/* Product Image */}
+      <div className="flex justify-center animate-slide-up stagger-1">
+        <div className="w-[140px] h-[140px] flex items-center justify-center p-2">
+          <img
+            src={product.image_url || getProductImage(product.product_name, gradeResult.grade)}
+            alt={product.product_name}
+            className="max-w-full max-h-full object-contain"
+            style={{ filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.1))' }}
+            onError={(e) => { (e.target as HTMLImageElement).src = getProductImage(product.product_name, gradeResult.grade) }}
+          />
         </div>
-      )}
+      </div>
 
       {/* Product Name */}
       <div className="text-center animate-slide-up stagger-1">

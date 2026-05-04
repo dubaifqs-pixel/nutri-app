@@ -4,14 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getHistory, clearHistory, type HistoryEntry } from '@/lib/history'
 import { GRADE_GRADIENTS, type Grade } from '@/lib/types'
-
-const GRADE_BG_SOFT: Record<Grade, string> = {
-  A: '#E8F5E9',
-  B: '#F1F8E9',
-  C: '#FFF8E1',
-  D: '#FFF3E0',
-  E: '#FFEBEE',
-}
+import { getProductImage } from '@/lib/product-images'
 import { calculateGrade } from '@/lib/scoring'
 
 export default function RecentScans() {
@@ -90,29 +83,23 @@ export default function RecentScans() {
           <button
             key={`${entry.scanned_at}-${i}`}
             onClick={() => handleEntryClick(entry)}
-            className="shrink-0 w-[200px] relative rounded-3xl p-4 text-left transition-all hover:-translate-y-1 hover:shadow-lg active:scale-[0.98] overflow-hidden"
-            style={{
-              border: '1px solid #EAE6E0',
-              backgroundColor: entry.image_url ? '#FFFFFF' : GRADE_BG_SOFT[entry.grade as Grade],
-            }}
+            className="shrink-0 w-[200px] relative rounded-3xl p-4 text-left transition-all hover:-translate-y-1 hover:shadow-lg active:scale-[0.98] overflow-hidden bg-white"
+            style={{ border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}
           >
-            <div className="flex flex-col gap-1 pr-16 min-h-[80px]">
+            <div className="flex flex-col gap-1 pr-2 min-h-[80px]">
               <p className="text-[16px] font-bold text-[#2D2A26] line-clamp-3 leading-snug">{entry.product_name}</p>
             </div>
 
-            {/* Product image when available */}
-            {entry.image_url && (
-              <img
-                src={entry.image_url}
-                alt=""
-                className="absolute -right-2 top-1/2 -translate-y-1/2 w-[80px] h-[80px] object-contain"
-                style={{ filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.12))' }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-              />
-            )}
+            {/* Category image — always shows */}
+            <img
+              src={getProductImage(entry.product_name, entry.grade)}
+              alt=""
+              className="absolute -right-2 -bottom-2 w-[100px] h-[100px] object-contain"
+              style={{ filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.1))' }}
+            />
 
             {/* Grade badge + score at bottom */}
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex items-center gap-2 mt-3 relative z-10">
               <span
                 className="w-8 h-8 rounded-[10px] flex items-center justify-center text-white text-xs font-bold"
                 style={{ background: GRADE_GRADIENTS[entry.grade as Grade] }}

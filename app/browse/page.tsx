@@ -2,17 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { getDemoProductCount } from '@/lib/demo-products'
-
-const CATEGORY_IMAGES: Record<string, string> = {
-  dairy: '/products/dairy.png',
-  beverages: '/products/beverages.png',
-  snacks: '/products/snacks.png',
-  cereals: '/products/cereals.png',
-  bread: '/products/bread-bakery.png',
-  meat: '/products/meat-poultry.png',
-  fruits: '/products/fruits-veg.png',
-  frozen: '/products/frozen.png',
-}
+import { getCategoryImage } from '@/lib/product-images'
 
 const CATEGORIES = [
   { id: 'dairy', name: 'Dairy', description: 'Milk, cheese, yogurt' },
@@ -39,7 +29,7 @@ export default function BrowsePage() {
 
       <div className="grid grid-cols-2 gap-3">
         {CATEGORIES.map((cat, i) => {
-          const imageUrl = CATEGORY_IMAGES[cat.id]
+          const imageUrl = getCategoryImage(cat.id)
           const count = getDemoProductCount(cat.id)
           return (
             <button
