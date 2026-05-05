@@ -6,9 +6,12 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-[#F2F0ED] pb-24">
       {/* Header */}
       <div className="flex items-center justify-between px-6 pt-8 pb-2 animate-fade-in">
-        <div>
-          <p className="text-[13px] text-[#8A8A8A] font-medium">Welcome back</p>
-          <h1 className="text-[22px] font-medium text-[#1A1A1A] tracking-tight">nutri</h1>
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="nutri" className="w-10 h-10 rounded-xl" />
+          <div>
+            <p className="text-[13px] text-[#8A8A8A] font-medium">Welcome back</p>
+            <h1 className="text-[22px] font-medium text-[#1A1A1A] tracking-tight">nutri</h1>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/landing" className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-[rgba(0,0,0,0.06)] transition-colors hover:border-[rgba(0,0,0,0.12)]">
