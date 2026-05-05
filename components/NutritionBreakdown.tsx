@@ -10,12 +10,12 @@ interface Props {
 const MAX_NEGATIVE_POINTS = 10
 
 const NUTRIENT_COLORS = {
-  energy: '#FF8C42',
-  sugars: '#E85D26',
-  saturated_fat: '#FF9800',
+  energy: '#8A8A8A',
+  sugars: '#C62828',
+  saturated_fat: '#E65100',
   sodium: '#F9A825',
-  protein: '#6BBF59',
-  fiber: '#4A9E3F',
+  protein: '#4CAF50',
+  fiber: '#2E7D32',
 }
 
 function NutrientRow({ label, value, unit, points, isPositive, delay, color }: {
@@ -27,35 +27,32 @@ function NutrientRow({ label, value, unit, points, isPositive, delay, color }: {
     ? Math.min((points / 5) * 100, 100)
     : Math.min((points / MAX_NEGATIVE_POINTS) * 100, 100)
 
-  const barGradient = isPositive
-    ? (points > 0 ? '#4CAF50' : '#9CA3AF')
-    : (points > 5 ? '#E53935' : points > 2 ? '#FF9800' : '#4CAF50')
+  const barColor = isPositive
+    ? (points > 0 ? '#4CAF50' : '#D0D0D0')
+    : (points > 5 ? '#E53935' : points > 2 ? '#F9A825' : '#4CAF50')
 
   const textColor = isPositive
-    ? (points > 0 ? 'text-[#2E7D32]' : 'text-[#9B8E82]')
+    ? (points > 0 ? 'text-[#2E7D32]' : 'text-[#8A8A8A]')
     : (points > 5 ? 'text-[#C62828]' : points > 2 ? 'text-[#E65100]' : 'text-[#2E7D32]')
 
   return (
     <div
       className="bg-white rounded-2xl p-3.5 animate-slide-up"
-      style={{
-        animationDelay: `${delay}ms`,
-        border: '1px solid #EAE6E0',
-      }}
+      style={{ animationDelay: `${delay}ms` }}
     >
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
-          <span className="text-sm font-medium text-[#2D2A26]">{label}</span>
+          <span className="text-sm font-medium text-[#1A1A1A]">{label}</span>
         </div>
         <span className={`text-sm font-bold ${textColor}`}>{value}{unit}</span>
       </div>
-      <div className="relative h-2 rounded-full overflow-hidden" style={{ background: '#EDEDED' }}>
+      <div className="relative h-2 rounded-full overflow-hidden bg-[#F2F0ED]">
         <div
           className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out"
           style={{
             width: `${percentage}%`,
-            backgroundColor: barGradient,
+            backgroundColor: barColor,
           }}
         />
       </div>
@@ -69,8 +66,8 @@ function NutrientRow({ label, value, unit, points, isPositive, delay, color }: {
 export default function NutritionBreakdown({ gradeResult, nutrition }: Props) {
   return (
     <div className="flex flex-col gap-2.5">
-      <h3 className="text-sm font-semibold text-[#2D2A26] mb-1 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9B8E82" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+      <h3 className="text-sm font-semibold text-[#1A1A1A] mb-1 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A8A8A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
         Nutrition Analysis
       </h3>
       <NutrientRow label="Energy" value={nutrition.energy_kcal} unit=" kcal" points={gradeResult.negative_points.energy} isPositive={false} delay={50} color={NUTRIENT_COLORS.energy} />
@@ -79,9 +76,9 @@ export default function NutritionBreakdown({ gradeResult, nutrition }: Props) {
       <NutrientRow label="Sodium" value={nutrition.sodium_mg} unit="mg" points={gradeResult.negative_points.sodium} isPositive={false} delay={200} color={NUTRIENT_COLORS.sodium} />
 
       <div className="flex items-center gap-3 my-1 px-1">
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#EAE6E0] to-transparent" />
-        <span className="text-[10px] text-[#B0A89E] uppercase tracking-widest">Positive</span>
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#EAE6E0] to-transparent" />
+        <div className="flex-1 h-px bg-[rgba(0,0,0,0.06)]" />
+        <span className="text-[10px] text-[#8A8A8A] uppercase tracking-widest">Positive</span>
+        <div className="flex-1 h-px bg-[rgba(0,0,0,0.06)]" />
       </div>
 
       <NutrientRow label="Protein" value={nutrition.protein_g} unit="g" points={gradeResult.positive_points.protein} isPositive={true} delay={300} color={NUTRIENT_COLORS.protein} />
@@ -94,7 +91,7 @@ export default function NutritionBreakdown({ gradeResult, nutrition }: Props) {
         </div>
       )}
       {!gradeResult.protein_counted && nutrition.protein_g !== null && (
-        <div className="bg-white flex items-start gap-2.5 text-xs text-[#9B8E82] px-4 py-3 rounded-2xl" style={{ border: '1px solid #EAE6E0' }}>
+        <div className="bg-white flex items-start gap-2.5 text-xs text-[#8A8A8A] px-4 py-3 rounded-2xl" style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
           Protein not counted (negative points &gt;= 11)
         </div>

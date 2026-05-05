@@ -4,7 +4,7 @@ import type { ChatMessage as ChatMessageType } from '@/lib/types'
 
 const BADGE_STYLES: Record<string, { bg: string; text: string; border: string }> = {
   HARMFUL: { bg: 'rgba(196, 40, 40, 0.08)', text: '#C62828', border: 'rgba(196, 40, 40, 0.2)' },
-  CAUTION: { bg: 'rgba(232, 93, 38, 0.08)', text: '#E85D26', border: 'rgba(232, 93, 38, 0.2)' },
+  CAUTION: { bg: 'rgba(232, 93, 38, 0.08)', text: '#E65100', border: 'rgba(232, 93, 38, 0.2)' },
   MODERATE: { bg: 'rgba(249, 168, 37, 0.08)', text: '#F9A825', border: 'rgba(249, 168, 37, 0.2)' },
   GOOD: { bg: 'rgba(74, 158, 63, 0.08)', text: '#4A9E3F', border: 'rgba(74, 158, 63, 0.2)' },
   EXCELLENT: { bg: 'rgba(46, 125, 50, 0.08)', text: '#2E7D32', border: 'rgba(46, 125, 50, 0.2)' },
@@ -24,13 +24,12 @@ const LEVEL_COLORS: Record<string, string> = {
 function DailyIntakeBar({ percent, color }: { percent: number; color: string }) {
   const clamped = Math.min(percent, 150)
   return (
-    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'rgba(45, 42, 38, 0.06)' }}>
+    <div className="w-full h-2 rounded-full overflow-hidden bg-[#F2F0ED]">
       <div
         className="h-full rounded-full transition-all duration-700"
         style={{
           width: `${Math.min(clamped / 1.5, 100)}%`,
           background: color,
-          boxShadow: percent > 80 ? `0 0 8px ${color}40` : 'none',
         }}
       />
     </div>
@@ -131,12 +130,12 @@ function ConcernsSection({ section }: { section: any }) {
         return (
           <div
             key={i}
-            className="glass-subtle rounded-2xl p-3 animate-slide-up"
-            style={{ animationDelay: `${i * 0.1}s`, borderColor: `${color}15` }}
+            className="bg-white rounded-2xl p-3 animate-slide-up"
+            style={{ animationDelay: `${i * 0.1}s`, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
           >
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-[#2D2A26]">{item.nutrient}</span>
+                <span className="text-sm font-semibold text-[#1A1A1A]">{item.nutrient}</span>
                 <span className="text-xs font-bold px-1.5 py-0.5 rounded-md" style={{ background: `${color}12`, color }}>{item.value}</span>
               </div>
               <span className="text-xs font-bold px-2 py-0.5 rounded-lg" style={{ background: `${color}15`, color }}>
@@ -144,8 +143,8 @@ function ConcernsSection({ section }: { section: any }) {
               </span>
             </div>
             <DailyIntakeBar percent={item.daily_percent} color={color} />
-            <p className="text-xs text-[#9B8E82] mt-1.5">{item.note_en}</p>
-            <p className="text-xs text-[#9B8E82] mt-0.5" dir="rtl">{item.note_ar}</p>
+            <p className="text-xs text-[#8A8A8A] mt-1.5">{item.note_en}</p>
+            <p className="text-xs text-[#8A8A8A] mt-0.5" dir="rtl">{item.note_ar}</p>
           </div>
         )
       })}
@@ -166,16 +165,16 @@ function PositivesSection({ section }: { section: any }) {
         return (
           <div
             key={i}
-            className="glass-subtle rounded-2xl p-3 animate-slide-up"
-            style={{ animationDelay: `${(i + 3) * 0.1}s`, borderColor: `${color}15` }}
+            className="bg-white rounded-2xl p-3 animate-slide-up"
+            style={{ animationDelay: `${(i + 3) * 0.1}s`, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
           >
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-[#2D2A26]">{item.nutrient}</span>
+              <span className="text-sm font-semibold text-[#1A1A1A]">{item.nutrient}</span>
               <span className="text-xs font-bold px-1.5 py-0.5 rounded-md" style={{ background: `${color}12`, color }}>{item.value}</span>
               <span className="text-xs px-1.5 py-0.5 rounded-md uppercase font-semibold" style={{ background: `${color}12`, color }}>{item.level}</span>
             </div>
-            <p className="text-xs text-[#9B8E82] mt-1.5">{item.note_en}</p>
-            <p className="text-xs text-[#9B8E82] mt-0.5" dir="rtl">{item.note_ar}</p>
+            <p className="text-xs text-[#8A8A8A] mt-1.5">{item.note_en}</p>
+            <p className="text-xs text-[#8A8A8A] mt-0.5" dir="rtl">{item.note_ar}</p>
           </div>
         )
       })}
@@ -188,18 +187,18 @@ function DetailSection({ section }: { section: any }) {
   return (
     <div className="flex flex-col gap-2 animate-slide-up" style={{ animationDelay: '0.15s' }}>
       <div className="flex items-center gap-1.5 px-1">
-        <span style={{ color: '#2D2A26' }}><ShieldIcon /></span>
-        <span className="text-xs font-semibold text-[#2D2A26] uppercase tracking-wider">{section.title_en || 'Details'}</span>
+        <span style={{ color: '#1A1A1A' }}><ShieldIcon /></span>
+        <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-wider">{section.title_en || 'Details'}</span>
       </div>
-      <div className="glass-subtle rounded-2xl p-3" style={{ borderColor: '#EAE6E0' }}>
+      <div className="bg-white rounded-2xl p-3" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
         <div className="flex flex-col gap-2.5">
           {section.points.map((point: any, i: number) => (
             <div key={i} className="flex items-start gap-2.5">
               <div
                 className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5"
                 style={{
-                  background: point.highlight ? 'rgba(255, 140, 66, 0.12)' : 'rgba(45, 42, 38, 0.06)',
-                  color: point.highlight ? '#FF8C42' : '#9B8E82',
+                  background: point.highlight ? 'rgba(26, 26, 26, 0.08)' : 'rgba(26, 26, 26, 0.04)',
+                  color: point.highlight ? '#1A1A1A' : '#8A8A8A',
                 }}
               >
                 {point.highlight ? (
@@ -209,8 +208,8 @@ function DetailSection({ section }: { section: any }) {
                 )}
               </div>
               <div className="flex-1">
-                <p className={`text-sm leading-relaxed ${point.highlight ? 'text-[#2D2A26] font-medium' : 'text-[#4A4540]'}`}>{point.text_en}</p>
-                <p className="text-xs text-[#9B8E82] mt-0.5" dir="rtl">{point.text_ar}</p>
+                <p className={`text-sm leading-relaxed ${point.highlight ? 'text-[#1A1A1A] font-medium' : 'text-[#4A4A4A]'}`}>{point.text_en}</p>
+                <p className="text-xs text-[#8A8A8A] mt-0.5" dir="rtl">{point.text_ar}</p>
               </div>
             </div>
           ))}
@@ -223,37 +222,36 @@ function DetailSection({ section }: { section: any }) {
 function CalculationSection({ section }: { section: any }) {
   return (
     <div
-      className="rounded-2xl p-4 animate-scale-in"
+      className="rounded-2xl p-4 animate-scale-in bg-white"
       style={{
         animationDelay: '0.3s',
-        background: 'linear-gradient(135deg, rgba(255, 140, 66, 0.08), rgba(255, 140, 66, 0.03))',
-        border: '1px solid rgba(255, 140, 66, 0.18)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
       }}
     >
       <div className="flex items-center gap-1.5 mb-3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF8C42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><path d="M8 10h8"/><path d="M8 14h4"/><path d="M12 8v8"/></svg>
-        <span className="text-xs font-semibold text-[#FF8C42] uppercase tracking-wider">{section.label_en || 'Recommended Amount'}</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><path d="M8 10h8"/><path d="M8 14h4"/><path d="M12 8v8"/></svg>
+        <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-wider">{section.label_en || 'Recommended Amount'}</span>
       </div>
       <div className="flex items-center gap-3 mb-2">
-        <div className="text-2xl font-bold text-[#2D2A26]">{section.value}</div>
+        <div className="text-2xl font-bold text-[#1A1A1A]">{section.value}</div>
       </div>
-      <div className="text-sm font-medium text-[#9B8E82] mb-2" dir="rtl">{section.value_ar}</div>
-      <div className="h-px w-full my-2" style={{ background: 'rgba(255, 140, 66, 0.15)' }} />
-      <p className="text-xs text-[#9B8E82] leading-relaxed">{section.note_en}</p>
-      <p className="text-xs text-[#9B8E82] leading-relaxed mt-1" dir="rtl">{section.note_ar}</p>
+      <div className="text-sm font-medium text-[#8A8A8A] mb-2" dir="rtl">{section.value_ar}</div>
+      <div className="h-px w-full my-2 bg-[rgba(0,0,0,0.06)]" />
+      <p className="text-xs text-[#8A8A8A] leading-relaxed">{section.note_en}</p>
+      <p className="text-xs text-[#8A8A8A] leading-relaxed mt-1" dir="rtl">{section.note_ar}</p>
     </div>
   )
 }
 
 function AdviceSection({ section }: { section: any }) {
   return (
-    <div className="glass-subtle rounded-2xl p-3.5 animate-slide-up" style={{ animationDelay: '0.5s', borderColor: 'rgba(255, 140, 66, 0.15)' }}>
+    <div className="bg-white rounded-2xl p-3.5 animate-slide-up" style={{ animationDelay: '0.5s', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
       <div className="flex items-center gap-1.5 mb-2">
-        <span style={{ color: '#2D2A26' }}><ShieldIcon /></span>
-        <span className="text-xs font-semibold text-[#2D2A26] uppercase tracking-wider">Advice</span>
+        <span style={{ color: '#1A1A1A' }}><ShieldIcon /></span>
+        <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-wider">Advice</span>
       </div>
-      <p className="text-sm text-[#2D2A26] leading-relaxed">{section.text_en}</p>
-      <p className="text-sm text-[#9B8E82] leading-relaxed mt-1.5" dir="rtl">{section.text_ar}</p>
+      <p className="text-sm text-[#1A1A1A] leading-relaxed">{section.text_en}</p>
+      <p className="text-sm text-[#8A8A8A] leading-relaxed mt-1.5" dir="rtl">{section.text_ar}</p>
     </div>
   )
 }
@@ -261,13 +259,13 @@ function AdviceSection({ section }: { section: any }) {
 function TipSection({ section }: { section: any }) {
   return (
     <div
-      className="flex items-start gap-2.5 px-3.5 py-3 rounded-2xl animate-slide-up"
-      style={{ animationDelay: '0.6s', background: 'rgba(255, 140, 66, 0.06)', border: '1px solid rgba(255, 140, 66, 0.12)' }}
+      className="flex items-start gap-2.5 px-3.5 py-3 rounded-2xl animate-slide-up bg-[#F2F0ED]"
+      style={{ animationDelay: '0.6s' }}
     >
-      <span className="mt-0.5" style={{ color: '#FF8C42' }}><LightbulbIcon /></span>
+      <span className="mt-0.5" style={{ color: '#8A8A8A' }}><LightbulbIcon /></span>
       <div className="flex-1">
-        <p className="text-xs text-[#2D2A26] leading-relaxed">{section.text_en}</p>
-        <p className="text-xs text-[#9B8E82] leading-relaxed mt-1" dir="rtl">{section.text_ar}</p>
+        <p className="text-xs text-[#1A1A1A] leading-relaxed">{section.text_en}</p>
+        <p className="text-xs text-[#8A8A8A] leading-relaxed mt-1" dir="rtl">{section.text_ar}</p>
       </div>
     </div>
   )
@@ -283,7 +281,7 @@ export default function ChatMessage({ message }: { message: ChatMessageType }) {
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] px-4 py-3 text-sm leading-relaxed glass-dark text-white rounded-2xl rounded-br-md">
+        <div className="max-w-[85%] px-4 py-3 text-sm leading-relaxed bg-[#1A1A1A] text-white rounded-2xl rounded-br-md">
           <div className="whitespace-pre-wrap">{message.content}</div>
         </div>
       </div>

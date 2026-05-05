@@ -1,12 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Quicksand } from 'next/font/google'
 import './globals.css'
-
-const quicksand = Quicksand({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-quicksand',
-})
 
 export const metadata: Metadata = {
   title: 'nutri -- Eat smarter.',
@@ -15,7 +8,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#FF8C42',
+  themeColor: '#F2F0ED',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -23,8 +16,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" dir="ltr" className={quicksand.variable}>
-      <body className="font-quicksand antialiased bg-[#F5F3EF] text-[#2D2A26] max-w-md mx-auto min-h-screen">
+    <html lang="en" dir="ltr">
+      <body className="antialiased bg-[#F2F0ED] text-[#1A1A1A] max-w-md mx-auto min-h-screen">
         {children}
       </body>
     </html>

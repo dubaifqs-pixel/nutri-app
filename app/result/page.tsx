@@ -24,8 +24,8 @@ export default function ResultPage() {
 
   if (!product || !gradeResult) {
     return (
-      <div className="min-h-screen flex items-center justify-center mesh-bg">
-        <div className="w-10 h-10 border-2 border-[#FF8C42] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F2F0ED]">
+        <div className="w-10 h-10 border-2 border-[#1A1A1A] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -52,13 +52,13 @@ export default function ResultPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-8 flex flex-col gap-6 mesh-bg">
+    <div className="min-h-screen px-6 py-8 flex flex-col gap-6 bg-[#F2F0ED]">
       {/* Header */}
       <div className="flex items-center gap-3 animate-fade-in">
-        <button onClick={() => router.push('/')} className="text-[#9B8E82] transition-colors hover:text-[#2D2A26] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#2D2A26]/5">
+        <button onClick={() => router.push('/')} className="text-[#8A8A8A] transition-colors hover:text-[#1A1A1A] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#1A1A1A]/5">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <p className="text-xs text-[#B0A89E] uppercase tracking-[0.1em] flex-1">Scan Result</p>
+        <p className="text-xs text-[#8A8A8A] uppercase tracking-[0.1em] flex-1">Scan Result</p>
       </div>
 
       {/* Product Image */}
@@ -76,35 +76,16 @@ export default function ResultPage() {
 
       {/* Product Name */}
       <div className="text-center animate-slide-up stagger-1">
-        <h1 className="text-xl font-bold text-[#2D2A26]">{product.product_name}</h1>
+        <h1 className="text-xl font-bold text-[#1A1A1A]">{product.product_name}</h1>
         <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
           {product.source === 'vision' && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-[#FF8C42] glass-subtle px-3 py-1.5 rounded-full" style={{ borderColor: 'rgba(255, 140, 66, 0.2)' }}>
+            <span className="inline-flex items-center gap-1.5 text-xs text-[#8A8A8A] bg-white px-3 py-1.5 rounded-full" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
               Analyzed by AI
             </span>
           )}
           {product.data_source && (
-            <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full glass-subtle ${
-              product.data_source === 'AI Knowledge'
-                ? 'text-[#FF8C42]'
-                : product.data_source === 'Open Food Facts'
-                ? 'text-[#3B82F6]'
-                : product.data_source === 'USDA'
-                ? 'text-[#4A9E3F]'
-                : product.data_source === 'Label Scan'
-                ? 'text-[#8B5CF6]'
-                : 'text-[#9B8E82]'
-            }`} style={{ borderColor: product.data_source === 'AI Knowledge'
-                ? 'rgba(255, 140, 66, 0.2)'
-                : product.data_source === 'Open Food Facts'
-                ? 'rgba(59, 130, 246, 0.2)'
-                : product.data_source === 'USDA'
-                ? 'rgba(74, 158, 63, 0.2)'
-                : product.data_source === 'Label Scan'
-                ? 'rgba(139, 92, 246, 0.2)'
-                : 'rgba(155, 142, 130, 0.2)'
-            }}>
+            <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-white text-[#8A8A8A]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
               {product.data_source === 'AI Knowledge' && (
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
               )}
@@ -121,7 +102,7 @@ export default function ResultPage() {
             </span>
           )}
           {product.confidence === 'low' && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-[#E85D26] glass-subtle px-3 py-1.5 rounded-full" style={{ borderColor: 'rgba(232, 93, 38, 0.2)' }}>
+            <span className="inline-flex items-center gap-1.5 text-xs text-[#C62828] bg-white px-3 py-1.5 rounded-full" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
               Verify data
             </span>
@@ -135,19 +116,19 @@ export default function ResultPage() {
       </div>
 
       {/* Nutrition Breakdown */}
-      <div className="bg-white rounded-3xl p-5 animate-slide-up stagger-3" style={{ border: '1px solid #EAE6E0' }}>
+      <div className="bg-white rounded-[28px] p-5 animate-slide-up stagger-3" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
         <NutritionBreakdown gradeResult={gradeResult} nutrition={product.nutrition} />
       </div>
 
       {/* Action Buttons */}
       <div className="flex gap-3 mt-2 animate-slide-up stagger-4">
-        <button onClick={() => router.push('/chat')} className="flex-1 py-3.5 rounded-2xl btn-tangerine text-sm flex items-center justify-center gap-2">
+        <button onClick={() => router.push('/chat')} className="flex-1 py-3.5 rounded-2xl btn-dark text-sm flex items-center justify-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Ask AI
         </button>
         <button
           onClick={() => router.push('/alternatives')}
-          className="flex-1 py-3.5 rounded-2xl btn-green text-sm flex items-center justify-center gap-2"
+          className="flex-1 py-3.5 rounded-2xl btn-outline-green text-sm flex items-center justify-center gap-2"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           Alternatives
@@ -162,7 +143,7 @@ export default function ResultPage() {
       <button onClick={handleShare} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-6">
         {shareState === 'copied' ? (
           <>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A9E3F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             Copied!
           </>
         ) : (

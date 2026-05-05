@@ -4,8 +4,8 @@
   "description": "Eat smarter. AI-powered food grading.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F5F3EF",
-  "theme_color": "#FF8C42",
+  "background_color": "#F2F0ED",
+  "theme_color": "#F2F0ED",
   "orientation": "portrait",
   "icons": [
     {

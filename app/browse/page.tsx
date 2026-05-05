@@ -19,12 +19,12 @@ export default function BrowsePage() {
   const router = useRouter()
 
   return (
-    <div className="min-h-screen px-5 py-8 flex flex-col gap-5 mesh-bg pb-24">
+    <div className="min-h-screen px-5 py-8 flex flex-col gap-5 bg-[#F2F0ED] pb-24">
       <div className="flex items-center gap-3 animate-fade-in">
-        <button onClick={() => router.push('/')} className="text-[#9B8E82] transition-colors hover:text-[#2D2A26] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#2D2A26]/5">
+        <button onClick={() => router.push('/')} className="text-[#8A8A8A] transition-colors hover:text-[#1A1A1A] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#1A1A1A]/5">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <h1 className="text-xl font-semibold text-[#2D2A26]">Categories</h1>
+        <h1 className="text-xl font-semibold text-[#1A1A1A]">Categories</h1>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -35,26 +35,24 @@ export default function BrowsePage() {
             <button
               key={cat.id}
               onClick={() => router.push(`/browse/${cat.id}`)}
-              className="relative bg-white flex flex-col items-start p-4 animate-slide-up overflow-hidden transition-all hover:-translate-y-1 hover:shadow-lg active:scale-[0.98]"
+              className="relative bg-white flex flex-col items-start p-4 animate-slide-up overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md active:scale-[0.98]"
               style={{
                 animationDelay: `${i * 50}ms`,
-                borderRadius: '22px',
-                border: '1px solid rgba(0,0,0,0.04)',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
+                borderRadius: '28px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                 minHeight: '160px',
               }}
             >
               {/* Text content */}
-              <span className="text-[15px] font-bold text-[#2D2A26] relative z-10">{cat.name}</span>
-              <span className="text-[11px] text-[#9B8E82] mt-1 relative z-10">{cat.description}</span>
+              <span className="text-[15px] font-bold text-[#1A1A1A] relative z-10">{cat.name}</span>
+              <span className="text-[11px] text-[#8A8A8A] mt-1 relative z-10">{cat.description}</span>
               {count > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] text-[#FF8C42] px-2.5 py-1 rounded-full mt-2 font-semibold relative z-10" style={{ background: 'rgba(255, 140, 66, 0.08)' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                <span className="inline-flex items-center gap-1 text-[10px] text-[#8A8A8A] px-2.5 py-1 rounded-full mt-2 font-semibold relative z-10 bg-[#F2F0ED]">
                   {count} curated
                 </span>
               )}
 
-              {/* Product image — large, visible, floating bottom-right */}
+              {/* Product image */}
               {imageUrl && (
                 <img
                   src={imageUrl}

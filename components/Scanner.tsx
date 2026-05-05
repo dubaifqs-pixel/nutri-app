@@ -157,7 +157,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
         {mode === 'barcode' && (
           <button
             onClick={() => { setError(null); setShowManual(true) }}
-            className="glass-dark text-white px-5 py-3.5 rounded-2xl text-sm transition-all hover:bg-white/20 min-h-[44px]"
+            className="bg-white/10 text-white px-5 py-3.5 rounded-2xl text-sm transition-all hover:bg-white/20 min-h-[44px]"
           >
             Enter barcode manually
           </button>
@@ -179,14 +179,14 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
           onChange={(e) => setManualBarcode(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
           placeholder="e.g. 6281100120018"
-          className="w-full max-w-xs glass-dark text-white text-center text-xl px-5 py-4 rounded-2xl outline-none placeholder:text-white/25 tracking-widest focus:ring-2 focus:ring-[#FF8C42]/40 transition-all"
+          className="w-full max-w-xs bg-white/10 text-white text-center text-xl px-5 py-4 rounded-2xl outline-none placeholder:text-white/25 tracking-widest focus:ring-2 focus:ring-[#4CAF50]/40 transition-all"
           dir="ltr"
           autoFocus
         />
         <button
           onClick={handleManualSubmit}
           disabled={manualBarcode.trim().length < 8}
-          className="w-full max-w-xs py-3.5 rounded-2xl btn-tangerine disabled:opacity-40 transition-all text-sm"
+          className="w-full max-w-xs py-3.5 rounded-2xl btn-green disabled:opacity-40 transition-all text-sm"
         >
           Search
         </button>
@@ -226,7 +226,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
   const frameH = mode === 'barcode' ? 140 : 220
   const cornerSize = 24
   const cornerThickness = 3
-  const cornerColor = scanStatus === 'detected' ? '#6BBF59' : '#FF8C42'
+  const cornerColor = scanStatus === 'detected' ? '#4CAF50' : '#4CAF50'
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center" style={{ height: '100vh' }}>
@@ -252,33 +252,30 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
           <div className="absolute bottom-0 right-0" style={{ width: cornerSize, height: cornerThickness, background: cornerColor, borderRadius: 2, animation: 'corner-pulse 2s ease-in-out infinite 0.6s' }} />
           <div className="absolute bottom-0 right-0" style={{ width: cornerThickness, height: cornerSize, background: cornerColor, borderRadius: 2, animation: 'corner-pulse 2s ease-in-out infinite 0.6s' }} />
 
-          {/* Glow effect */}
+          {/* Glow effect on detection */}
           {scanStatus === 'detected' && (
-            <div className="absolute -inset-2 rounded-2xl" style={{ boxShadow: '0 0 40px rgba(107, 191, 89, 0.4), inset 0 0 40px rgba(107, 191, 89, 0.1)' }} />
-          )}
-          {isAutoScanning && scanStatus === 'scanning' && videoReady && (
-            <div className="absolute -inset-1 rounded-xl" style={{ boxShadow: '0 0 25px rgba(255, 140, 66, 0.2)' }} />
+            <div className="absolute -inset-2 rounded-2xl" style={{ boxShadow: '0 0 40px rgba(76, 175, 80, 0.4), inset 0 0 40px rgba(76, 175, 80, 0.1)' }} />
           )}
 
           {/* Scanning line animation */}
           {isAutoScanning && scanStatus === 'scanning' && videoReady && (
-            <div className="absolute inset-x-3 h-0.5 bg-gradient-to-r from-transparent via-[#FF8C42] to-transparent animate-scan-line" style={{ boxShadow: '0 0 8px rgba(255, 140, 66, 0.6)' }} />
+            <div className="absolute inset-x-3 h-0.5 bg-gradient-to-r from-transparent via-[#4CAF50] to-transparent animate-scan-line" style={{ boxShadow: '0 0 8px rgba(76, 175, 80, 0.6)' }} />
           )}
         </div>
       </div>
 
       {/* Status pill */}
-      <div className="absolute bottom-32 glass-dark px-5 py-2.5 rounded-full flex items-center gap-2.5">
+      <div className="absolute bottom-32 bg-black/70 backdrop-blur-sm px-5 py-2.5 rounded-full flex items-center gap-2.5">
         {isAutoScanning && scanStatus === 'scanning' && videoReady && (
-          <div className="w-2 h-2 bg-[#FF8C42] rounded-full animate-tangerine-pulse" />
+          <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-pulse" />
         )}
         {scanStatus === 'detected' && (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6BBF59" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
         )}
         <p className="text-white text-sm">{guideText}</p>
       </div>
 
-      {/* Capture button with concentric rings */}
+      {/* Capture button */}
       <button
         onClick={capturePhoto}
         disabled={!videoReady}
@@ -288,18 +285,11 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
         <div className="relative w-20 h-20 flex items-center justify-center">
           {/* Outer ring */}
           <div className="absolute inset-0 rounded-full border-[3px] border-white/60" />
-          {/* Middle ring (pulsing) */}
-          <div className="absolute inset-1.5 rounded-full border-2 border-white/30" style={{ animation: isAutoScanning && scanStatus === 'scanning' ? 'pulse-ring 2s ease-in-out infinite' : 'none' }} />
           {/* Inner fill */}
           <div
             className="w-14 h-14 rounded-full shadow-lg transition-colors"
             style={{
-              background: scanStatus === 'detected'
-                ? 'linear-gradient(135deg, #6BBF59, #4A9E3F)'
-                : 'linear-gradient(135deg, #FF8C42, #E85D26)',
-              boxShadow: scanStatus === 'detected'
-                ? '0 4px 20px rgba(107, 191, 89, 0.4)'
-                : '0 4px 20px rgba(255, 140, 66, 0.4)',
+              background: scanStatus === 'detected' ? '#4CAF50' : '#FFFFFF',
             }}
           />
         </div>
