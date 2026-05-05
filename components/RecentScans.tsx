@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { getHistory, clearHistory, type HistoryEntry } from '@/lib/history'
 import { GRADE_GRADIENTS, type Grade } from '@/lib/types'
@@ -10,6 +10,12 @@ import { calculateGrade } from '@/lib/scoring'
 export default function RecentScans() {
   const router = useRouter()
   const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [dragX, setDragX] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [exitDirection, setExitDirection] = useState<'left' | 'right' | null>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const startXRef = useRef(0)
 
   useEffect(() => {
     setHistory(getHistory())
@@ -39,6 +45,43 @@ export default function RecentScans() {
     router.push('/result')
   }
 
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsDragging(true)
+    startXRef.current = e.clientX
+    setExitDirection(null)
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return
+    const diff = e.clientX - startXRef.current
+    setDragX(diff)
+  }
+
+  const handlePointerUp = () => {
+    if (!isDragging) return
+    setIsDragging(false)
+
+    const threshold = 100
+    if (Math.abs(dragX) > threshold) {
+      // Swipe away
+      const direction = dragX > 0 ? 'right' : 'left'
+      setExitDirection(direction)
+      setTimeout(() => {
+        setCurrentIndex(prev => Math.min(prev + 1, history.length - 1))
+        setDragX(0)
+        setExitDirection(null)
+      }, 300)
+    } else {
+      // Spring back
+      setDragX(0)
+    }
+  }
+
+  const currentEntry = history[currentIndex]
+  const nextEntry = history[currentIndex + 1]
+  const rotation = dragX * 0.08
+  const opacity = 1 - Math.abs(dragX) / 400
+
   return (
     <div className="w-full">
       {/* Stats */}
@@ -58,46 +101,82 @@ export default function RecentScans() {
         </div>
       </div>
 
-      {/* Swipe Cards — one card takes most of screen width */}
-      <div
-        className="flex gap-4 overflow-x-auto hide-scrollbar px-6 pb-3"
-        style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
-      >
-        {history.map((entry, i) => (
+      {/* Tinder-style stacked cards */}
+      <div className="relative px-6" style={{ height: '280px' }}>
+        {/* Card counter */}
+        <div className="absolute top-0 right-6 z-10 flex items-center gap-1">
+          <span className="text-[11px] font-semibold text-[#8A8A8A]">{currentIndex + 1}/{history.length}</span>
+        </div>
+
+        {/* Next card (behind) */}
+        {nextEntry && (
           <div
-            key={`${entry.scanned_at}-${i}`}
-            onClick={() => handleEntryClick(entry)}
-            className="shrink-0 relative bg-white cursor-pointer active:scale-[0.98] transition-transform"
+            className="absolute inset-x-6 bg-white"
             style={{
-              width: 'calc(100vw - 90px)',
-              maxWidth: '320px',
-              minHeight: '260px',
               borderRadius: '28px',
+              height: '260px',
               boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-              scrollSnapAlign: 'center',
-              overflow: 'visible',
+              transform: 'scale(0.95) translateY(8px)',
+              opacity: 0.6,
             }}
           >
-            {/* Text — left side, top */}
             <div style={{ padding: '28px 24px 0', maxWidth: '55%' }}>
-              <h3 style={{
-                fontSize: '24px',
-                fontWeight: 700,
-                lineHeight: 1.1,
-                color: '#1A1A1A',
-                letterSpacing: '-0.01em',
-              }}>
-                {entry.product_name}
+              <h3 style={{ fontSize: '20px', fontWeight: 700, lineHeight: 1.1, color: '#C4C4C4' }}>
+                {nextEntry.product_name}
               </h3>
-              <p style={{ fontSize: '12px', color: '#8A8A8A', marginTop: '6px', fontWeight: 500 }}>
+            </div>
+          </div>
+        )}
+
+        {/* Current card (top, draggable) */}
+        {currentEntry && (
+          <div
+            ref={cardRef}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={() => { if (isDragging) handlePointerUp() }}
+            onClick={() => {
+              if (Math.abs(dragX) < 5) handleEntryClick(currentEntry)
+            }}
+            className="absolute inset-x-6 bg-white cursor-grab active:cursor-grabbing select-none"
+            style={{
+              borderRadius: '28px',
+              height: '260px',
+              boxShadow: isDragging
+                ? '0 16px 40px rgba(0,0,0,0.12)'
+                : '0 4px 16px rgba(0,0,0,0.06)',
+              transform: exitDirection
+                ? `translateX(${exitDirection === 'right' ? '120%' : '-120%'}) rotate(${exitDirection === 'right' ? '15' : '-15'}deg)`
+                : `translateX(${dragX}px) rotate(${rotation}deg)`,
+              transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              opacity: exitDirection ? 0 : opacity,
+              overflow: 'visible',
+              touchAction: 'pan-y',
+              zIndex: 5,
+            }}
+          >
+            {/* Product name */}
+            <div style={{ padding: '28px 24px 0', maxWidth: '50%' }}>
+              <h3 style={{
+                fontSize: '26px',
+                fontWeight: 700,
+                lineHeight: 1.08,
+                color: '#1A1A1A',
+                letterSpacing: '-0.02em',
+              }}>
+                {currentEntry.product_name}
+              </h3>
+              <p style={{ fontSize: '12px', color: '#8A8A8A', marginTop: '8px', fontWeight: 500 }}>
                 nutri score
               </p>
             </div>
 
-            {/* Product image — massive, bottom right, overlapping */}
+            {/* Product image — massive, overlapping */}
             <img
-              src={getProductImage(entry.product_name, entry.grade)}
+              src={getProductImage(currentEntry.product_name, currentEntry.grade)}
               alt=""
+              draggable={false}
               style={{
                 position: 'absolute',
                 right: '-20px',
@@ -107,87 +186,74 @@ export default function RecentScans() {
                 objectFit: 'contain',
                 filter: 'drop-shadow(0 12px 28px rgba(0,0,0,0.12))',
                 pointerEvents: 'none',
+                userSelect: 'none',
               }}
             />
 
-            {/* Grade + Score — bottom left */}
+            {/* Swipe indicators */}
+            {isDragging && dragX > 30 && (
+              <div style={{
+                position: 'absolute', top: '24px', right: '24px',
+                padding: '6px 16px', borderRadius: '12px',
+                border: '2px solid #4CAF50', color: '#4CAF50',
+                fontSize: '13px', fontWeight: 700, transform: 'rotate(12deg)',
+              }}>
+                VIEW
+              </div>
+            )}
+            {isDragging && dragX < -30 && (
+              <div style={{
+                position: 'absolute', top: '24px', left: '24px',
+                padding: '6px 16px', borderRadius: '12px',
+                border: '2px solid #8A8A8A', color: '#8A8A8A',
+                fontSize: '13px', fontWeight: 700, transform: 'rotate(-12deg)',
+              }}>
+                SKIP
+              </div>
+            )}
+
+            {/* Grade badge + score */}
             <div style={{
-              position: 'absolute',
-              bottom: '24px',
-              left: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              zIndex: 2,
+              position: 'absolute', bottom: '24px', left: '24px',
+              display: 'flex', alignItems: 'center', gap: '8px', zIndex: 2,
             }}>
               <span style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '16px',
-                fontWeight: 700,
-                background: GRADE_GRADIENTS[entry.grade as Grade],
-                boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                width: '42px', height: '42px', borderRadius: '14px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontSize: '17px', fontWeight: 700,
+                background: GRADE_GRADIENTS[currentEntry.grade as Grade],
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
               }}>
-                {entry.grade}
+                {currentEntry.grade}
               </span>
               <span style={{
-                fontSize: '11px',
-                color: '#8A8A8A',
-                background: '#F2F0ED',
-                padding: '5px 12px',
-                borderRadius: '20px',
-                fontWeight: 500,
+                fontSize: '12px', color: '#8A8A8A', background: '#F2F0ED',
+                padding: '6px 14px', borderRadius: '20px', fontWeight: 500,
               }}>
-                Score: {entry.score}
+                Score: {currentEntry.score}
               </span>
             </div>
-
-            {/* Swipe arrow indicator — right side middle */}
-            <div style={{
-              position: 'absolute',
-              right: '16px',
-              top: '28px',
-              width: '28px',
-              height: '28px',
-              borderRadius: '14px',
-              background: 'rgba(0,0,0,0.04)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 3,
-            }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8A8A8A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </div>
           </div>
-        ))}
+        )}
 
-        {/* "Scan more" end card */}
-        <div
-          className="shrink-0 flex flex-col items-center justify-center cursor-pointer active:scale-[0.98] transition-transform"
-          onClick={() => router.push('/scan?mode=label')}
-          style={{
-            width: '120px',
-            minHeight: '260px',
-            borderRadius: '28px',
-            border: '2px dashed rgba(0,0,0,0.08)',
-            scrollSnapAlign: 'center',
-          }}
-        >
-          <div style={{
-            width: '44px', height: '44px', borderRadius: '22px',
-            background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-          }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A8A8A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        {/* All cards swiped */}
+        {currentIndex >= history.length && (
+          <div className="absolute inset-x-6 flex flex-col items-center justify-center" style={{ height: '260px' }}>
+            <p className="text-[#8A8A8A] text-sm">No more products</p>
+            <button
+              onClick={() => setCurrentIndex(0)}
+              className="mt-3 text-sm text-[#4CAF50] font-semibold"
+            >
+              Start over
+            </button>
           </div>
-          <span style={{ fontSize: '11px', color: '#8A8A8A', marginTop: '8px', fontWeight: 500 }}>Scan</span>
-        </div>
+        )}
       </div>
+
+      {/* Swipe hint */}
+      <p className="text-center text-[10px] text-[#C4C4C4] mt-2 px-6">
+        Swipe to browse  ·  Tap to view details
+      </p>
 
       {/* Clear history */}
       <button
