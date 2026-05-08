@@ -47,17 +47,17 @@ export function getProductImage(productName: string, grade?: string): string {
   return '/products/cat-fruit.png'
 }
 
-// Get category image for browse pages
+// Get category image for browse pages — uses dedicated hero category images
 export function getCategoryImage(categoryId: string): string {
   const mapping: Record<string, string> = {
-    dairy: '/products/cat-milk.png',
-    beverages: '/products/cat-juice.png',
-    snacks: '/products/cat-chips.png',
-    cereals: '/products/cat-cereal.png',
-    bread: '/products/cat-bread.png',
-    meat: '/products/cat-chicken.png',
-    fruits: '/products/cat-fruit.png',
-    frozen: '/products/cat-icecream.png',
+    dairy: '/products/dairy.png',
+    beverages: '/products/beverages.png',
+    snacks: '/products/snacks.png',
+    cereals: '/products/cereals.png',
+    bread: '/products/bread-bakery.png',
+    meat: '/products/meat-poultry.png',
+    fruits: '/products/fruits-veg.png',
+    frozen: '/products/frozen.png',
   }
-  return mapping[categoryId] || '/products/cat-fruit.png'
+  return mapping[categoryId] || '/products/fruits-veg.png'
 }
