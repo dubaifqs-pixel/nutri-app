@@ -40,8 +40,28 @@
 - Generated with Recraft AI (transparent backgrounds)
 - Category images: `cat-chocolate.png`, `cat-milk.png`, etc.
 
+## Nutrition Data Sources
+
+The 69 demo products in `lib/demo-products.ts` come from a mix of sources.
+Coverage is uneven by region — verified 2026-05-08:
+
+| Source | UAE-local brands | Global packaged brands | Raw produce / meats | API endpoint |
+|---|---|---|---|---|
+| **USDA FoodData Central** | none | partial | strong (authoritative) | `api.nal.usda.gov/fdc/v1` |
+| **Open Food Facts** | very thin | strong | partial | `world.openfoodfacts.org/cgi/search.pl` |
+| **Product label (manual)** | strong | strong | strong | n/a |
+
+What this means in practice:
+- **Al Ain, Almarai, Al Rawabi, Al Islami, Al Kabeer, Wooden Bakery, Tanmiah, Al Rawdah, etc.** — the only reliable verification is the printed nutrition label on the package. Neither USDA nor OFF has these.
+- **Coca-Cola, KitKat, Lay's, Pringles, Lurpak, Quaker, Weetabix, etc.** — Open Food Facts has good coverage. Cross-check by barcode.
+- **Raw produce, raw meats, generic dairy** — USDA FDC is authoritative.
+- Products that have been verified against an external source carry a `// Source: ...` comment with the FDC ID or OFF barcode. Anything without that comment is a label-based estimate.
+
+When adding new UAE-branded products, prefer pulling values from the actual package and add a `// Source: package label` comment so future audits know the provenance.
+
 ## Environment Variables
 - `GEMINI_API_KEY` — Google Gemini API key (required)
+- `USDA_API_KEY` — USDA FoodData Central API key (optional, falls back to `DEMO_KEY` with 30 req/hour limit). Sign up at https://fdc.nal.usda.gov/api-key-signup.html
 
 ## Commands
 - `npm run dev` — local development
