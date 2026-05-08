@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useState } from 'react'
 import { en, type TranslationKey } from './translations/en'
 import { ar } from './translations/ar'
 
@@ -17,16 +17,6 @@ function readLang(): Lang {
   return stored === 'ar' ? 'ar' : 'en'
 }
 
-function subscribe(cb: () => void) {
-  if (typeof window === 'undefined') return () => {}
-  window.addEventListener(EVENT, cb)
-  window.addEventListener('storage', cb)
-  return () => {
-    window.removeEventListener(EVENT, cb)
-    window.removeEventListener('storage', cb)
-  }
-}
-
 export function setLang(lang: Lang) {
   if (typeof window === 'undefined') return
   localStorage.setItem(STORAGE_KEY, lang)
@@ -35,8 +25,25 @@ export function setLang(lang: Lang) {
   window.dispatchEvent(new Event(EVENT))
 }
 
+/**
+ * Returns the active language. Always 'en' on first render to match SSR,
+ * then updates to the stored value via useEffect to avoid hydration mismatch.
+ */
 export function useLang(): Lang {
-  return useSyncExternalStore(subscribe, readLang, () => 'en')
+  const [lang, setLangState] = useState<Lang>('en')
+
+  useEffect(() => {
+    setLangState(readLang())
+    const handler = () => setLangState(readLang())
+    window.addEventListener(EVENT, handler)
+    window.addEventListener('storage', handler)
+    return () => {
+      window.removeEventListener(EVENT, handler)
+      window.removeEventListener('storage', handler)
+    }
+  }, [])
+
+  return lang
 }
 
 export function useT() {
@@ -44,7 +51,7 @@ export function useT() {
   return (key: TranslationKey) => dictionaries[lang][key] ?? key
 }
 
-// Apply lang/dir on initial mount (in case localStorage was set in a prior session)
+// Apply lang/dir on mount in case the inline pre-paint script didn't run
 export function useApplyLang() {
   const lang = useLang()
   useEffect(() => {
