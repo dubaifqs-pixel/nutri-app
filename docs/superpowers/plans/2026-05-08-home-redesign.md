@@ -1,3 +1,87 @@
+# Home Screen Redesign Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Replace the scrollable home screen with a single-screen green grid layout — no scrolling, everything visible at once.
+
+**Architecture:** Replace `app/page.tsx` entirely with the new layout. Extract a lightweight `RecentPills` component from the existing `RecentScans` logic to render compact grade pills (no swipe cards). Bottom nav and routing stay unchanged.
+
+**Tech Stack:** Next.js 16, TypeScript, Tailwind CSS v4, existing `lib/history.ts` and `lib/types.ts`
+
+---
+
+### Task 1: Create RecentPills component
+
+**Files:**
+- Create: `components/RecentPills.tsx`
+
+- [ ] **Step 1: Create the component**
+
+```tsx
+'use client'
+
+import { useEffect, useState } from 'react'
+import { getHistory, type HistoryEntry } from '@/lib/history'
+import { GRADE_COLORS, type Grade } from '@/lib/types'
+
+export default function RecentPills() {
+  const [entries, setEntries] = useState<HistoryEntry[]>([])
+
+  useEffect(() => {
+    setEntries(getHistory().slice(0, 3))
+  }, [])
+
+  if (entries.length === 0) return null
+
+  return (
+    <div className="flex items-center gap-2 px-5 pb-3">
+      <span className="text-[9px] font-bold uppercase tracking-[0.06em] text-white/70 mr-1 whitespace-nowrap">
+        Recent
+      </span>
+      {entries.map((entry, i) => (
+        <div
+          key={`${entry.scanned_at}-${i}`}
+          className="flex items-center gap-1.5 rounded-full px-2 py-1"
+          style={{ background: 'rgba(255,255,255,0.25)' }}
+        >
+          <div
+            className="w-3 h-3 rounded-full flex-shrink-0"
+            style={{ background: GRADE_COLORS[entry.grade as Grade] }}
+          />
+          <span className="text-[9px] font-medium text-white max-w-[48px] overflow-hidden text-ellipsis whitespace-nowrap">
+            {entry.product_name}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+- [ ] **Step 2: Check GRADE_COLORS exists in lib/types.ts**
+
+Run: `grep -n "GRADE_COLORS\|GRADE_GRADIENTS" /Users/nada/nutri-app/lib/types.ts`
+
+If only `GRADE_GRADIENTS` exists (not `GRADE_COLORS`), replace `GRADE_COLORS` with `GRADE_GRADIENTS` in the component above. The gradient string still works as a CSS `background` value.
+
+- [ ] **Step 3: Commit**
+
+```bash
+cd /Users/nada/nutri-app
+git add components/RecentPills.tsx
+git commit -m "feat: add RecentPills compact grade pill strip"
+```
+
+---
+
+### Task 2: Rewrite app/page.tsx with green grid layout
+
+**Files:**
+- Modify: `app/page.tsx`
+
+- [ ] **Step 1: Replace page.tsx entirely**
+
+```tsx
 import Link from 'next/link'
 import RecentPills from '@/components/RecentPills'
 
@@ -158,3 +242,53 @@ export default function Home() {
     </div>
   )
 }
+```
+
+- [ ] **Step 2: Verify the dev server is running and open the app**
+
+Run: `curl -s http://localhost:3000 | grep -c "html"` — should return 1.
+
+Open http://localhost:3000 in the browser and confirm:
+- Green background fills the screen
+- No vertical scrolling
+- Scan Now, Browse, Compare, AI Chat all visible
+- Bottom nav has green tint
+
+- [ ] **Step 3: Commit**
+
+```bash
+cd /Users/nada/nutri-app
+git add app/page.tsx
+git commit -m "feat: redesign home screen — green grid layout, no scroll"
+```
+
+---
+
+### Task 3: Verify no regressions on other pages
+
+- [ ] **Step 1: Check scan, result, browse, compare, chat pages still load**
+
+Run each in the browser or via curl:
+```bash
+curl -s http://localhost:3000/browse | grep -c "html"
+curl -s http://localhost:3000/compare | grep -c "html"
+curl -s http://localhost:3000/chat | grep -c "html"
+```
+Each should return 1.
+
+- [ ] **Step 2: Run the test suite**
+
+```bash
+cd /Users/nada/nutri-app
+export NVM_DIR="$HOME/.nvm" && source "$NVM_DIR/nvm.sh"
+npx vitest run
+```
+
+Expected: all 10 tests pass. If any fail, investigate before continuing.
+
+- [ ] **Step 3: Final commit if any fixes were needed**
+
+```bash
+git add -A
+git commit -m "fix: resolve any regressions from home redesign"
+```
