@@ -6,6 +6,7 @@ import { DEMO_PRODUCTS } from '@/lib/demo-products'
 import { calculateGrade } from '@/lib/scoring'
 import { GRADE_GRADIENTS, type Grade } from '@/lib/types'
 import { getProductImage } from '@/lib/product-images'
+import { useT } from '@/lib/i18n'
 
 type Featured = {
   name: string
@@ -45,6 +46,7 @@ function buildFeatured(): Featured[] {
 }
 
 export default function FeaturedProducts() {
+  const t = useT()
   const [products, setProducts] = useState<Featured[]>([])
 
   useEffect(() => {
@@ -58,10 +60,10 @@ export default function FeaturedProducts() {
       <div className="flex items-center justify-between px-5 mb-2">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#E8721C' }} />
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E8721C' }}>Featured Today</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E8721C' }}>{t('home.featuredToday')}</span>
         </div>
         <Link href="/browse" className="text-[10px] font-semibold" style={{ color: '#5A574F' }}>
-          See all →
+          {t('home.seeAll')}
         </Link>
       </div>
 
@@ -73,19 +75,19 @@ export default function FeaturedProducts() {
             className="shrink-0 w-[120px] rounded-2xl bg-white relative overflow-hidden transition-transform active:scale-[0.97]"
             style={{ border: '1px solid #E2DDD5', height: 130 }}
           >
-            <div className="absolute top-2 left-2 w-7 h-7 rounded-[8px] flex items-center justify-center text-white text-[13px] font-bold" style={{ background: GRADE_GRADIENTS[p.grade], boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+            <div className="absolute w-7 h-7 rounded-[8px] flex items-center justify-center text-white text-[13px] font-bold" style={{ top: 8, insetInlineStart: 8, background: GRADE_GRADIENTS[p.grade], boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
               {p.grade}
             </div>
             <img
               src={p.image}
               alt={p.name}
               className="absolute"
-              style={{ width: 80, height: 80, objectFit: 'contain', right: -6, top: 14, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.08))' }}
+              style={{ width: 80, height: 80, objectFit: 'contain', insetInlineEnd: -6, top: 14, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.08))' }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
             <div className="absolute left-2 right-2 bottom-2">
               <p className="text-[10px] font-semibold leading-tight line-clamp-2" style={{ color: '#1A1917' }}>{p.name}</p>
-              <p className="text-[9px] mt-0.5" style={{ color: '#9A9790' }}>Score: {p.score}</p>
+              <p className="text-[9px] mt-0.5" style={{ color: '#9A9790' }}>{t('home.score')}: {p.score}</p>
             </div>
           </Link>
         ))}

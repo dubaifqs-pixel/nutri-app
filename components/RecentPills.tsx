@@ -6,6 +6,7 @@ import { getHistory, type HistoryEntry } from '@/lib/history'
 import { GRADE_COLORS, type Grade } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
 import { DEMO_PRODUCTS } from '@/lib/demo-products'
+import { useT } from '@/lib/i18n'
 
 type Pill = { name: string; grade: Grade; key: string }
 
@@ -29,6 +30,7 @@ function buildFeatured(): Pill[] {
 }
 
 export default function RecentPills() {
+  const t = useT()
   const [pills, setPills] = useState<Pill[]>([])
   const [showingDemo, setShowingDemo] = useState(false)
 
@@ -53,7 +55,7 @@ export default function RecentPills() {
     <div className="px-5 pb-3">
       <div className="flex items-center gap-2 hide-scrollbar overflow-x-auto">
         <span className="text-[9px] font-bold uppercase tracking-[0.06em] mr-1 whitespace-nowrap" style={{ color: '#9A9790' }}>
-          {showingDemo ? 'Featured' : 'Recent'}
+          {showingDemo ? t('home.featuredToday') : t('home.recent')}
         </span>
         {pills.map((p) => (
           <Link
