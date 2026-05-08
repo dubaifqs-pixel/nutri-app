@@ -7,9 +7,11 @@ import NutritionBreakdown from '@/components/NutritionBreakdown'
 import type { ProductData, GradeResult } from '@/lib/types'
 import { GRADE_LABELS_EN } from '@/lib/types'
 import { getProductImage } from '@/lib/product-images'
+import { useT } from '@/lib/i18n'
 
 export default function ResultPage() {
   const router = useRouter()
+  const t = useT()
   const [product, setProduct] = useState<ProductData | null>(null)
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null)
   const [shareState, setShareState] = useState<'idle' | 'copied'>('idle')
@@ -60,7 +62,7 @@ export default function ResultPage() {
         </button>
         <div className="flex items-center gap-2 flex-1">
           <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#E8721C' }} />
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E8721C' }}>Scan Result</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E8721C' }}>{t('result.scanResult')}</span>
         </div>
       </div>
 
@@ -84,7 +86,7 @@ export default function ResultPage() {
           {product.source === 'vision' && (
             <span className="inline-flex items-center gap-1.5 text-xs bg-white px-3 py-1.5 rounded-full" style={{ color: '#5A574F', border: '1px solid #E2DDD5' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-              Analyzed by AI
+              {t('result.analyzedByAI')}
             </span>
           )}
           {product.data_source && (
@@ -107,7 +109,7 @@ export default function ResultPage() {
           {product.confidence === 'low' && (
             <span className="inline-flex items-center gap-1.5 text-xs bg-white px-3 py-1.5 rounded-full" style={{ color: '#C62828', border: '1px solid #E2DDD5' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-              Verify data
+              {t('result.verifyData')}
             </span>
           )}
         </div>
@@ -127,32 +129,32 @@ export default function ResultPage() {
       <div className="flex gap-3 mt-2 animate-slide-up stagger-4">
         <button onClick={() => router.push('/chat')} className="flex-1 py-3.5 rounded-2xl btn-accent text-sm flex items-center justify-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Ask AI
+          {t('result.askAI')}
         </button>
         <button
           onClick={() => router.push('/alternatives')}
           className="flex-1 py-3.5 rounded-2xl btn-outline-accent text-sm flex items-center justify-center gap-2"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          Alternatives
+          {t('result.alternatives')}
         </button>
       </div>
 
       <button onClick={() => router.push('/')} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-5">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-        Scan another product
+        {t('result.scanAnother')}
       </button>
 
       <button onClick={handleShare} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-6">
         {shareState === 'copied' ? (
           <>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8721C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-            Copied!
+            {t('result.copied')}
           </>
         ) : (
           <>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-            Share result
+            {t('result.share')}
           </>
         )}
       </button>

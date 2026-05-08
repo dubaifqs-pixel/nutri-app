@@ -4,10 +4,12 @@ import { useEffect, useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ChatMessageComponent from '@/components/ChatMessage'
 import type { ChatMessage, ProductData, GradeResult } from '@/lib/types'
+import { useT } from '@/lib/i18n'
 
 function ChatContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useT()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -80,11 +82,11 @@ function ChatContent() {
       <div className="px-4 py-3 flex items-center justify-between z-10" style={{ background: '#F1EEE8', borderBottom: '1px solid #E2DDD5' }}>
         <button onClick={() => router.push('/result')} className="text-sm flex items-center gap-1 transition-colors min-w-[44px] min-h-[44px] -ml-2 pl-2 rounded-xl" style={{ color: '#5A574F' }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          Back
+          {t('chat.back')}
         </button>
         <h1 className="text-sm font-semibold flex items-center gap-1.5" style={{ color: '#1A1917' }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8721C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-          AI Assistant
+          {t('chat.title')}
         </h1>
         <div className="w-12" />
       </div>
@@ -93,9 +95,9 @@ function ChatContent() {
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
         {messages.length === 0 && (
           <div className="text-center text-sm mt-8 animate-fade-in" style={{ color: '#5A574F' }}>
-            <p>Ask any question about this product</p>
+            <p>{t('chat.empty')}</p>
             <div className="flex flex-wrap gap-2 justify-center mt-4">
-              {['Is this good for diabetics?', 'What are the harmful ingredients?', 'Give me better alternatives'].map((q) => (
+              {[t('chat.suggest1'), t('chat.suggest2'), t('chat.suggest3')].map((q) => (
                 <button
                   key={q}
                   onClick={() => sendMessage(q)}
@@ -130,7 +132,7 @@ function ChatContent() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') sendMessage() }}
-          placeholder="Ask a question..."
+          placeholder={t('chat.placeholder')}
           className="flex-1 bg-white rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 transition-all"
           style={{ color: '#1A1917', border: '1px solid #E2DDD5' }}
         />

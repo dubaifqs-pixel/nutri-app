@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { getHistory, type HistoryEntry } from '@/lib/history'
 import { GRADE_GRADIENTS, GRADE_GLOWS, type Grade, type NutritionData, type GradeResult } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
+import { useT } from '@/lib/i18n'
 
 interface CompareProduct {
   product_name: string
@@ -38,6 +39,7 @@ function getWinner(s1: CompareProduct, s2: CompareProduct): 1 | 2 | 0 {
 
 export default function ComparePage() {
   const router = useRouter()
+  const t = useT()
   const [slot1, setSlot1] = useState<CompareProduct | null>(null)
   const [slot2, setSlot2] = useState<CompareProduct | null>(null)
   const [showModal, setShowModal] = useState<1 | 2 | null>(null)
@@ -132,9 +134,9 @@ export default function ComparePage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#E8721C' }} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E8721C' }}>Compare</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E8721C' }}>{t('compare.section')}</span>
           </div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A1917' }}>Product Showdown</h1>
+          <h1 className="text-xl font-bold" style={{ color: '#1A1917' }}>{t('compare.title')}</h1>
         </div>
       </div>
 
@@ -160,7 +162,7 @@ export default function ComparePage() {
                   <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
                     style={{ background: 'linear-gradient(135deg, #E8721C, #D8651A)', color: 'white', boxShadow: '0 4px 12px rgba(232, 114, 28, 0.4)' }}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-                    Better
+                    {t('compare.better')}
                   </div>
                 </div>
               )}
@@ -175,9 +177,9 @@ export default function ComparePage() {
                     <span className="text-3xl font-bold" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>{product.grade}</span>
                   </div>
                   <p className="text-[11px] font-semibold text-[#1A1917] text-center line-clamp-2 mt-1">{product.product_name}</p>
-                  <p className="text-[10px] text-[#5A574F]">Score: {product.score}</p>
+                  <p className="text-[10px] text-[#5A574F]">{t('home.score')}: {product.score}</p>
                   <button onClick={() => clearSlot(slotNum)} className="text-[10px] text-[#9A9790] hover:text-red-400 min-h-[36px] px-2 flex items-center transition-colors">
-                    Remove
+                    {t('compare.remove')}
                   </button>
                 </>
               ) : (
@@ -185,7 +187,7 @@ export default function ComparePage() {
                   <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-[#E2DDD5] flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                   </div>
-                  <span className="text-xs font-medium">Add product</span>
+                  <span className="text-xs font-medium">{t('compare.addProduct')}</span>
                 </button>
               )}
             </div>
@@ -208,7 +210,7 @@ export default function ComparePage() {
       {/* Head-to-Head Nutrient Bars */}
       {bothLoaded && slot1 && slot2 && (
         <div className="flex flex-col gap-2.5 animate-slide-up stagger-3">
-          <h3 className="text-xs font-semibold text-[#5A574F] uppercase tracking-wider px-1">Head to Head</h3>
+          <h3 className="text-xs font-semibold text-[#5A574F] uppercase tracking-wider px-1">{t('compare.headToHead')}</h3>
           {NUTRIENTS.map(({ key, label, unit, lowerIsBetter, max }, i) => {
             const v1 = slot1.nutrition[key]
             const v2 = slot2.nutrition[key]
@@ -226,7 +228,7 @@ export default function ComparePage() {
               <div key={key} className="glass-subtle rounded-xl p-3 animate-slide-up" style={{ animationDelay: `${0.3 + i * 0.08}s` }}>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs font-semibold text-[#1A1917]">{label}</span>
-                  <span className="text-[10px] text-[#9A9790]">{lowerIsBetter ? 'lower is better' : 'higher is better'}</span>
+                  <span className="text-[10px] text-[#9A9790]">{lowerIsBetter ? t('compare.lowerIsBetter') : t('compare.higherIsBetter')}</span>
                 </div>
 
                 {/* Product 1 bar */}
@@ -304,7 +306,7 @@ export default function ComparePage() {
                   <p className="text-[10px] text-white/50 mt-0.5">{slot1.product_name.split(' ').slice(0, 2).join(' ')}</p>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                  <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">Wins</p>
+                  <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">{t('compare.wins')}</p>
                   <div className="w-8 h-0.5 rounded-full bg-[#E8721C]" />
                 </div>
                 <div className="flex-1 text-center">
@@ -324,7 +326,7 @@ export default function ComparePage() {
             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #E8721C, #D8651A)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
             </div>
-            <h3 className="text-sm font-bold text-[#1A1917]">AI Verdict</h3>
+            <h3 className="text-sm font-bold text-[#1A1917]">{t('compare.aiVerdict')}</h3>
           </div>
           {verdictLoading ? (
             <div className="flex items-center gap-2.5 py-4 justify-center">
@@ -345,22 +347,22 @@ export default function ComparePage() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center" onClick={() => setShowModal(null)}>
           <div className="w-full max-w-md bg-[#FFFFFF] rounded-t-3xl px-6 py-6 flex flex-col gap-3 animate-slide-up-full" onClick={(e) => e.stopPropagation()} style={{ boxShadow: '0 -8px 40px rgba(0,0,0,0.1)' }}>
             <div className="w-10 h-1 bg-[#E2DDD5] rounded-full mx-auto mb-2" />
-            <h2 className="text-base font-bold text-[#1A1917] mb-1">Select Product</h2>
+            <h2 className="text-base font-bold text-[#1A1917] mb-1">{t('compare.selectProduct')}</h2>
 
             <button onClick={() => router.push(`/scan?mode=label&return=compare&slot=${showModal}`)} className="flex items-center gap-3 w-full py-3.5 px-4 rounded-2xl btn-tangerine text-sm">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              Scan Nutrition Label
+              {t('compare.scanLabel')}
             </button>
             <button onClick={() => router.push(`/scan?mode=barcode&return=compare&slot=${showModal}`)} className="flex items-center gap-3 w-full py-3.5 px-4 rounded-2xl btn-espresso text-sm">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
-              Scan Barcode
+              {t('compare.scanBarcode')}
             </button>
 
             {history.length > 0 && (
               <>
                 <div className="flex items-center gap-2 mt-2 mb-1">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5A574F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <span className="text-xs font-semibold text-[#9A9790] uppercase tracking-wider">From History</span>
+                  <span className="text-xs font-semibold text-[#9A9790] uppercase tracking-wider">{t('compare.fromHistory')}</span>
                 </div>
                 <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
                   {history.map((entry, i) => (
@@ -375,7 +377,7 @@ export default function ComparePage() {
               </>
             )}
 
-            <button onClick={() => setShowModal(null)} className="mt-2 py-2 text-sm text-[#9A9790] transition-colors hover:text-[#5A574F] min-h-[44px] w-full">Cancel</button>
+            <button onClick={() => setShowModal(null)} className="mt-2 py-2 text-sm text-[#9A9790] transition-colors hover:text-[#5A574F] min-h-[44px] w-full">{t('compare.cancel')}</button>
           </div>
         </div>
       )}

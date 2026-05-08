@@ -3,20 +3,14 @@
 import { useRouter } from 'next/navigation'
 import { getDemoProductCount } from '@/lib/demo-products'
 import { getCategoryImage } from '@/lib/product-images'
+import { useT } from '@/lib/i18n'
 
-const CATEGORIES = [
-  { id: 'dairy', name: 'Dairy', description: 'Milk, cheese, yogurt' },
-  { id: 'beverages', name: 'Beverages', description: 'Juices, sodas, water' },
-  { id: 'snacks', name: 'Snacks', description: 'Chips, cookies, crackers' },
-  { id: 'cereals', name: 'Cereals', description: 'Breakfast cereals, oats' },
-  { id: 'bread', name: 'Bread & Bakery', description: 'Bread, pastries' },
-  { id: 'meat', name: 'Meat & Poultry', description: 'Chicken, beef, seafood' },
-  { id: 'fruits', name: 'Fruits & Veg', description: 'Fresh produce' },
-  { id: 'frozen', name: 'Frozen Foods', description: 'Frozen meals, ice cream' },
-]
+const CATEGORY_IDS = ['dairy', 'beverages', 'snacks', 'cereals', 'bread', 'meat', 'fruits', 'frozen'] as const
+type CategoryId = typeof CATEGORY_IDS[number]
 
 export default function BrowsePage() {
   const router = useRouter()
+  const t = useT()
 
   return (
     <div className="min-h-screen px-5 py-8 flex flex-col gap-5 pb-24" style={{ background: '#F1EEE8' }}>
@@ -27,20 +21,22 @@ export default function BrowsePage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#E8721C' }} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E8721C' }}>Browse</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E8721C' }}>{t('browse.section')}</span>
           </div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A1917' }}>Categories</h1>
+          <h1 className="text-xl font-bold" style={{ color: '#1A1917' }}>{t('browse.title')}</h1>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        {CATEGORIES.map((cat, i) => {
-          const imageUrl = getCategoryImage(cat.id)
-          const count = getDemoProductCount(cat.id)
+        {CATEGORY_IDS.map((catId: CategoryId, i) => {
+          const imageUrl = getCategoryImage(catId)
+          const count = getDemoProductCount(catId)
+          const name = t(`browse.cat.${catId}` as const)
+          const description = t(`browse.cat.${catId}.desc` as const)
           return (
             <button
-              key={cat.id}
-              onClick={() => router.push(`/browse/${cat.id}`)}
+              key={catId}
+              onClick={() => router.push(`/browse/${catId}`)}
               className="group relative flex flex-col items-start p-4 animate-slide-up overflow-hidden transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]"
               style={{
                 animationDelay: `${i * 50}ms`,
@@ -65,18 +61,18 @@ export default function BrowsePage() {
                 }}
               />
 
-              <span className="text-[15px] font-bold relative z-10" style={{ color: '#1A1917' }}>{cat.name}</span>
-              <span className="text-[11px] mt-1 relative z-10" style={{ color: '#9A9790' }}>{cat.description}</span>
+              <span className="text-[15px] font-bold relative z-10" style={{ color: '#1A1917' }}>{name}</span>
+              <span className="text-[11px] mt-1 relative z-10" style={{ color: '#9A9790' }}>{description}</span>
               {count > 0 && (
                 <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full mt-2 font-semibold relative z-10" style={{ color: '#E8721C', background: '#FEF0E6', border: '1px solid #F5C4A0' }}>
-                  {count} curated
+                  {count} {t('browse.curated')}
                 </span>
               )}
 
               {imageUrl && (
                 <img
                   src={imageUrl}
-                  alt={cat.name}
+                  alt={name}
                   className="absolute w-[120px] h-[120px] object-contain transition-transform duration-500 ease-out group-hover:scale-110 group-hover:-rotate-6"
                   style={{
                     insetInlineEnd: -12,
