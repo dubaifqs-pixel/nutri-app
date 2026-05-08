@@ -31,7 +31,7 @@
 - `lib/gemini.ts` — AI prompts (vision, chat, auto-detect)
 - `lib/food-api.ts` — AI-first data layer (Gemini + USDA + Open Food Facts)
 - `lib/product-images.ts` — Category image library mapping
-- `lib/demo-products.ts` — 53 curated UAE products
+- `lib/demo-products.ts` — 69 curated UAE products across 8 categories
 - `lib/types.ts` — TypeScript types, grade colors/gradients
 - `lib/history.ts` — Local scan history
 
