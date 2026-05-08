@@ -765,12 +765,13 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
       category: 'meat',
       brand: 'Tanmiah',
       image_url: null,
+      // Source: USDA FDC 171052 (Chicken, broilers or fryers, meat only, raw)
       nutrition: {
-        energy_kcal: 115,
+        energy_kcal: 119,
         sugars_g: 0,
-        saturated_fat_g: 0.4,
-        sodium_mg: 60,
-        protein_g: 24.0,
+        saturated_fat_g: 0.8,
+        sodium_mg: 77,
+        protein_g: 21.4,
         fiber_g: 0,
         fruits_veg_percent: 0,
       },
@@ -888,6 +889,7 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
       category: 'fruits',
       brand: 'Fresh',
       image_url: null,
+      // Source: USDA FDC 169910 (Mangos, raw)
       nutrition: {
         energy_kcal: 60,
         sugars_g: 13.7,
@@ -903,6 +905,7 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
       category: 'fruits',
       brand: 'Fresh',
       image_url: null,
+      // Source: USDA FDC 170393 (Carrots, raw)
       nutrition: {
         energy_kcal: 41,
         sugars_g: 4.7,
@@ -918,9 +921,10 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
       category: 'fruits',
       brand: 'Bateel',
       image_url: null,
+      // Source: USDA FDC 168191 (Dates, medjool)
       nutrition: {
         energy_kcal: 277,
-        sugars_g: 66.0,
+        sugars_g: 66.5,
         saturated_fat_g: 0,
         sodium_mg: 1,
         protein_g: 1.8,
@@ -1056,13 +1060,14 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
       category: 'frozen',
       brand: 'Lulu',
       image_url: null,
+      // Source: USDA FDC 169287 (Spinach, frozen, chopped or leaf, unprepared)
       nutrition: {
-        energy_kcal: 23,
-        sugars_g: 0.4,
-        saturated_fat_g: 0.1,
-        sodium_mg: 80,
-        protein_g: 3.0,
-        fiber_g: 2.5,
+        energy_kcal: 29,
+        sugars_g: 0.65,
+        saturated_fat_g: 0.04,
+        sodium_mg: 74,
+        protein_g: 3.6,
+        fiber_g: 2.9,
         fruits_veg_percent: 100,
       },
     },
