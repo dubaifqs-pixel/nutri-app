@@ -1,12 +1,15 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #F2F0ED;
+  --color-background: #F1EEE8;
   --color-card: #FFFFFF;
-  --color-text-primary: #1A1A1A;
-  --color-text-secondary: #8A8A8A;
-  --color-accent-green: #4CAF50;
-  --color-accent-green-dark: #5DB075;
+  --color-text-primary: #1A1917;
+  --color-text-secondary: #5A574F;
+  --color-text-tertiary: #9A9790;
+  --color-accent: #E8721C;
+  --color-accent-light: #FEF0E6;
+  --color-accent-band: #F5C4A0;
+  --color-border: #E2DDD5;
 }
 
 :root {
@@ -23,8 +26,8 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #F2F0ED;
-  color: #1A1A1A;
+  background-color: #F1EEE8;
+  color: #1A1917;
 }
 
 * {
@@ -41,7 +44,7 @@ button, a, input {
 /* Better focus states */
 input:focus-visible,
 button:focus-visible {
-  outline: 2px solid rgba(76, 175, 80, 0.4);
+  outline: 2px solid rgba(232, 114, 28, 0.4);
   outline-offset: 2px;
 }
 
@@ -176,14 +179,14 @@ button:focus-visible {
 /* ============================================ */
 
 .btn-dark {
-  background: #1A1A1A;
+  background: #1A1917;
   color: white;
   font-weight: 600;
   transition: all 200ms ease;
 }
 
 .btn-dark:hover {
-  background: #333333;
+  background: #333028;
   transform: translateY(-1px);
 }
 
@@ -191,26 +194,26 @@ button:focus-visible {
   transform: scale(0.97);
 }
 
-.btn-green {
-  background: #4CAF50;
+.btn-accent {
+  background: #E8721C;
   color: white;
   font-weight: 600;
   transition: all 200ms ease;
 }
 
-.btn-green:hover {
-  background: #43A047;
+.btn-accent:hover {
+  background: #D8651A;
   transform: translateY(-1px);
 }
 
-.btn-green:active {
+.btn-accent:active {
   transform: scale(0.97);
 }
 
 .btn-outline {
   background: #FFFFFF;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  color: #1A1A1A;
+  border: 1px solid #E2DDD5;
+  color: #1A1917;
   transition: all 200ms ease;
 }
 
@@ -224,20 +227,20 @@ button:focus-visible {
   transform: scale(0.97);
 }
 
-.btn-outline-green {
+.btn-outline-accent {
   background: #FFFFFF;
-  border: 1.5px solid #4CAF50;
-  color: #4CAF50;
+  border: 1.5px solid #E8721C;
+  color: #E8721C;
   font-weight: 600;
   transition: all 200ms ease;
 }
 
-.btn-outline-green:hover {
-  background: rgba(76, 175, 80, 0.04);
+.btn-outline-accent:hover {
+  background: #FEF0E6;
   transform: translateY(-1px);
 }
 
-.btn-outline-green:active {
+.btn-outline-accent:active {
   transform: scale(0.97);
 }
 

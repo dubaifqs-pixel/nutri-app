@@ -143,7 +143,7 @@ export default function ResultPage() {
       <button onClick={handleShare} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-6">
         {shareState === 'copied' ? (
           <>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8721C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             Copied!
           </>
         ) : (

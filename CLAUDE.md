@@ -8,13 +8,15 @@
 - **Repo:** https://github.com/dubaifqs-pixel/nutri-app
 
 ## Design System
-- **Background:** #F2F0ED (warm gray)
-- **Cards:** #FFFFFF, border-radius 28px, shadow 0 2px 8px rgba(0,0,0,0.04)
-- **Text:** #1A1A1A (primary), #8A8A8A (secondary)
-- **Accent:** #4CAF50 (green, scan button only)
-- **Font:** System font (-apple-system, SF Pro, Segoe UI)
-- **Icons:** Black outlined, stroke-width 1.5
-- **Style:** Minimal, monochrome + green. Inspired by Swipe Drinks app.
+- **Background:** #F1EEE8 (warm cream)
+- **Cards:** #FFFFFF, border 1px #E2DDD5, border-radius 22–28px, shadow 0 2px 8px rgba(0,0,0,0.04)
+- **Text:** #1A1917 (primary), #5A574F (secondary), #9A9790 (tertiary)
+- **Accent:** #E8721C (orange) — used for primary CTA, eyebrow tags, icons-on-tint
+- **Accent tint:** #FEF0E6 (light orange) for icon backgrounds
+- **Border:** #E2DDD5
+- **Font:** System font (-apple-system, SF Pro, Segoe UI). DM Sans + Cairo for stakeholder doc.
+- **Icons:** Outlined, stroke-width 1.5, dark on tint or orange on tint
+- **Style:** Minimal, warm cream + orange. Aligned with DFQS proposal document.
 - **No emojis** — use SVG icons only.
 
 ## Grade Colors

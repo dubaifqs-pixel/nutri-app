@@ -131,7 +131,7 @@ function ChatContent() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') sendMessage() }}
           placeholder="Ask a question..."
-          className="flex-1 bg-white rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#4CAF50]/30 transition-all"
+          className="flex-1 bg-white rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#E8721C]/30 transition-all"
           style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
         />
         <button

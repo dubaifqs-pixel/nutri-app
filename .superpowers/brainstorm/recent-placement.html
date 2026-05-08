@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nutri — Recent Scans Placement</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F2F0ED; padding: 24px; }
+  h1 { font-size: 18px; font-weight: 600; color: #1A1A1A; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #8A8A8A; margin-bottom: 28px; }
+
+  .layouts { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+
+  .layout-card {
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
+    width: 240px;
+    cursor: pointer;
+    border: 2.5px solid transparent;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .layout-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+  .layout-card.selected { border-color: #4CAF50; }
+
+  .layout-label { font-size: 11px; font-weight: 700; color: #8A8A8A; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+  .layout-name { font-size: 15px; font-weight: 600; color: #1A1A1A; margin-bottom: 4px; }
+  .layout-desc { font-size: 12px; color: #8A8A8A; margin-bottom: 14px; line-height: 1.5; }
+
+  .phone {
+    width: 100%;
+    height: 360px;
+    background: #F2F0ED;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ph-header { padding: 10px 12px 6px; display: flex; align-items: center; justify-content: space-between; }
+  .ph-logo { width: 22px; height: 22px; background: #1A1A1A; border-radius: 6px; }
+  .ph-logo-row { display: flex; align-items: center; gap: 5px; }
+  .ph-logo-text { font-size: 11px; font-weight: 600; color: #1A1A1A; }
+  .ph-icon-btn { width: 22px; height: 22px; background: white; border-radius: 50%; }
+
+  .ph-nav {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(242,240,237,0.9);
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 5px 0 4px; border-top: 1px solid rgba(0,0,0,0.05);
+    height: 38px;
+  }
+  .ph-nav-dot { width: 5px; height: 5px; background: #ccc; border-radius: 50%; }
+  .ph-nav-scan { background: #4CAF50; border-radius: 20px; padding: 4px 10px; }
+  .ph-nav-scan-dot { width: 12px; height: 8px; background: white; border-radius: 2px; }
+
+  /* Shared recent strip */
+  .recent-strip {
+    display: flex; align-items: center; gap: 5px;
+    padding: 0 10px;
+  }
+  .recent-label { font-size: 8px; font-weight: 700; color: #8A8A8A; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 2px; }
+  .recent-pill {
+    height: 22px; width: 38px; background: white; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 3px;
+  }
+  .recent-pill-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .recent-pill-grade { font-size: 7px; font-weight: 700; }
+
+  /* Grid body */
+  .grid-body {
+    flex: 1;
+    display: grid;
+    gap: 6px;
+    padding: 6px 10px 44px;
+  }
+
+  .cell-scan {
+    background: #1A1A1A; border-radius: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 14px;
+  }
+  .cell-scan-text { font-size: 13px; font-weight: 700; color: white; }
+  .cell-scan-sub { font-size: 8px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .cell-scan-icon { width: 28px; height: 28px; background: rgba(255,255,255,0.15); border-radius: 8px; }
+
+  .cell-white {
+    background: white; border-radius: 12px;
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
+    padding: 8px 10px;
+  }
+  .cell-icon { width: 16px; height: 3px; background: #E0E0E0; border-radius: 2px; margin-bottom: 4px; }
+  .cell-label { font-size: 9px; font-weight: 600; color: #1A1A1A; }
+  .cell-sub { font-size: 7px; color: #8A8A8A; margin-top: 1px; }
+
+  /* Option 1: recent strip above scan */
+  .opt1 .grid-body { grid-template-columns: 1fr 1fr; grid-template-rows: 28px 80px 60px 60px; }
+  .opt1 .recent-row { grid-column: span 2; display: flex; align-items: center; }
+  .opt1 .scan-row { grid-column: span 2; }
+
+  /* Option 2: recent inside header */
+  .opt2 .ph-header-ext { padding: 4px 12px 6px; display: flex; align-items: center; gap: 5px; }
+  .opt2 .grid-body { grid-template-columns: 1fr 1fr; grid-template-rows: 80px 60px 60px; }
+  .opt2 .scan-row { grid-column: span 2; }
+
+  /* Option 3: recent as 3rd row spanning full width */
+  .opt3 .grid-body { grid-template-columns: 1fr 1fr; grid-template-rows: 80px 60px 44px; }
+  .opt3 .scan-row { grid-column: span 2; }
+  .opt3 .recent-row { grid-column: span 2; background: white; border-radius: 12px; display: flex; align-items: center; padding: 0 10px; gap: 6px; }
+
+  .selected-indicator {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1A1A1A; color: white; padding: 10px 20px; border-radius: 20px;
+    font-size: 13px; font-weight: 600; display: none;
+  }
+  .selected-indicator.visible { display: block; }
+</style>
+</head>
+<body>
+
+<h1>Where should Recent Scans go?</h1>
+<p class="subtitle">All three keep Option B's grid. Only placement of the recent strip differs.</p>
+
+<div class="layouts">
+
+  <!-- Option 1: Recent above scan button -->
+  <div class="layout-card opt1" onclick="pick(this,'1')">
+    <div class="layout-label">Option 1</div>
+    <div class="layout-name">Strip above Scan</div>
+    <div class="layout-desc">Thin recent row sits between header and the scan button.</div>
+    <div class="phone">
+      <div class="ph-header">
+        <div class="ph-logo-row"><div class="ph-logo"></div><span class="ph-logo-text">nutri</span></div>
+        <div class="ph-icon-btn"></div>
+      </div>
+      <div class="grid-body">
+        <!-- recent strip -->
+        <div class="recent-row recent-strip">
+          <span class="recent-label">Recent</span>
+          <div class="recent-pill"><div class="recent-pill-dot" style="background:#66BB6A"></div><span class="recent-pill-grade" style="color:#2E7D32">A</span></div>
+          <div class="recent-pill"><div class="recent-pill-dot" style="background:#FFC107"></div><span class="recent-pill-grade" style="color:#F9A825">C</span></div>
+          <div class="recent-pill"><div class="recent-pill-dot" style="background:#8BC34A"></div><span class="recent-pill-grade" style="color:#558B2F">B</span></div>
+        </div>
+        <!-- scan -->
+        <div class="cell-scan scan-row">
+          <div><div class="cell-scan-text">Scan Now</div><div class="cell-scan-sub">Label or barcode</div></div>
+          <div class="cell-scan-icon"></div>
+        </div>
+        <!-- Browse -->
+        <div class="cell-white"><div class="cell-icon"></div><div class="cell-label">Browse</div></div>
+        <!-- Compare -->
+        <div class="cell-white"><div class="cell-icon"></div><div class="cell-label">Compare</div></div>
+        <!-- Chat full width -->
+        <div class="cell-white" style="grid-column:span 2; flex-direction:row; justify-content:space-between; align-items:center;">
+          <div><div class="cell-icon"></div><div class="cell-label">AI Chat</div></div>
+          <div style="font-size:8px;color:#8A8A8A">Ask anything →</div>
+        </div>
+      </div>
+      <div class="ph-nav">
+        <div class="ph-nav-dot"></div><div class="ph-nav-dot"></div>
+        <div class="ph-nav-scan"><div class="ph-nav-scan-dot"></div></div>
+        <div class="ph-nav-dot"></div><div class="ph-nav-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option 2: Recent inside header row -->
+  <div class="layout-card opt2" onclick="pick(this,'2')">
+    <div class="layout-label">Option 2</div>
+    <div class="layout-name">Under Header</div>
+    <div class="layout-desc">Recent pills sit just under the logo, saving vertical space for bigger grid cards.</div>
+    <div class="phone">
+      <div class="ph-header">
+        <div class="ph-logo-row"><div class="ph-logo"></div><span class="ph-logo-text">nutri</span></div>
+        <div class="ph-icon-btn"></div>
+      </div>
+      <div class="ph-header-ext recent-strip">
+        <span class="recent-label">Recent</span>
+        <div class="recent-pill"><div class="recent-pill-dot" style="background:#66BB6A"></div><span class="recent-pill-grade" style="color:#2E7D32">A</span></div>
+        <div class="recent-pill"><div class="recent-pill-dot" style="background:#FFC107"></div><span class="recent-pill-grade" style="color:#F9A825">C</span></div>
+        <div class="recent-pill"><div class="recent-pill-dot" style="background:#8BC34A"></div><span class="recent-pill-grade" style="color:#558B2F">B</span></div>
+      </div>
+      <div class="grid-body">
+        <div class="cell-scan scan-row">
+          <div><div class="cell-scan-text">Scan Now</div><div class="cell-scan-sub">Label or barcode</div></div>
+          <div class="cell-scan-icon"></div>
+        </div>
+        <div class="cell-white"><div class="cell-icon"></div><div class="cell-label">Browse</div></div>
+        <div class="cell-white"><div class="cell-icon"></div><div class="cell-label">Compare</div></div>
+        <div class="cell-white" style="grid-column:span 2; flex-direction:row; justify-content:space-between; align-items:center;">
+          <div><div class="cell-icon"></div><div class="cell-label">AI Chat</div></div>
+          <div style="font-size:8px;color:#8A8A8A">Ask anything →</div>
+        </div>
+      </div>
+      <div class="ph-nav">
+        <div class="ph-nav-dot"></div><div class="ph-nav-dot"></div>
+        <div class="ph-nav-scan"><div class="ph-nav-scan-dot"></div></div>
+        <div class="ph-nav-dot"></div><div class="ph-nav-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option 3: Recent as bottom row -->
+  <div class="layout-card opt3" onclick="pick(this,'3')">
+    <div class="layout-label">Option 3</div>
+    <div class="layout-name">Bottom Strip</div>
+    <div class="layout-desc">Recent scans appear as the last row, just above the nav bar.</div>
+    <div class="phone">
+      <div class="ph-header">
+        <div class="ph-logo-row"><div class="ph-logo"></div><span class="ph-logo-text">nutri</span></div>
+        <div class="ph-icon-btn"></div>
+      </div>
+      <div class="grid-body">
+        <div class="cell-scan scan-row">
+          <div><div class="cell-scan-text">Scan Now</div><div class="cell-scan-sub">Label or barcode</div></div>
+          <div class="cell-scan-icon"></div>
+        </div>
+        <div class="cell-white"><div class="cell-icon"></div><div class="cell-label">Browse</div></div>
+        <div class="cell-white"><div class="cell-icon"></div><div class="cell-label">Compare</div></div>
+        <div class="recent-row recent-strip">
+          <span class="recent-label">Recent</span>
+          <div class="recent-pill"><div class="recent-pill-dot" style="background:#66BB6A"></div><span class="recent-pill-grade" style="color:#2E7D32">A</span></div>
+          <div class="recent-pill"><div class="recent-pill-dot" style="background:#FFC107"></div><span class="recent-pill-grade" style="color:#F9A825">C</span></div>
+          <div class="recent-pill"><div class="recent-pill-dot" style="background:#8BC34A"></div><span class="recent-pill-grade" style="color:#558B2F">B</span></div>
+        </div>
+      </div>
+      <div class="ph-nav">
+        <div class="ph-nav-dot"></div><div class="ph-nav-dot"></div>
+        <div class="ph-nav-scan"><div class="ph-nav-scan-dot"></div></div>
+        <div class="ph-nav-dot"></div><div class="ph-nav-dot"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="selected-indicator" id="indicator"></div>
+<script>
+  function pick(card, label) {
+    document.querySelectorAll('.layout-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    const ind = document.getElementById('indicator');
+    ind.textContent = 'Selected: Option ' + label;
+    ind.classList.add('visible');
+  }
+</script>
+</body>
+</html>

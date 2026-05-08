@@ -195,7 +195,7 @@ export default function RecentScans() {
               <div style={{
                 position: 'absolute', top: '24px', right: '24px',
                 padding: '6px 16px', borderRadius: '12px',
-                border: '2px solid #4CAF50', color: '#4CAF50',
+                border: '2px solid #E8721C', color: '#E8721C',
                 fontSize: '13px', fontWeight: 700, transform: 'rotate(12deg)',
               }}>
                 VIEW
@@ -242,7 +242,7 @@ export default function RecentScans() {
             <p className="text-[#8A8A8A] text-sm">No more products</p>
             <button
               onClick={() => setCurrentIndex(0)}
-              className="mt-3 text-sm text-[#4CAF50] font-semibold"
+              className="mt-3 text-sm text-[#E8721C] font-semibold"
             >
               Start over
             </button>

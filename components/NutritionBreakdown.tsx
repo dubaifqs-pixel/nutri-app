@@ -14,7 +14,7 @@ const NUTRIENT_COLORS = {
   sugars: '#C62828',
   saturated_fat: '#E65100',
   sodium: '#F9A825',
-  protein: '#4CAF50',
+  protein: '#E8721C',
   fiber: '#2E7D32',
 }
 
@@ -28,8 +28,8 @@ function NutrientRow({ label, value, unit, points, isPositive, delay, color }: {
     : Math.min((points / MAX_NEGATIVE_POINTS) * 100, 100)
 
   const barColor = isPositive
-    ? (points > 0 ? '#4CAF50' : '#D0D0D0')
-    : (points > 5 ? '#E53935' : points > 2 ? '#F9A825' : '#4CAF50')
+    ? (points > 0 ? '#E8721C' : '#D0D0D0')
+    : (points > 5 ? '#E53935' : points > 2 ? '#F9A825' : '#E8721C')
 
   const textColor = isPositive
     ? (points > 0 ? 'text-[#2E7D32]' : 'text-[#8A8A8A]')

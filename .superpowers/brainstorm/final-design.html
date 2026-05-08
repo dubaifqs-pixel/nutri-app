@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nutri — Final Design</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #E8E6E3; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; gap: 20px; }
+
+  h1 { font-size: 18px; font-weight: 600; color: #1A1A1A; text-align: center; }
+  .subtitle { font-size: 13px; color: #8A8A8A; text-align: center; max-width: 400px; line-height: 1.5; }
+
+  /* Phone frame */
+  .phone-frame {
+    width: 320px;
+    height: 580px;
+    background: #F2F0ED;
+    border-radius: 40px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.08);
+    position: relative;
+  }
+
+  /* Header */
+  .header {
+    padding: 20px 20px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .logo-row { display: flex; align-items: center; gap: 8px; }
+  .logo-img {
+    width: 32px; height: 32px; background: #1A1A1A; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-img span { color: white; font-size: 10px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-text-col { display: flex; flex-direction: column; }
+  .logo-welcome { font-size: 10px; color: #8A8A8A; font-weight: 500; }
+  .logo-name { font-size: 16px; font-weight: 600; color: #1A1A1A; line-height: 1.1; }
+  .header-btn {
+    width: 32px; height: 32px; background: white; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .header-btn svg { opacity: 0.6; }
+
+  /* Recent strip */
+  .recent-strip {
+    padding: 0 20px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .recent-label {
+    font-size: 9px; font-weight: 700; color: #8A8A8A;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-right: 2px; white-space: nowrap;
+  }
+  .recent-pill {
+    display: flex; align-items: center; gap: 4px;
+    background: white; border-radius: 20px;
+    padding: 4px 8px 4px 5px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .grade-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .pill-name { font-size: 9px; color: #1A1A1A; font-weight: 500; max-width: 48px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Grid */
+  .grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 0 16px 16px;
+    min-height: 0;
+  }
+
+  /* Scan card */
+  .card-scan {
+    grid-column: span 2;
+    background: #1A1A1A;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: opacity 0.1s;
+  }
+  .card-scan:hover { opacity: 0.92; }
+  .scan-left { display: flex; flex-direction: column; gap: 2px; }
+  .scan-title { font-size: 18px; font-weight: 700; color: white; }
+  .scan-sub { font-size: 10px; color: rgba(255,255,255,0.45); font-weight: 500; }
+  .scan-icon-wrap {
+    width: 48px; height: 48px; background: rgba(255,255,255,0.1);
+    border-radius: 15px; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Action cards */
+  .card {
+    background: white;
+    border-radius: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.1s;
+  }
+  .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .card-icon {
+    width: 28px; height: 28px; background: #F2F0ED; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px;
+  }
+  .card-icon svg { opacity: 0.7; }
+  .card-title { font-size: 13px; font-weight: 600; color: #1A1A1A; }
+  .card-sub { font-size: 10px; color: #8A8A8A; margin-top: 2px; }
+
+  /* AI Chat card — full width */
+  .card-chat {
+    grid-column: span 2;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+  }
+  .chat-left { display: flex; align-items: center; gap: 10px; }
+  .chat-arrow { font-size: 16px; color: #8A8A8A; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    flex-shrink: 0;
+    background: rgba(242,240,237,0.85);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 8px 8px 10px;
+    height: 52px;
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 44px; }
+  .nav-label { font-size: 9px; font-weight: 600; color: #1A1A1A; }
+  .nav-label-dim { font-size: 9px; font-weight: 500; color: #8A8A8A; }
+  .nav-scan-btn {
+    background: #4CAF50; border-radius: 20px;
+    padding: 7px 14px;
+    display: flex; align-items: center; gap: 5px;
+    margin-top: -10px;
+    box-shadow: 0 3px 10px rgba(76,175,80,0.35);
+  }
+  .nav-scan-btn span { font-size: 11px; font-weight: 700; color: white; }
+
+  .approve-bar {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 600;
+    border: none; cursor: pointer; transition: opacity 0.1s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-approve { background: #1A1A1A; color: white; }
+  .btn-change { background: white; color: #1A1A1A; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .result { font-size: 14px; font-weight: 600; color: #4CAF50; text-align: center; display: none; }
+</style>
+</head>
+<body>
+
+<h1>Final Design — Home Screen</h1>
+<p class="subtitle">No scrolling. Everything visible on one screen. Does this look right?</p>
+
+<div class="phone-frame">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-img"><span>n</span></div>
+      <div class="logo-text-col">
+        <span class="logo-welcome">Welcome back</span>
+        <span class="logo-name">nutri</span>
+      </div>
+    </div>
+    <div class="header-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    </div>
+  </div>
+
+  <!-- Recent strip -->
+  <div class="recent-strip">
+    <span class="recent-label">Recent</span>
+    <div class="recent-pill">
+      <div class="grade-dot" style="background:#66BB6A"></div>
+      <span class="pill-name">Almarai Milk</span>
+    </div>
+    <div class="recent-pill">
+      <div class="grade-dot" style="background:#FFC107"></div>
+      <span class="pill-name">Kit Kat</span>
+    </div>
+    <div class="recent-pill">
+      <div class="grade-dot" style="background:#8BC34A"></div>
+      <span class="pill-name">Laban Up</span>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid">
+
+    <!-- Scan -->
+    <div class="card-scan">
+      <div class="scan-left">
+        <div class="scan-title">Scan Now</div>
+        <div class="scan-sub">Label or barcode</div>
+      </div>
+      <div class="scan-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </div>
+    </div>
+
+    <!-- Browse -->
+    <div class="card">
+      <div class="card-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+      </div>
+      <div class="card-title">Browse</div>
+      <div class="card-sub">By category</div>
+    </div>
+
+    <!-- Compare -->
+    <div class="card">
+      <div class="card-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
+      </div>
+      <div class="card-title">Compare</div>
+      <div class="card-sub">Side by side</div>
+    </div>
+
+    <!-- AI Chat -->
+    <div class="card card-chat">
+      <div class="chat-left">
+        <div class="card-icon" style="margin-bottom:0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div>
+          <div class="card-title">AI Chat</div>
+          <div class="card-sub">Ask anything about your food</div>
+        </div>
+      </div>
+      <span class="chat-arrow">›</span>
+    </div>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8A8A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+      <span class="nav-label-dim">Browse</span>
+    </div>
+    <div class="nav-scan-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <span>Scan</span>
+    </div>
+    <div class="nav-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8A8A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
+      <span class="nav-label-dim">Compare</span>
+    </div>
+    <div class="nav-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8A8A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="nav-label-dim">AI Chat</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="approve-bar">
+  <button class="btn btn-approve" onclick="approve()">Looks good, build it</button>
+  <button class="btn btn-change" onclick="change()">I want changes</button>
+</div>
+<div class="result" id="result"></div>
+
+<script>
+  function approve() {
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('result').textContent = '✓ Approved! Tell Claude to build it.';
+  }
+  function change() {
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('result').style.color = '#FF9800';
+    document.getElementById('result').textContent = 'Tell Claude what you want changed.';
+  }
+</script>
+</body>
+</html>
