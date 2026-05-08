@@ -41,18 +41,34 @@ export default function BrowsePage() {
             <button
               key={cat.id}
               onClick={() => router.push(`/browse/${cat.id}`)}
-              className="relative bg-white flex flex-col items-start p-4 animate-slide-up overflow-hidden transition-all hover:-translate-y-1 active:scale-[0.98]"
+              className="group relative flex flex-col items-start p-4 animate-slide-up overflow-hidden transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]"
               style={{
                 animationDelay: `${i * 50}ms`,
                 borderRadius: '22px',
                 border: '1px solid #E2DDD5',
                 minHeight: '160px',
+                background: 'linear-gradient(165deg, #FFFFFF 0%, #FAF8F4 100%)',
+                boxShadow: '0 1px 2px rgba(26,25,23,0.04), 0 6px 16px rgba(26,25,23,0.05)',
               }}
             >
+              {/* Soft warm glow behind product image */}
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  width: 140,
+                  height: 140,
+                  insetInlineEnd: -50,
+                  bottom: -50,
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle, rgba(232,114,28,0.08) 0%, transparent 60%)',
+                  filter: 'blur(6px)',
+                }}
+              />
+
               <span className="text-[15px] font-bold relative z-10" style={{ color: '#1A1917' }}>{cat.name}</span>
               <span className="text-[11px] mt-1 relative z-10" style={{ color: '#9A9790' }}>{cat.description}</span>
               {count > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full mt-2 font-semibold relative z-10" style={{ color: '#E8721C', background: '#FEF0E6' }}>
+                <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full mt-2 font-semibold relative z-10" style={{ color: '#E8721C', background: '#FEF0E6', border: '1px solid #F5C4A0' }}>
                   {count} curated
                 </span>
               )}
@@ -61,12 +77,12 @@ export default function BrowsePage() {
                 <img
                   src={imageUrl}
                   alt={cat.name}
-                  className="absolute -right-3 -bottom-3 w-[110px] h-[110px] object-contain transition-transform duration-300"
+                  className="absolute w-[120px] h-[120px] object-contain transition-transform duration-500 ease-out group-hover:scale-110 group-hover:-rotate-6"
                   style={{
-                    filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.1))',
+                    insetInlineEnd: -12,
+                    bottom: -12,
+                    filter: 'drop-shadow(0 8px 16px rgba(26,25,23,0.16)) drop-shadow(0 3px 6px rgba(26,25,23,0.08))',
                   }}
-                  onMouseOver={(e) => { (e.target as HTMLImageElement).style.transform = 'scale(1.1) rotate(-5deg)' }}
-                  onMouseOut={(e) => { (e.target as HTMLImageElement).style.transform = '' }}
                   loading="lazy"
                 />
               )}
