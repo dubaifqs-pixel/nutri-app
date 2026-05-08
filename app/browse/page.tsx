@@ -73,7 +73,32 @@ export default function BrowsePage() {
                 </span>
               )}
 
-              {imageUrl && (
+              {/* Frozen gets a 3-item composition for variety */}
+              {cat.id === 'frozen' ? (
+                <div className="absolute w-[140px] h-[140px] pointer-events-none" style={{ insetInlineEnd: -16, bottom: -16 }}>
+                  <img
+                    src="/products/cat-icecream.png"
+                    alt="ice cream"
+                    className="absolute transition-transform duration-500 ease-out group-hover:scale-110 group-hover:-rotate-6"
+                    style={{ width: 70, height: 70, objectFit: 'contain', insetInlineEnd: 8, bottom: 56, filter: 'drop-shadow(0 6px 12px rgba(26,25,23,0.18)) drop-shadow(0 2px 4px rgba(26,25,23,0.08))', zIndex: 3 }}
+                    loading="lazy"
+                  />
+                  <img
+                    src="/products/cat-chicken.png"
+                    alt="frozen chicken"
+                    className="absolute transition-transform duration-500 ease-out group-hover:scale-110 group-hover:rotate-3"
+                    style={{ width: 78, height: 78, objectFit: 'contain', insetInlineEnd: 50, bottom: 6, filter: 'drop-shadow(0 6px 12px rgba(26,25,23,0.16)) drop-shadow(0 2px 4px rgba(26,25,23,0.08))', zIndex: 2 }}
+                    loading="lazy"
+                  />
+                  <img
+                    src="/products/cat-fruit.png"
+                    alt="frozen vegetables"
+                    className="absolute transition-transform duration-500 ease-out group-hover:scale-110 group-hover:rotate-6"
+                    style={{ width: 64, height: 64, objectFit: 'contain', insetInlineEnd: -4, bottom: 12, filter: 'drop-shadow(0 6px 12px rgba(26,25,23,0.16)) drop-shadow(0 2px 4px rgba(26,25,23,0.08))', zIndex: 1 }}
+                    loading="lazy"
+                  />
+                </div>
+              ) : imageUrl && (
                 <img
                   src={imageUrl}
                   alt={cat.name}
