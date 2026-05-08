@@ -20,7 +20,8 @@ function ChatContent() {
   useEffect(() => {
     const productData = sessionStorage.getItem('dfqs_product')
     const gradeData = sessionStorage.getItem('dfqs_grade')
-    if (!productData || !gradeData) { router.push('/'); return }
+    // If product context is missing, run in general AI mode (no bounce)
+    if (!productData || !gradeData) return
     const p = JSON.parse(productData)
     const g = JSON.parse(gradeData)
     setProduct(p)
@@ -80,7 +81,7 @@ function ChatContent() {
     <div className="h-dvh flex flex-col" style={{ background: '#F1EEE8' }}>
       {/* Header */}
       <div className="px-4 py-3 flex items-center justify-between z-10" style={{ background: '#F1EEE8', borderBottom: '1px solid #E2DDD5' }}>
-        <button onClick={() => router.push('/result')} className="text-sm flex items-center gap-1 transition-colors min-w-[44px] min-h-[44px] -ml-2 pl-2 rounded-xl" style={{ color: '#5A574F' }}>
+        <button onClick={() => router.push(product ? '/result' : '/')} className="text-sm flex items-center gap-1 transition-colors min-w-[44px] min-h-[44px] -ml-2 pl-2 rounded-xl" style={{ color: '#5A574F' }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           {t('chat.back')}
         </button>
@@ -95,9 +96,12 @@ function ChatContent() {
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
         {messages.length === 0 && (
           <div className="text-center text-sm mt-8 animate-fade-in" style={{ color: '#5A574F' }}>
-            <p>{t('chat.empty')}</p>
+            <p>{product ? t('chat.empty') : t('chat.empty.general')}</p>
             <div className="flex flex-wrap gap-2 justify-center mt-4">
-              {[t('chat.suggest1'), t('chat.suggest2'), t('chat.suggest3')].map((q) => (
+              {(product
+                ? [t('chat.suggest1'), t('chat.suggest2'), t('chat.suggest3')]
+                : [t('chat.suggest.general1'), t('chat.suggest.general2'), t('chat.suggest.general3')]
+              ).map((q) => (
                 <button
                   key={q}
                   onClick={() => sendMessage(q)}
