@@ -1,37 +1,48 @@
 # Nutri — Developer Setup Guide
 
+## Team
+- **Mohammad (MBinHaider)** — GitHub collaborator, backend/AI/deployment
+- **Nada (dubaifqs-pixel)** — Repo owner, frontend/design/content
+
 ## Prerequisites
 - Node.js 18+ installed
 - Git installed
 - A Claude Code account (sign up at claude.ai)
-- Access to the GitHub repo: https://github.com/dubaifqs-pixel/nutri-app
+- GitHub access to: https://github.com/dubaifqs-pixel/nutri-app
 
 ---
 
 ## Setup for Mohammad (MBinHaider)
 
-Your code is already at `~/Desktop/Work/DFQS/dfqs/`. Just make sure it's connected to the right repo:
+You are a collaborator on Nada's repo. Your code is at `~/Desktop/Work/DFQS/dfqs/`.
 
+### First time (already done):
 ```bash
 cd ~/Desktop/Work/DFQS/dfqs
 git remote set-url origin https://github.com/dubaifqs-pixel/nutri-app.git
+gh auth login          # login as MBinHaider
+gh auth setup-git      # configure git credentials
 git pull
 npm install
 ```
 
-Create `.env.local` if missing:
+### Create `.env.local` if missing:
 ```bash
 echo "GEMINI_API_KEY=AIzaSyAewvSEFVVM6nIpXkhwS-xDutW1NMwqtME" > .env.local
 ```
 
-Start working:
+### Start working:
 ```bash
+cd ~/Desktop/Work/DFQS/dfqs
+git pull
 claude
 ```
 
 ---
 
-## Setup for Nada
+## Setup for Nada (dubaifqs-pixel)
+
+You own the repo. This is your main project.
 
 ### One-time setup (do once):
 
@@ -76,6 +87,24 @@ npx vitest run
 ```
 All 10 tests should pass.
 
+### Start working:
+```bash
+cd nutri-app
+git pull
+claude
+```
+
+---
+
+## Accounts & Access
+
+| Service | Mohammad (MBinHaider) | Nada (dubaifqs-pixel) |
+|---------|----------------------|----------------------|
+| **GitHub** | Collaborator (push access) | Owner |
+| **Vercel** | Own account (dfqs.vercel.app) | Own account (nutri-app-mocha.vercel.app) |
+| **Claude Code** | Own Anthropic account | Own Anthropic account |
+| **Gemini API** | Shared key | Shared key |
+
 ---
 
 ## Daily Workflow (Both)
@@ -83,7 +112,7 @@ All 10 tests should pass.
 ### Before starting work:
 ```bash
 cd nutri-app          # or ~/Desktop/Work/DFQS/dfqs for Mohammad
-git pull              # get latest changes from the other person
+git pull              # ALWAYS pull first to get each other's changes
 claude                # start Claude Code
 ```
 
@@ -103,7 +132,7 @@ Vercel auto-deploys to https://nutri-app-mocha.vercel.app on every push.
 ### If you get merge conflicts:
 ```bash
 git pull              # this might show conflicts
-# Fix the conflicted files
+# Fix the conflicted files (or ask Claude to help)
 git add -A
 git commit -m "resolve merge conflict"
 git push
@@ -121,8 +150,8 @@ git push
 | Communicate | Tell each other what you're working on |
 
 ### Suggested Task Split:
-- **Mohammad:** Backend, API routes, AI prompts, data layer, deployment
-- **Nada:** Frontend, design, UI components, landing page, content
+- **Mohammad:** Backend, API routes, AI prompts, data layer, scoring algorithm, deployment
+- **Nada:** Frontend, design, UI components, landing page, content, product images
 
 ---
 
@@ -135,6 +164,8 @@ git push
 | `npx vitest run` | Run tests |
 | `git status` | See what files changed |
 | `git log --oneline -10` | See recent commits |
+| `git pull` | Get latest changes |
+| `git push` | Push your changes |
 | `vercel --prod` | Manual deploy to Vercel |
 
 ---
@@ -143,26 +174,43 @@ git push
 
 ```
 nutri-app/
-├── app/                  ← Pages and API routes
-│   ├── page.tsx          ← Home screen
-│   ├── scan/             ← Camera scanning
-│   ├── result/           ← Grade result
-│   ├── chat/             ← AI chat
-│   ├── alternatives/     ← Healthier options
-│   ├── compare/          ← Product comparison
-│   ├── browse/           ← Category browser
-│   ├── landing/          ← Stakeholder landing page
-│   └── api/              ← Backend API routes
-├── components/           ← Reusable UI components
-├── lib/                  ← Business logic
-│   ├── scoring.ts        ← Nutri-Score algorithm
-│   ├── gemini.ts         ← AI prompts
-│   ├── food-api.ts       ← Data layer (AI + databases)
-│   ├── product-images.ts ← Image library mapping
-│   └── types.ts          ← TypeScript types
-├── public/products/      ← Product images (transparent PNGs)
-├── CLAUDE.md             ← Project context for Claude Code
-└── .env.local            ← API keys (not in git)
+├── app/                  <- Pages and API routes
+|   ├── page.tsx          <- Home screen
+|   ├── scan/             <- Camera scanning
+|   ├── result/           <- Grade result
+|   ├── chat/             <- AI chat
+|   ├── alternatives/     <- Healthier options
+|   ├── compare/          <- Product comparison
+|   ├── browse/           <- Category browser
+|   ├── landing/          <- Stakeholder landing page
+|   └── api/              <- Backend API routes
+|       ├── scan-label/   <- Gemini Vision (read nutrition labels)
+|       ├── scan-barcode/ <- Gemini Vision (read barcodes)
+|       ├── barcode/      <- Open Food Facts / AI lookup
+|       ├── grade/        <- Nutri-Score calculation
+|       ├── chat/         <- AI chat with product context
+|       ├── recommend/    <- Find healthier alternatives
+|       ├── browse/       <- Category product search
+|       └── auto-detect/  <- Auto-detect nutrition labels
+├── components/           <- Reusable UI components
+|   ├── GradeBadge.tsx    <- A-E grade display
+|   ├── NutritionBreakdown.tsx <- Nutrient bars
+|   ├── Scanner.tsx       <- Camera + auto-detect
+|   ├── ChatMessage.tsx   <- Rich AI chat responses
+|   └── RecentScans.tsx   <- Tinder-style swipe cards
+├── lib/                  <- Business logic
+|   ├── scoring.ts        <- Nutri-Score algorithm
+|   ├── scoring.test.ts   <- Algorithm tests
+|   ├── gemini.ts         <- AI prompts (vision, chat)
+|   ├── food-api.ts       <- AI-first data layer
+|   ├── product-images.ts <- Category image library
+|   ├── demo-products.ts  <- 53 curated UAE products
+|   ├── history.ts        <- Local scan history
+|   └── types.ts          <- TypeScript types
+├── public/products/      <- Product images (transparent PNGs)
+├── CLAUDE.md             <- Project context for Claude Code
+├── SETUP.md              <- This file
+└── .env.local            <- API keys (NOT in git)
 ```
 
 ---
@@ -172,3 +220,5 @@ nutri-app/
 - **Live app:** https://nutri-app-mocha.vercel.app
 - **GitHub:** https://github.com/dubaifqs-pixel/nutri-app
 - **Vercel dashboard:** https://vercel.com/dubaifqs-pixels-projects/nutri-app
+- **Gemini API console:** https://aistudio.google.com/apikey
+- **Recraft AI (product images):** https://www.recraft.ai
