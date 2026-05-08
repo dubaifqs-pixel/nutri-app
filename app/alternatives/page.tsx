@@ -134,7 +134,7 @@ export default function AlternativesPage() {
   if (!product || !gradeResult) {
     return (
       <div className="min-h-screen flex items-center justify-center mesh-bg">
-        <div className="w-10 h-10 border-2 border-[#FF8C42] border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-2 border-[#E8721C] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -143,15 +143,15 @@ export default function AlternativesPage() {
     <div className="min-h-screen px-6 py-8 flex flex-col gap-5 mesh-bg">
       {/* Header */}
       <div className="flex items-center gap-3 animate-fade-in">
-        <button onClick={() => router.push('/result')} className="text-[#9B8E82] transition-colors hover:text-[#2D2A26] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#2D2A26]/5">
+        <button onClick={() => router.push('/result')} className="text-[#5A574F] transition-colors hover:text-[#1A1917] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#1A1917]/5">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <h1 className="text-lg font-bold text-[#2D2A26]">Healthier Alternatives</h1>
+        <h1 className="text-lg font-bold text-[#1A1917]">Healthier Alternatives</h1>
       </div>
 
       {/* Original Product Card */}
       <div className="glass-card p-4 animate-slide-up stagger-1" style={{ borderRadius: '20px' }}>
-        <p className="text-[10px] text-[#B0A89E] uppercase tracking-[0.1em] mb-2.5 font-semibold">Your Product</p>
+        <p className="text-[10px] text-[#9A9790] uppercase tracking-[0.1em] mb-2.5 font-semibold">Your Product</p>
         <div className="flex items-center gap-3">
           <div
             className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl font-bold"
@@ -160,8 +160,8 @@ export default function AlternativesPage() {
             {gradeResult.grade}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[#2D2A26] truncate">{product.product_name}</p>
-            <p className="text-xs text-[#9B8E82] mt-0.5">Score: {gradeResult.score}</p>
+            <p className="text-sm font-semibold text-[#1A1917] truncate">{product.product_name}</p>
+            <p className="text-xs text-[#5A574F] mt-0.5">Score: {gradeResult.score}</p>
           </div>
         </div>
         {/* Key bad nutrients */}
@@ -187,8 +187,8 @@ export default function AlternativesPage() {
             className="shrink-0 px-4 py-2.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap min-h-[44px] flex items-center"
             style={
               activeFilter === f.key
-                ? { background: 'linear-gradient(135deg, #FF8C42, #E85D26)', color: '#fff', boxShadow: '0 4px 12px rgba(255, 140, 66, 0.3)' }
-                : { background: 'rgba(253, 252, 250, 0.6)', color: '#9B8E82', border: '1px solid #EAE6E0', backdropFilter: 'blur(10px)' }
+                ? { background: 'linear-gradient(135deg, #E8721C, #D8651A)', color: '#fff', boxShadow: '0 4px 12px rgba(232, 114, 28, 0.3)' }
+                : { background: 'rgba(253, 252, 250, 0.6)', color: '#5A574F', border: '1px solid #E2DDD5', backdropFilter: 'blur(10px)' }
             }
           >
             {f.label}
@@ -199,16 +199,16 @@ export default function AlternativesPage() {
       {/* Loading State */}
       {loading && (
         <div className="flex flex-col items-center gap-4 py-12">
-          <div className="w-10 h-10 border-2 border-[#FF8C42] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-[#9B8E82]">Finding healthier alternatives...</p>
+          <div className="w-10 h-10 border-2 border-[#E8721C] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[#5A574F]">Finding healthier alternatives...</p>
         </div>
       )}
 
       {/* Error State */}
       {error && !loading && (
         <div className="text-center py-12">
-          <p className="text-sm text-[#9B8E82]">{error}</p>
-          <button onClick={() => router.push('/result')} className="mt-4 text-sm text-[#FF8C42] font-semibold">
+          <p className="text-sm text-[#5A574F]">{error}</p>
+          <button onClick={() => router.push('/result')} className="mt-4 text-sm text-[#E8721C] font-semibold">
             Go back
           </button>
         </div>
@@ -231,8 +231,8 @@ export default function AlternativesPage() {
             </div>
           ) : (
             <div className="text-center py-12 flex flex-col items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9B8E82" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <p className="text-sm text-[#9B8E82]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#5A574F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <p className="text-sm text-[#5A574F]">
                 {activeFilter !== 'all'
                   ? 'No alternatives match this filter. Try a different filter.'
                   : 'No healthier alternatives found.'}
@@ -240,7 +240,7 @@ export default function AlternativesPage() {
               {activeFilter !== 'all' && (
                 <button
                   onClick={() => setActiveFilter('all')}
-                  className="text-sm text-[#FF8C42] font-semibold"
+                  className="text-sm text-[#E8721C] font-semibold"
                 >
                   Show all alternatives
                 </button>
@@ -256,12 +256,12 @@ export default function AlternativesPage() {
 
           {/* AI Summary */}
           {data.summary && (
-            <div className="glass-card p-4 mt-1" style={{ borderRadius: '20px', borderColor: 'rgba(255, 140, 66, 0.1)' }}>
+            <div className="glass-card p-4 mt-1" style={{ borderRadius: '20px', borderColor: 'rgba(232, 114, 28, 0.1)' }}>
               <div className="flex items-center gap-2 mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF8C42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-                <h3 className="text-sm font-semibold text-[#2D2A26]">AI Summary</h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8721C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                <h3 className="text-sm font-semibold text-[#1A1917]">AI Summary</h3>
               </div>
-              <p className="text-sm text-[#4A4540] leading-relaxed">{data.summary}</p>
+              <p className="text-sm text-[#5A574F] leading-relaxed">{data.summary}</p>
             </div>
           )}
         </>
@@ -305,14 +305,14 @@ function AlternativeCard({
 
         {/* Product info */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-[#2D2A26] truncate">{alt.product_name}</p>
+          <p className="text-sm font-semibold text-[#1A1917] truncate">{alt.product_name}</p>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-[#9B8E82]">Score: {alt.score}</span>
+            <span className="text-xs text-[#5A574F]">Score: {alt.score}</span>
             <span
               className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
               style={{
-                background: (alt.source === 'ai_knowledge' || alt.source === 'manual') ? 'rgba(255, 140, 66, 0.1)' : 'rgba(45, 42, 38, 0.05)',
-                color: (alt.source === 'ai_knowledge' || alt.source === 'manual') ? '#FF8C42' : '#9B8E82',
+                background: (alt.source === 'ai_knowledge' || alt.source === 'manual') ? 'rgba(232, 114, 28, 0.1)' : 'rgba(45, 42, 38, 0.05)',
+                color: (alt.source === 'ai_knowledge' || alt.source === 'manual') ? '#E8721C' : '#5A574F',
               }}
             >
               {SOURCE_LABELS[alt.source] || alt.source}
@@ -326,14 +326,14 @@ function AlternativeCard({
             src={alt.image_url}
             alt={alt.product_name}
             loading="lazy"
-            className="shrink-0 w-10 h-10 rounded-xl object-cover bg-[#F5F3EF]"
+            className="shrink-0 w-10 h-10 rounded-xl object-cover bg-[#F1EEE8]"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
         )}
       </div>
 
       {/* Nutrition mini row */}
-      <div className="flex gap-3 mt-3 text-xs text-[#9B8E82]">
+      <div className="flex gap-3 mt-3 text-xs text-[#5A574F]">
         <span>{formatVal(alt.nutrition.energy_kcal)} kcal</span>
         <span>Sugar: {formatVal(alt.nutrition.sugars_g)}g</span>
         <span>Protein: {formatVal(alt.nutrition.protein_g)}g</span>
@@ -344,9 +344,9 @@ function AlternativeCard({
         <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2.5">
           {comparisons.map((c) => (
             <span key={c.label} className="flex items-center gap-1 text-xs">
-              <span className="text-[#9B8E82]">{c.label}:</span>
-              <span className="text-[#B0A89E]">{c.from}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9B8E82" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <span className="text-[#5A574F]">{c.label}:</span>
+              <span className="text-[#9A9790]">{c.from}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#5A574F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               <span className={c.improved ? 'text-[#4A9E3F] font-medium' : 'text-[#C62828] font-medium'}>{c.to}</span>
               {c.improved ? (
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A9E3F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
@@ -361,10 +361,10 @@ function AlternativeCard({
       {/* Compare button */}
       <button
         onClick={onCompare}
-        className="w-full mt-3 py-2.5 rounded-xl text-xs font-semibold text-[#2D2A26] flex items-center justify-center gap-1.5 btn-outline min-h-[44px]"
-        style={{ background: 'rgba(255, 140, 66, 0.06)', borderColor: 'rgba(255, 140, 66, 0.15)' }}
+        className="w-full mt-3 py-2.5 rounded-xl text-xs font-semibold text-[#1A1917] flex items-center justify-center gap-1.5 btn-outline min-h-[44px]"
+        style={{ background: 'rgba(232, 114, 28, 0.06)', borderColor: 'rgba(232, 114, 28, 0.15)' }}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF8C42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8721C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
         Compare
       </button>
     </div>

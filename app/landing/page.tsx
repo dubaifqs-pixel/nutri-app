@@ -87,7 +87,7 @@ export default function LandingPage() {
       {/* Back to App */}
       <div className="sticky top-0 z-50 glass px-6 py-3" style={{ borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderRadius: 0 }}>
         <div className="max-w-4xl mx-auto">
-          <Link href="/" className="text-[#9B8E82] text-sm flex items-center gap-1 transition-colors hover:text-[#2D2A26] min-h-[44px] w-fit">
+          <Link href="/" className="text-[#5A574F] text-sm flex items-center gap-1 transition-colors hover:text-[#1A1917] min-h-[44px] w-fit">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             Back to App
           </Link>
@@ -95,23 +95,23 @@ export default function LandingPage() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden" style={{ background: '#F5F3EF' }}>
+      <section className="relative overflow-hidden" style={{ background: '#F1EEE8' }}>
         {/* Floating accent shapes */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-16 left-8 w-56 h-56 rounded-full opacity-[0.07]" style={{ background: 'radial-gradient(circle, #FF8C42 0%, transparent 70%)' }} />
+          <div className="absolute top-16 left-8 w-56 h-56 rounded-full opacity-[0.07]" style={{ background: 'radial-gradient(circle, #E8721C 0%, transparent 70%)' }} />
           <div className="absolute top-40 right-16 w-32 h-32 rounded-full opacity-[0.05]" style={{ background: 'radial-gradient(circle, #6BBF59 0%, transparent 70%)' }} />
-          <div className="absolute bottom-20 left-1/3 w-80 h-80 rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #FF8C42 0%, transparent 70%)' }} />
+          <div className="absolute bottom-20 left-1/3 w-80 h-80 rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #E8721C 0%, transparent 70%)' }} />
         </div>
 
         <div className="relative max-w-4xl mx-auto px-6 py-24 md:py-36 text-center">
-          <h1 className="text-6xl md:text-8xl font-bold text-[#2D2A26] tracking-tight">
+          <h1 className="text-6xl md:text-8xl font-bold text-[#1A1917] tracking-tight">
             nutri
           </h1>
-          <p className="text-lg md:text-xl text-[#9B8E82] mt-3">
+          <p className="text-lg md:text-xl text-[#5A574F] mt-3">
             Eat smarter.
           </p>
           <div className="tangerine-underline w-20 mx-auto mt-6 mb-6" />
-          <p className="text-base md:text-lg text-[#B0A89E] max-w-xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg text-[#9A9790] max-w-xl mx-auto leading-relaxed">
             AI-powered food grading to help you make healthier choices
           </p>
           <Link
@@ -125,7 +125,7 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works */}
-      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #2D2A26 0%, #4A4540 100%)' }}>
+      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #1A1917 0%, #5A574F 100%)' }}>
         <div className="max-w-4xl mx-auto px-6 py-20 md:py-28">
           <h2 className="text-2xl md:text-3xl font-bold text-white text-center">How It Works</h2>
           <p className="text-sm text-white/40 text-center mt-2">Three simple steps to healthier choices</p>
@@ -138,7 +138,7 @@ export default function LandingPage() {
                 <div className="w-24 h-24 rounded-2xl glass-dark flex items-center justify-center text-white mb-5 relative z-10">
                   {step.icon}
                 </div>
-                <span className="text-xs font-bold tracking-wider uppercase mb-2 text-gradient-tangerine" style={{ background: 'linear-gradient(135deg, #FF8C42, #E85D26)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{step.number}</span>
+                <span className="text-xs font-bold tracking-wider uppercase mb-2 text-gradient-tangerine" style={{ background: 'linear-gradient(135deg, #E8721C, #D8651A)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{step.number}</span>
                 <h3 className="text-lg font-bold text-white">{step.title}</h3>
                 <p className="text-sm text-white/40 mt-2 leading-relaxed max-w-xs">{step.description}</p>
                 {i < STEPS.length - 1 && (
@@ -155,8 +155,8 @@ export default function LandingPage() {
       {/* Grading Scale */}
       <section className="py-20 md:py-28 mesh-bg">
         <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#2D2A26] text-center">The Grading Scale</h2>
-          <p className="text-sm text-[#9B8E82] text-center mt-2">Based on the internationally recognized Nutri-Score algorithm</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1A1917] text-center">The Grading Scale</h2>
+          <p className="text-sm text-[#5A574F] text-center mt-2">Based on the internationally recognized Nutri-Score algorithm</p>
 
           <div className="mt-14 flex flex-col gap-3 max-w-lg mx-auto">
             {GRADES.map((g) => (
@@ -169,10 +169,10 @@ export default function LandingPage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-[#2D2A26]">{g.label}</span>
-                    <span className="text-xs text-[#9B8E82]">Score: {g.range}</span>
+                    <span className="text-sm font-semibold text-[#1A1917]">{g.label}</span>
+                    <span className="text-xs text-[#5A574F]">Score: {g.range}</span>
                   </div>
-                  <p className="text-xs text-[#9B8E82] mt-0.5">{g.description}</p>
+                  <p className="text-xs text-[#5A574F] mt-0.5">{g.description}</p>
                 </div>
               </div>
             ))}
@@ -181,17 +181,17 @@ export default function LandingPage() {
       </section>
 
       {/* Key Features */}
-      <section className="bg-[#FDFCFA] py-20 md:py-28">
+      <section className="bg-[#FFFFFF] py-20 md:py-28">
         <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#2D2A26] text-center">Key Features</h2>
-          <p className="text-sm text-[#9B8E82] text-center mt-2">Everything you need to make informed food choices</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1A1917] text-center">Key Features</h2>
+          <p className="text-sm text-[#5A574F] text-center mt-2">Everything you need to make informed food choices</p>
 
           <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {FEATURES.map((feature) => (
               <div key={feature.title} className="glass-card flex flex-col p-6" style={{ borderRadius: '20px' }}>
-                <div className="text-[#2D2A26] mb-4">{feature.icon}</div>
-                <h3 className="text-sm font-bold text-[#2D2A26]">{feature.title}</h3>
-                <p className="text-xs text-[#9B8E82] mt-2 leading-relaxed">{feature.description}</p>
+                <div className="text-[#1A1917] mb-4">{feature.icon}</div>
+                <h3 className="text-sm font-bold text-[#1A1917]">{feature.title}</h3>
+                <p className="text-xs text-[#5A574F] mt-2 leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -199,41 +199,41 @@ export default function LandingPage() {
       </section>
 
       {/* Technology */}
-      <section className="py-20 md:py-28" style={{ backgroundColor: '#F5F3EF' }}>
+      <section className="py-20 md:py-28" style={{ backgroundColor: '#F1EEE8' }}>
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#2D2A26]">Powered By</h2>
-          <p className="text-sm text-[#9B8E82] mt-2 max-w-lg mx-auto leading-relaxed">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1A1917]">Powered By</h2>
+          <p className="text-sm text-[#5A574F] mt-2 max-w-lg mx-auto leading-relaxed">
             nutri uses the proven Nutri-Score system, enhanced with AI for instant access
           </p>
 
           <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-2xl mx-auto">
             <div className="glass-card flex flex-col items-center p-6" style={{ borderRadius: '20px' }}>
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: 'rgba(45, 42, 38, 0.05)' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D2A26" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A1917" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
               </div>
-              <h3 className="text-sm font-bold text-[#2D2A26]">Gemini AI</h3>
-              <p className="text-xs text-[#9B8E82] mt-1">Vision and language AI</p>
+              <h3 className="text-sm font-bold text-[#1A1917]">Gemini AI</h3>
+              <p className="text-xs text-[#5A574F] mt-1">Vision and language AI</p>
             </div>
             <div className="glass-card flex flex-col items-center p-6" style={{ borderRadius: '20px' }}>
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: 'rgba(45, 42, 38, 0.05)' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D2A26" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A1917" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>
               </div>
-              <h3 className="text-sm font-bold text-[#2D2A26]">Nutri-Score</h3>
-              <p className="text-xs text-[#9B8E82] mt-1">Proven grading algorithm</p>
+              <h3 className="text-sm font-bold text-[#1A1917]">Nutri-Score</h3>
+              <p className="text-xs text-[#5A574F] mt-1">Proven grading algorithm</p>
             </div>
             <div className="glass-card flex flex-col items-center p-6" style={{ borderRadius: '20px' }}>
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: 'rgba(45, 42, 38, 0.05)' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D2A26" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A1917" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
               </div>
-              <h3 className="text-sm font-bold text-[#2D2A26]">Open Food Facts</h3>
-              <p className="text-xs text-[#9B8E82] mt-1">Global product database</p>
+              <h3 className="text-sm font-bold text-[#1A1917]">Open Food Facts</h3>
+              <p className="text-xs text-[#5A574F] mt-1">Global product database</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Call to Action */}
-      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #FF8C42 0%, #E85D26 100%)' }}>
+      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #E8721C 0%, #D8651A 100%)' }}>
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)' }} />
           <div className="absolute bottom-0 left-20 w-48 h-48 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)' }} />
@@ -247,7 +247,7 @@ export default function LandingPage() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 mt-8 px-8 py-4 rounded-2xl text-[#2D2A26] font-semibold text-base transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center gap-2 mt-8 px-8 py-4 rounded-2xl text-[#1A1917] font-semibold text-base transition-all hover:scale-[1.02] active:scale-[0.98]"
             style={{ background: 'white', boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}
           >
             Try nutri Now

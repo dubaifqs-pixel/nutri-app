@@ -29,7 +29,7 @@ interface BrowseProduct {
 
 function ProductSkeleton() {
   return (
-    <div className="flex items-center gap-3 px-4 py-3.5 rounded-[16px] bg-white" style={{ border: '1px solid #EAE6E0' }}>
+    <div className="flex items-center gap-3 px-4 py-3.5 rounded-[16px] bg-white" style={{ border: '1px solid #E2DDD5' }}>
       <div className="w-12 h-12 rounded-xl shrink-0 shimmer-loading" />
       <div className="flex-1 min-w-0 flex flex-col gap-2">
         <div className="h-3.5 rounded-lg w-3/4 shimmer-loading" />
@@ -42,7 +42,7 @@ function ProductSkeleton() {
 
 function DemoBadge() {
   return (
-    <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-[#FF8C42] px-1.5 py-0.5 rounded-full leading-none" style={{ background: 'rgba(255, 140, 66, 0.1)' }}>
+    <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-[#E8721C] px-1.5 py-0.5 rounded-full leading-none" style={{ background: 'rgba(232, 114, 28, 0.1)' }}>
       <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
       Curated
     </span>
@@ -144,35 +144,35 @@ export default function CategoryPage() {
     <div className="min-h-screen px-6 py-8 flex flex-col gap-6 mesh-bg">
       {/* Header */}
       <div className="flex items-center gap-3 animate-fade-in">
-        <button onClick={() => router.push('/browse')} className="text-[#9B8E82] transition-colors hover:text-[#2D2A26] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#2D2A26]/5">
+        <button onClick={() => router.push('/browse')} className="text-[#5A574F] transition-colors hover:text-[#1A1917] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#1A1917]/5">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <h1 className="text-lg font-bold text-[#2D2A26]">{categoryName}</h1>
+        <h1 className="text-lg font-bold text-[#1A1917]">{categoryName}</h1>
       </div>
 
       {/* Demo Products */}
       {demoGraded.length > 0 && (
         <div className="flex flex-col gap-2 animate-slide-up stagger-1">
           <div className="flex items-center gap-2 px-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF8C42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-            <span className="text-xs font-semibold text-[#B0A89E] uppercase tracking-[0.08em]">Curated UAE Products</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8721C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+            <span className="text-xs font-semibold text-[#9A9790] uppercase tracking-[0.08em]">Curated UAE Products</span>
           </div>
           {demoGraded.map((dp, i) => (
             <button
               key={`demo-${dp.product_name}-${i}`}
               onClick={() => handleDemoProductClick(dp)}
               className="flex items-center gap-3 px-4 py-3.5 bg-white text-left animate-slide-up transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
-              style={{ animationDelay: `${(i + 1) * 50}ms`, borderRadius: '16px', border: '1px solid #EAE6E0' }}
+              style={{ animationDelay: `${(i + 1) * 50}ms`, borderRadius: '16px', border: '1px solid #E2DDD5' }}
             >
-              <div className="w-12 h-12 rounded-xl bg-[#F5F3EF] shrink-0 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9B8E82" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              <div className="w-12 h-12 rounded-xl bg-[#F1EEE8] shrink-0 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A574F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-sm font-medium text-[#2D2A26] truncate">{dp.product_name}</p>
+                  <p className="text-sm font-medium text-[#1A1917] truncate">{dp.product_name}</p>
                   <DemoBadge />
                 </div>
-                <p className="text-[11px] text-[#9B8E82] mt-0.5">{dp.brand} -- Score: {dp.score}</p>
+                <p className="text-[11px] text-[#5A574F] mt-0.5">{dp.brand} -- Score: {dp.score}</p>
               </div>
               <span
                 className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold"
@@ -188,9 +188,9 @@ export default function CategoryPage() {
       {/* Divider */}
       {demoGraded.length > 0 && !loading && products.length > 0 && (
         <div className="flex items-center gap-3 px-1">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#EAE6E0] to-transparent" />
-          <span className="text-[10px] font-medium text-[#B0A89E] uppercase tracking-[0.12em]">Database Results</span>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#EAE6E0] to-transparent" />
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#E2DDD5] to-transparent" />
+          <span className="text-[10px] font-medium text-[#9A9790] uppercase tracking-[0.12em]">Database Results</span>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#E2DDD5] to-transparent" />
         </div>
       )}
 
@@ -206,16 +206,16 @@ export default function CategoryPage() {
       {/* Error State */}
       {error && !loading && (
         <div className="text-center py-12">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9B8E82" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto opacity-30 mb-3"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-          <p className="text-sm text-[#9B8E82]">{error}</p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#5A574F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto opacity-30 mb-3"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <p className="text-sm text-[#5A574F]">{error}</p>
         </div>
       )}
 
       {/* Empty State */}
       {!loading && !error && products.length === 0 && demoGraded.length === 0 && (
         <div className="text-center py-12">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9B8E82" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto opacity-30 mb-3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <p className="text-sm text-[#9B8E82]">No products found in this category</p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#5A574F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto opacity-30 mb-3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <p className="text-sm text-[#5A574F]">No products found in this category</p>
         </div>
       )}
 
@@ -227,7 +227,7 @@ export default function CategoryPage() {
               key={`${product.barcode || product.product_name}-${i}`}
               onClick={() => handleProductClick(product)}
               className="flex items-center gap-3 px-4 py-3.5 bg-white text-left animate-slide-up transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
-              style={{ animationDelay: `${i * 40}ms`, borderRadius: '16px', border: '1px solid #EAE6E0' }}
+              style={{ animationDelay: `${i * 40}ms`, borderRadius: '16px', border: '1px solid #E2DDD5' }}
             >
               {product.image_url ? (
                 <img
@@ -238,13 +238,13 @@ export default function CategoryPage() {
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                 />
               ) : (
-                <div className="w-12 h-12 rounded-xl bg-[#F5F3EF] shrink-0 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9B8E82" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                <div className="w-12 h-12 rounded-xl bg-[#F1EEE8] shrink-0 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A574F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#2D2A26] truncate">{product.product_name}</p>
-                <p className="text-[11px] text-[#9B8E82] mt-0.5">Score: {product.score}</p>
+                <p className="text-sm font-medium text-[#1A1917] truncate">{product.product_name}</p>
+                <p className="text-[11px] text-[#5A574F] mt-0.5">Score: {product.score}</p>
               </div>
               <span
                 className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold"
@@ -264,7 +264,7 @@ export default function CategoryPage() {
             >
               {loadingMore ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-[#9B8E82] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-[#5A574F] border-t-transparent rounded-full animate-spin" />
                   Loading...
                 </>
               ) : (
