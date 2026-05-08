@@ -19,12 +19,18 @@ export default function BrowsePage() {
   const router = useRouter()
 
   return (
-    <div className="min-h-screen px-5 py-8 flex flex-col gap-5 bg-[#F2F0ED] pb-24">
+    <div className="min-h-screen px-5 py-8 flex flex-col gap-5 pb-24" style={{ background: '#F1EEE8' }}>
       <div className="flex items-center gap-3 animate-fade-in">
-        <button onClick={() => router.push('/')} className="text-[#8A8A8A] transition-colors hover:text-[#1A1A1A] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#1A1A1A]/5">
+        <button onClick={() => router.push('/')} className="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl transition-colors" style={{ color: '#5A574F' }} aria-label="Back home">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <h1 className="text-xl font-semibold text-[#1A1A1A]">Categories</h1>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#E8721C' }} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E8721C' }}>Browse</span>
+          </div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A1917' }}>Categories</h1>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -35,24 +41,22 @@ export default function BrowsePage() {
             <button
               key={cat.id}
               onClick={() => router.push(`/browse/${cat.id}`)}
-              className="relative bg-white flex flex-col items-start p-4 animate-slide-up overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md active:scale-[0.98]"
+              className="relative bg-white flex flex-col items-start p-4 animate-slide-up overflow-hidden transition-all hover:-translate-y-1 active:scale-[0.98]"
               style={{
                 animationDelay: `${i * 50}ms`,
-                borderRadius: '28px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                borderRadius: '22px',
+                border: '1px solid #E2DDD5',
                 minHeight: '160px',
               }}
             >
-              {/* Text content */}
-              <span className="text-[15px] font-bold text-[#1A1A1A] relative z-10">{cat.name}</span>
-              <span className="text-[11px] text-[#8A8A8A] mt-1 relative z-10">{cat.description}</span>
+              <span className="text-[15px] font-bold relative z-10" style={{ color: '#1A1917' }}>{cat.name}</span>
+              <span className="text-[11px] mt-1 relative z-10" style={{ color: '#9A9790' }}>{cat.description}</span>
               {count > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] text-[#8A8A8A] px-2.5 py-1 rounded-full mt-2 font-semibold relative z-10 bg-[#F2F0ED]">
+                <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full mt-2 font-semibold relative z-10" style={{ color: '#E8721C', background: '#FEF0E6' }}>
                   {count} curated
                 </span>
               )}
 
-              {/* Product image */}
               {imageUrl && (
                 <img
                   src={imageUrl}

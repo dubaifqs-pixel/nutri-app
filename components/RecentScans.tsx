@@ -86,8 +86,8 @@ export default function RecentScans() {
     <div className="w-full">
       {/* Stats */}
       <div className="flex items-center gap-3 px-6 mb-5">
-        <span className="text-[40px] font-bold text-[#1A1A1A] leading-none tracking-tight">{history.length}</span>
-        <span className="text-[11px] font-semibold text-[#8A8A8A] uppercase tracking-[0.12em] mt-2">Scanned</span>
+        <span className="text-[40px] font-bold text-[#1A1917] leading-none tracking-tight">{history.length}</span>
+        <span className="text-[11px] font-semibold text-[#9A9790] uppercase tracking-[0.12em] mt-2">Scanned</span>
         <div className="flex items-center gap-1 ml-auto">
           {history.slice(0, 5).map((entry, i) => (
             <span
@@ -105,7 +105,7 @@ export default function RecentScans() {
       <div className="relative px-6" style={{ height: '280px' }}>
         {/* Card counter */}
         <div className="absolute top-0 right-6 z-10 flex items-center gap-1">
-          <span className="text-[11px] font-semibold text-[#8A8A8A]">{currentIndex + 1}/{history.length}</span>
+          <span className="text-[11px] font-semibold text-[#9A9790]">{currentIndex + 1}/{history.length}</span>
         </div>
 
         {/* Next card (behind) */}
@@ -162,12 +162,12 @@ export default function RecentScans() {
                 fontSize: '26px',
                 fontWeight: 700,
                 lineHeight: 1.08,
-                color: '#1A1A1A',
+                color: '#1A1917',
                 letterSpacing: '-0.02em',
               }}>
                 {currentEntry.product_name}
               </h3>
-              <p style={{ fontSize: '12px', color: '#8A8A8A', marginTop: '8px', fontWeight: 500 }}>
+              <p style={{ fontSize: '12px', color: '#9A9790', marginTop: '8px', fontWeight: 500 }}>
                 nutri score
               </p>
             </div>
@@ -205,7 +205,7 @@ export default function RecentScans() {
               <div style={{
                 position: 'absolute', top: '24px', left: '24px',
                 padding: '6px 16px', borderRadius: '12px',
-                border: '2px solid #8A8A8A', color: '#8A8A8A',
+                border: '2px solid #9A9790', color: '#9A9790',
                 fontSize: '13px', fontWeight: 700, transform: 'rotate(-12deg)',
               }}>
                 SKIP
@@ -227,7 +227,7 @@ export default function RecentScans() {
                 {currentEntry.grade}
               </span>
               <span style={{
-                fontSize: '12px', color: '#8A8A8A', background: '#F2F0ED',
+                fontSize: '12px', color: '#9A9790', background: '#F1EEE8',
                 padding: '6px 14px', borderRadius: '20px', fontWeight: 500,
               }}>
                 Score: {currentEntry.score}
@@ -239,7 +239,7 @@ export default function RecentScans() {
         {/* All cards swiped */}
         {currentIndex >= history.length && (
           <div className="absolute inset-x-6 flex flex-col items-center justify-center" style={{ height: '260px' }}>
-            <p className="text-[#8A8A8A] text-sm">No more products</p>
+            <p className="text-[#9A9790] text-sm">No more products</p>
             <button
               onClick={() => setCurrentIndex(0)}
               className="mt-3 text-sm text-[#E8721C] font-semibold"
@@ -258,7 +258,7 @@ export default function RecentScans() {
       {/* Clear history */}
       <button
         onClick={() => { clearHistory(); setHistory([]) }}
-        className="flex items-center gap-1.5 mx-auto mt-2 text-xs text-[#8A8A8A] transition-colors hover:text-red-400 min-h-[44px] px-3"
+        className="flex items-center gap-1.5 mx-auto mt-2 text-xs text-[#9A9790] transition-colors hover:text-red-400 min-h-[44px] px-3"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
         Clear history

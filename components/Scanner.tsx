@@ -186,7 +186,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
         <button
           onClick={handleManualSubmit}
           disabled={manualBarcode.trim().length < 8}
-          className="w-full max-w-xs py-3.5 rounded-2xl btn-green disabled:opacity-40 transition-all text-sm"
+          className="w-full max-w-xs py-3.5 rounded-2xl btn-accent disabled:opacity-40 transition-all text-sm"
         >
           Search
         </button>
