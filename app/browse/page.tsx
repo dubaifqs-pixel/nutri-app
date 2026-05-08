@@ -15,33 +15,6 @@ const CATEGORIES = [
   { id: 'frozen', name: 'Frozen Foods', description: 'Frozen meals, ice cream' },
 ]
 
-type CompositionItem = {
-  src: string
-  alt: string
-  size: number
-  right: number
-  bottom: number
-  hover: string
-}
-
-const COMPOSITIONS: Record<string, CompositionItem[]> = {
-  frozen: [
-    { src: '/products/cat-icecream.png', alt: 'ice cream', size: 70, right: 8, bottom: 56, hover: 'group-hover:scale-110 group-hover:-rotate-6' },
-    { src: '/products/cat-chicken.png', alt: 'frozen chicken', size: 78, right: 50, bottom: 6, hover: 'group-hover:scale-110 group-hover:rotate-3' },
-    { src: '/products/cat-fruit.png', alt: 'frozen vegetables', size: 64, right: -4, bottom: 12, hover: 'group-hover:scale-110 group-hover:rotate-6' },
-  ],
-  beverages: [
-    { src: '/products/cat-juice.png', alt: 'juice', size: 72, right: 8, bottom: 52, hover: 'group-hover:scale-110 group-hover:-rotate-6' },
-    { src: '/products/cat-softdrink.png', alt: 'soft drink', size: 76, right: 52, bottom: 4, hover: 'group-hover:scale-110 group-hover:rotate-3' },
-    { src: '/products/cat-water.png', alt: 'water', size: 64, right: -2, bottom: 8, hover: 'group-hover:scale-110 group-hover:rotate-6' },
-  ],
-  fruits: [
-    { src: '/products/cat-fruit.png', alt: 'apple', size: 70, right: 12, bottom: 54, hover: 'group-hover:scale-110 group-hover:-rotate-6' },
-    { src: '/products/fruits-veg.png', alt: 'fruits and vegetables', size: 80, right: 48, bottom: 4, hover: 'group-hover:scale-110 group-hover:rotate-3' },
-    { src: '/products/cat-fruit.png', alt: 'orange', size: 56, right: -4, bottom: 14, hover: 'group-hover:scale-110 group-hover:rotate-12' },
-  ],
-}
-
 export default function BrowsePage() {
   const router = useRouter()
 
@@ -100,29 +73,7 @@ export default function BrowsePage() {
                 </span>
               )}
 
-              {/* Multi-item compositions for categories that benefit from variety */}
-              {COMPOSITIONS[cat.id] ? (
-                <div className="absolute w-[140px] h-[140px] pointer-events-none" style={{ insetInlineEnd: -16, bottom: -16 }}>
-                  {COMPOSITIONS[cat.id].map((item, idx) => (
-                    <img
-                      key={item.src}
-                      src={item.src}
-                      alt={item.alt}
-                      className={`absolute transition-transform duration-500 ease-out ${item.hover}`}
-                      style={{
-                        width: item.size,
-                        height: item.size,
-                        objectFit: 'contain',
-                        insetInlineEnd: item.right,
-                        bottom: item.bottom,
-                        filter: 'drop-shadow(0 6px 12px rgba(26,25,23,0.18)) drop-shadow(0 2px 4px rgba(26,25,23,0.08))',
-                        zIndex: 3 - idx,
-                      }}
-                      loading="lazy"
-                    />
-                  ))}
-                </div>
-              ) : imageUrl && (
+              {imageUrl && (
                 <img
                   src={imageUrl}
                   alt={cat.name}
