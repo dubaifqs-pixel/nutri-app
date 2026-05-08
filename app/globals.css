@@ -266,6 +266,37 @@ button:focus-visible {
   border: 1px solid #E2DDD5;
 }
 
+.glass {
+  background: rgba(241, 238, 232, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid #E2DDD5;
+}
+
+.glass-card {
+  background: #FFFFFF;
+  border: 1px solid #E2DDD5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.glass-dark {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.tangerine-underline {
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, #E8721C, transparent);
+}
+
+.text-gradient-tangerine {
+  background: linear-gradient(135deg, #E8721C, #D8651A);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 @keyframes tangerine-pulse {
   0%, 100% { box-shadow: 0 4px 16px rgba(232, 114, 28, 0.35); }
   50% { box-shadow: 0 4px 24px rgba(232, 114, 28, 0.55); }

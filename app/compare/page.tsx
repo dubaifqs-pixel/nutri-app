@@ -238,16 +238,16 @@ export default function ComparePage() {
                       style={{
                         width: `${Math.min((n1 / maxVal) * 100, 100)}%`,
                         background: winner1
-                          ? 'linear-gradient(90deg, #6BBF59, #4A9E3F)'
+                          ? 'linear-gradient(90deg, #3B8C3A, #2E7D32)'
                           : winner2
                             ? 'linear-gradient(90deg, #FF9800, #E65100)'
                             : 'linear-gradient(90deg, #9A9790, #5A574F)',
-                        boxShadow: winner1 ? '0 0 8px rgba(74, 158, 63, 0.3)' : 'none',
+                        boxShadow: winner1 ? '0 0 8px rgba(46, 125, 50, 0.3)' : 'none',
                       }}
                     />
                   </div>
                   {winner1 && (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A9E3F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                   )}
                 </div>
 
@@ -260,23 +260,23 @@ export default function ComparePage() {
                       style={{
                         width: `${Math.min((n2 / maxVal) * 100, 100)}%`,
                         background: winner2
-                          ? 'linear-gradient(90deg, #6BBF59, #4A9E3F)'
+                          ? 'linear-gradient(90deg, #3B8C3A, #2E7D32)'
                           : winner1
                             ? 'linear-gradient(90deg, #FF9800, #E65100)'
                             : 'linear-gradient(90deg, #9A9790, #5A574F)',
-                        boxShadow: winner2 ? '0 0 8px rgba(74, 158, 63, 0.3)' : 'none',
+                        boxShadow: winner2 ? '0 0 8px rgba(46, 125, 50, 0.3)' : 'none',
                       }}
                     />
                   </div>
                   {winner2 && (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A9E3F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                   )}
                 </div>
 
                 {/* Labels */}
                 <div className="flex justify-between mt-1">
-                  <span className={`text-[9px] ${winner1 ? 'text-[#4A9E3F] font-semibold' : 'text-[#5A574F]'}`}>{slot1.product_name.split(' ').slice(0, 2).join(' ')}</span>
-                  <span className={`text-[9px] ${winner2 ? 'text-[#4A9E3F] font-semibold' : 'text-[#5A574F]'}`}>{slot2.product_name.split(' ').slice(0, 2).join(' ')}</span>
+                  <span className={`text-[9px] ${winner1 ? 'text-[#2E7D32] font-semibold' : 'text-[#5A574F]'}`}>{slot1.product_name.split(' ').slice(0, 2).join(' ')}</span>
+                  <span className={`text-[9px] ${winner2 ? 'text-[#2E7D32] font-semibold' : 'text-[#5A574F]'}`}>{slot2.product_name.split(' ').slice(0, 2).join(' ')}</span>
                 </div>
               </div>
             )
