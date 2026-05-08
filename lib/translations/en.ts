@@ -77,6 +77,28 @@ export const en = {
   'chat.suggest1': 'Is this good for diabetics?',
   'chat.suggest2': 'What are the harmful ingredients?',
   'chat.suggest3': 'Give me better alternatives',
+  'chat.details': 'Details',
+  'chat.recommendedAmount': 'Recommended Amount',
+  'chat.advice': 'Advice',
+  'chat.concerns': 'Concerns',
+  'chat.positives': 'Positives',
+  'chat.dailyPercent': 'daily',
+
+  // Nutrition Breakdown
+  'nutri.analysis': 'Nutrition Analysis',
+  'nutri.energy': 'Energy',
+  'nutri.sugars': 'Sugars',
+  'nutri.saturatedFat': 'Saturated Fat',
+  'nutri.sodium': 'Sodium',
+  'nutri.protein': 'Protein',
+  'nutri.fiber': 'Fiber',
+  'nutri.positive': 'Positive',
+  'nutri.points': 'pts',
+  'nutri.unit.kcal': 'kcal',
+  'nutri.unit.g': 'g',
+  'nutri.unit.mg': 'mg',
+  'nutri.partialData': 'Partial data — some values are missing',
+  'nutri.proteinNotCounted': 'Protein not counted (negative points ≥ 11)',
 }
 
 export type TranslationKey = keyof typeof en

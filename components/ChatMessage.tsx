@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChatMessage as ChatMessageType } from '@/lib/types'
+import { useLang, useT } from '@/lib/i18n'
 
 const BADGE_STYLES: Record<string, { bg: string; text: string; border: string }> = {
   HARMFUL: { bg: 'rgba(196, 40, 40, 0.08)', text: '#C62828', border: 'rgba(196, 40, 40, 0.2)' },
@@ -19,6 +20,14 @@ const LEVEL_COLORS: Record<string, string> = {
   moderate: '#F9A825',
   low: '#4A9E3F',
   good: '#4A9E3F',
+}
+
+// Pick primary/secondary text based on active language. Falls back if a side is missing.
+function pickLang(en: string | undefined, ar: string | undefined, lang: 'en' | 'ar'): { primary: string; secondary: string; primaryDir: 'ltr' | 'rtl'; secondaryDir: 'ltr' | 'rtl' } {
+  if (lang === 'ar') {
+    return { primary: ar || en || '', secondary: en || '', primaryDir: 'rtl', secondaryDir: 'ltr' }
+  }
+  return { primary: en || ar || '', secondary: ar || '', primaryDir: 'ltr', secondaryDir: 'rtl' }
 }
 
 function DailyIntakeBar({ percent, color }: { percent: number; color: string }) {
@@ -91,7 +100,9 @@ function RichResponse({ content }: { content: string }) {
 }
 
 function VerdictBadge({ section }: { section: any }) {
+  const lang = useLang()
   const style = BADGE_STYLES[section.badge] || BADGE_STYLES.MODERATE
+  const { primary, secondary, primaryDir, secondaryDir } = pickLang(section.title_en, section.title_ar, lang)
   return (
     <div
       className="flex items-center gap-2.5 px-4 py-3 rounded-2xl animate-scale-in"
@@ -104,8 +115,8 @@ function VerdictBadge({ section }: { section: any }) {
         {section.badge === 'HARMFUL' || section.badge === 'CAUTION' ? <WarningIcon /> : <CheckIcon />}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold" style={{ color: style.text }}>{section.title_en}</p>
-        <p className="text-xs mt-0.5" style={{ color: style.text, opacity: 0.8 }} dir="rtl">{section.title_ar}</p>
+        <p className="text-sm font-semibold" style={{ color: style.text }} dir={primaryDir}>{primary}</p>
+        {secondary && <p className="text-xs mt-0.5" style={{ color: style.text, opacity: 0.8 }} dir={secondaryDir}>{secondary}</p>}
       </div>
       <span
         className="text-[10px] font-bold px-2 py-1 rounded-lg shrink-0 uppercase tracking-wider"
@@ -118,15 +129,18 @@ function VerdictBadge({ section }: { section: any }) {
 }
 
 function ConcernsSection({ section }: { section: any }) {
+  const lang = useLang()
+  const t = useT()
   if (!section.items?.length) return null
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-1.5 px-1">
         <span style={{ color: '#C62828' }}><WarningIcon /></span>
-        <span className="text-xs font-semibold text-[#C62828] uppercase tracking-wider">Concerns</span>
+        <span className="text-xs font-semibold text-[#C62828] uppercase tracking-wider">{t('chat.concerns')}</span>
       </div>
       {section.items.map((item: any, i: number) => {
         const color = LEVEL_COLORS[item.level] || '#F9A825'
+        const note = pickLang(item.note_en, item.note_ar, lang)
         return (
           <div
             key={i}
@@ -139,12 +153,12 @@ function ConcernsSection({ section }: { section: any }) {
                 <span className="text-xs font-bold px-1.5 py-0.5 rounded-md" style={{ background: `${color}12`, color }}>{item.value}</span>
               </div>
               <span className="text-xs font-bold px-2 py-0.5 rounded-lg" style={{ background: `${color}15`, color }}>
-                {item.daily_percent}% daily
+                {item.daily_percent}% {t('chat.dailyPercent')}
               </span>
             </div>
             <DailyIntakeBar percent={item.daily_percent} color={color} />
-            <p className="text-xs text-[#9A9790] mt-1.5">{item.note_en}</p>
-            <p className="text-xs text-[#9A9790] mt-0.5" dir="rtl">{item.note_ar}</p>
+            <p className="text-xs text-[#9A9790] mt-1.5" dir={note.primaryDir}>{note.primary}</p>
+            {note.secondary && <p className="text-xs text-[#9A9790] mt-0.5" dir={note.secondaryDir}>{note.secondary}</p>}
           </div>
         )
       })}
@@ -153,15 +167,18 @@ function ConcernsSection({ section }: { section: any }) {
 }
 
 function PositivesSection({ section }: { section: any }) {
+  const lang = useLang()
+  const t = useT()
   if (!section.items?.length) return null
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-1.5 px-1">
         <span style={{ color: '#4A9E3F' }}><CheckIcon /></span>
-        <span className="text-xs font-semibold text-[#4A9E3F] uppercase tracking-wider">Positives</span>
+        <span className="text-xs font-semibold text-[#4A9E3F] uppercase tracking-wider">{t('chat.positives')}</span>
       </div>
       {section.items.map((item: any, i: number) => {
         const color = LEVEL_COLORS[item.level] || '#4A9E3F'
+        const note = pickLang(item.note_en, item.note_ar, lang)
         return (
           <div
             key={i}
@@ -173,8 +190,8 @@ function PositivesSection({ section }: { section: any }) {
               <span className="text-xs font-bold px-1.5 py-0.5 rounded-md" style={{ background: `${color}12`, color }}>{item.value}</span>
               <span className="text-xs px-1.5 py-0.5 rounded-md uppercase font-semibold" style={{ background: `${color}12`, color }}>{item.level}</span>
             </div>
-            <p className="text-xs text-[#9A9790] mt-1.5">{item.note_en}</p>
-            <p className="text-xs text-[#9A9790] mt-0.5" dir="rtl">{item.note_ar}</p>
+            <p className="text-xs text-[#9A9790] mt-1.5" dir={note.primaryDir}>{note.primary}</p>
+            {note.secondary && <p className="text-xs text-[#9A9790] mt-0.5" dir={note.secondaryDir}>{note.secondary}</p>}
           </div>
         )
       })}
@@ -183,36 +200,43 @@ function PositivesSection({ section }: { section: any }) {
 }
 
 function DetailSection({ section }: { section: any }) {
+  const lang = useLang()
+  const t = useT()
   if (!section.points?.length) return null
+  const titlePick = pickLang(section.title_en, section.title_ar, lang)
+  const titleText = titlePick.primary || t('chat.details')
   return (
     <div className="flex flex-col gap-2 animate-slide-up" style={{ animationDelay: '0.15s' }}>
       <div className="flex items-center gap-1.5 px-1">
         <span style={{ color: '#1A1917' }}><ShieldIcon /></span>
-        <span className="text-xs font-semibold text-[#1A1917] uppercase tracking-wider">{section.title_en || 'Details'}</span>
+        <span className="text-xs font-semibold text-[#1A1917] uppercase tracking-wider">{titleText}</span>
       </div>
       <div className="bg-white rounded-2xl p-3" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
         <div className="flex flex-col gap-2.5">
-          {section.points.map((point: any, i: number) => (
-            <div key={i} className="flex items-start gap-2.5">
-              <div
-                className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5"
-                style={{
-                  background: point.highlight ? 'rgba(26, 26, 26, 0.08)' : 'rgba(26, 26, 26, 0.04)',
-                  color: point.highlight ? '#1A1917' : '#9A9790',
-                }}
-              >
-                {point.highlight ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/></svg>
-                )}
+          {section.points.map((point: any, i: number) => {
+            const text = pickLang(point.text_en, point.text_ar, lang)
+            return (
+              <div key={i} className="flex items-start gap-2.5">
+                <div
+                  className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5"
+                  style={{
+                    background: point.highlight ? 'rgba(26, 26, 26, 0.08)' : 'rgba(26, 26, 26, 0.04)',
+                    color: point.highlight ? '#1A1917' : '#9A9790',
+                  }}
+                >
+                  {point.highlight ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/></svg>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className={`text-sm leading-relaxed ${point.highlight ? 'text-[#1A1917] font-medium' : 'text-[#4A4A4A]'}`} dir={text.primaryDir}>{text.primary}</p>
+                  {text.secondary && <p className="text-xs text-[#9A9790] mt-0.5" dir={text.secondaryDir}>{text.secondary}</p>}
+                </div>
               </div>
-              <div className="flex-1">
-                <p className={`text-sm leading-relaxed ${point.highlight ? 'text-[#1A1917] font-medium' : 'text-[#4A4A4A]'}`}>{point.text_en}</p>
-                <p className="text-xs text-[#9A9790] mt-0.5" dir="rtl">{point.text_ar}</p>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
@@ -220,6 +244,11 @@ function DetailSection({ section }: { section: any }) {
 }
 
 function CalculationSection({ section }: { section: any }) {
+  const lang = useLang()
+  const t = useT()
+  const labelPick = pickLang(section.label_en, section.label_ar, lang)
+  const noteValue = pickLang(section.value, section.value_ar, lang)
+  const note = pickLang(section.note_en, section.note_ar, lang)
   return (
     <div
       className="rounded-2xl p-4 animate-scale-in bg-white"
@@ -230,33 +259,38 @@ function CalculationSection({ section }: { section: any }) {
     >
       <div className="flex items-center gap-1.5 mb-3">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A1917" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><path d="M8 10h8"/><path d="M8 14h4"/><path d="M12 8v8"/></svg>
-        <span className="text-xs font-semibold text-[#1A1917] uppercase tracking-wider">{section.label_en || 'Recommended Amount'}</span>
+        <span className="text-xs font-semibold text-[#1A1917] uppercase tracking-wider">{labelPick.primary || t('chat.recommendedAmount')}</span>
       </div>
       <div className="flex items-center gap-3 mb-2">
-        <div className="text-2xl font-bold text-[#1A1917]">{section.value}</div>
+        <div className="text-2xl font-bold text-[#1A1917]" dir={noteValue.primaryDir}>{noteValue.primary}</div>
       </div>
-      <div className="text-sm font-medium text-[#9A9790] mb-2" dir="rtl">{section.value_ar}</div>
+      {noteValue.secondary && <div className="text-sm font-medium text-[#9A9790] mb-2" dir={noteValue.secondaryDir}>{noteValue.secondary}</div>}
       <div className="h-px w-full my-2 bg-[rgba(0,0,0,0.06)]" />
-      <p className="text-xs text-[#9A9790] leading-relaxed">{section.note_en}</p>
-      <p className="text-xs text-[#9A9790] leading-relaxed mt-1" dir="rtl">{section.note_ar}</p>
+      <p className="text-xs text-[#9A9790] leading-relaxed" dir={note.primaryDir}>{note.primary}</p>
+      {note.secondary && <p className="text-xs text-[#9A9790] leading-relaxed mt-1" dir={note.secondaryDir}>{note.secondary}</p>}
     </div>
   )
 }
 
 function AdviceSection({ section }: { section: any }) {
+  const lang = useLang()
+  const t = useT()
+  const text = pickLang(section.text_en, section.text_ar, lang)
   return (
     <div className="bg-white rounded-2xl p-3.5 animate-slide-up" style={{ animationDelay: '0.5s', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
       <div className="flex items-center gap-1.5 mb-2">
         <span style={{ color: '#1A1917' }}><ShieldIcon /></span>
-        <span className="text-xs font-semibold text-[#1A1917] uppercase tracking-wider">Advice</span>
+        <span className="text-xs font-semibold text-[#1A1917] uppercase tracking-wider">{t('chat.advice')}</span>
       </div>
-      <p className="text-sm text-[#1A1917] leading-relaxed">{section.text_en}</p>
-      <p className="text-sm text-[#9A9790] leading-relaxed mt-1.5" dir="rtl">{section.text_ar}</p>
+      <p className="text-sm text-[#1A1917] leading-relaxed" dir={text.primaryDir}>{text.primary}</p>
+      {text.secondary && <p className="text-sm text-[#9A9790] leading-relaxed mt-1.5" dir={text.secondaryDir}>{text.secondary}</p>}
     </div>
   )
 }
 
 function TipSection({ section }: { section: any }) {
+  const lang = useLang()
+  const text = pickLang(section.text_en, section.text_ar, lang)
   return (
     <div
       className="flex items-start gap-2.5 px-3.5 py-3 rounded-2xl animate-slide-up bg-[#F1EEE8]"
@@ -264,8 +298,8 @@ function TipSection({ section }: { section: any }) {
     >
       <span className="mt-0.5" style={{ color: '#9A9790' }}><LightbulbIcon /></span>
       <div className="flex-1">
-        <p className="text-xs text-[#1A1917] leading-relaxed">{section.text_en}</p>
-        <p className="text-xs text-[#9A9790] leading-relaxed mt-1" dir="rtl">{section.text_ar}</p>
+        <p className="text-xs text-[#1A1917] leading-relaxed" dir={text.primaryDir}>{text.primary}</p>
+        {text.secondary && <p className="text-xs text-[#9A9790] leading-relaxed mt-1" dir={text.secondaryDir}>{text.secondary}</p>}
       </div>
     </div>
   )
