@@ -7,7 +7,7 @@ import { DEMO_PRODUCTS } from '@/lib/demo-products'
 import { calculateGrade } from '@/lib/scoring'
 import { getProductImage } from '@/lib/product-images'
 import { GRADE_COLORS, type Grade, type NutritionData } from '@/lib/types'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 
 // Pick featured products — each with a distinct image
 const FEATURED = [
@@ -64,6 +64,15 @@ function ScoreArc({ grade, score }: { grade: Grade; score: number }) {
 
 export default function Home() {
   const t = useT()
+
+  // Preload all product images on mount
+  useEffect(() => {
+    FEATURED.forEach(p => {
+      const img = new Image()
+      img.src = p.image
+    })
+  }, [])
+
   const [currentIndex, setCurrentIndex] = useState(0)
   const [dragX, setDragX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
