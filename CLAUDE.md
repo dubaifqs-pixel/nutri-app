@@ -7,16 +7,18 @@
 - **Deployed:** https://nutri-app-mocha.vercel.app
 - **Repo:** https://github.com/dubaifqs-pixel/nutri-app
 
-## Design System
-- **Background:** #F1EEE8 (warm cream)
-- **Cards:** #FFFFFF, border 1px #E2DDD5, border-radius 22–28px, shadow 0 2px 8px rgba(0,0,0,0.04)
-- **Text:** #1A1917 (primary), #5A574F (secondary), #9A9790 (tertiary)
-- **Accent:** #E8721C (orange) — used for primary CTA, eyebrow tags, icons-on-tint
-- **Accent tint:** #FEF0E6 (light orange) for icon backgrounds
-- **Border:** #E2DDD5
-- **Font:** System font (-apple-system, SF Pro, Segoe UI). DM Sans + Cairo for stakeholder doc.
-- **Icons:** Outlined, stroke-width 1.5, dark on tint or orange on tint
-- **Style:** Minimal, warm cream + orange. Aligned with DFQS proposal document.
+## Design System (Swipe Drinks palette)
+- **Background:** #F5F4F0 (warm light gray)
+- **Cards:** #FFFFFF, border 1px rgba(0,0,0,0.06), border-radius 20px, shadow 0 1px 4px rgba(0,0,0,0.04)
+- **Text:** #1A1A1A (primary), #7A7A7A (secondary), #ACACAC (tertiary)
+- **Accent (Scan button):** #B6F074 (lime green) with black text — THE signature color
+- **Pastel accents:** #FFEC89 (yellow), #DAB8F1 (lavender), #B6E1FA (blue) — used sparingly on quick-action icon backgrounds
+- **Dark cards/nav:** #1A1A1A
+- **Border:** rgba(0,0,0,0.06)
+- **Font:** Nunito (Google Fonts: 400, 500, 600, 700, 800). Headings 700-800, body 400-500, labels 600 uppercase tracking.
+- **Icons:** Outlined, stroke-width 1.5, black outlined
+- **Bottom nav:** #F5F4F0 bg, center Scan pill is #B6F074 lime green + black text, active icon black, inactive #ACACAC
+- **Style:** Very clean, lots of whitespace, no heavy shadows, no gradients on buttons. Light, airy, premium.
 - **No emojis** — use SVG icons only.
 
 ## Grade Colors

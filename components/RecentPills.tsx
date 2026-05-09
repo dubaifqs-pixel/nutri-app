@@ -54,7 +54,7 @@ export default function RecentPills() {
   return (
     <div className="px-5 pb-3">
       <div className="flex items-center gap-2 hide-scrollbar overflow-x-auto">
-        <span className="text-[9px] font-bold uppercase tracking-[0.06em] mr-1 whitespace-nowrap" style={{ color: '#9A9790' }}>
+        <span className="text-[9px] font-bold uppercase tracking-[0.06em] mr-1 whitespace-nowrap" style={{ color: '#ACACAC' }}>
           {showingDemo ? t('home.featuredToday') : t('home.recent')}
         </span>
         {pills.map((p) => (
@@ -62,13 +62,13 @@ export default function RecentPills() {
             key={p.key}
             href={showingDemo ? '/browse' : '/'}
             className="flex items-center gap-1.5 rounded-full px-2 py-1 bg-white shrink-0"
-            style={{ border: '1px solid #E2DDD5' }}
+            style={{ border: '1px solid rgba(0,0,0,0.06)' }}
           >
             <div
               className="w-3 h-3 rounded-full flex-shrink-0"
               style={{ background: GRADE_COLORS[p.grade] }}
             />
-            <span className="text-[9px] font-medium max-w-[88px] overflow-hidden text-ellipsis whitespace-nowrap" style={{ color: '#1A1917' }}>
+            <span className="text-[9px] font-medium max-w-[88px] overflow-hidden text-ellipsis whitespace-nowrap" style={{ color: '#1A1A1A' }}>
               {p.name}
             </span>
           </Link>

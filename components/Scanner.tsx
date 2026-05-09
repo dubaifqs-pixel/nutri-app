@@ -179,7 +179,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
           onChange={(e) => setManualBarcode(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
           placeholder="e.g. 6281100120018"
-          className="w-full max-w-xs bg-white/10 text-white text-center text-xl px-5 py-4 rounded-2xl outline-none placeholder:text-white/25 tracking-widest focus:ring-2 focus:ring-[#E8721C]/40 transition-all"
+          className="w-full max-w-xs bg-white/10 text-white text-center text-xl px-5 py-4 rounded-2xl outline-none placeholder:text-white/25 tracking-widest focus:ring-2 focus:ring-[#B6F074]/40 transition-all"
           dir="ltr"
           autoFocus
         />
@@ -226,7 +226,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
   const frameH = mode === 'barcode' ? 140 : 220
   const cornerSize = 24
   const cornerThickness = 3
-  const cornerColor = scanStatus === 'detected' ? '#E8721C' : '#E8721C'
+  const cornerColor = scanStatus === 'detected' ? '#B6F074' : '#B6F074'
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center" style={{ height: '100vh' }}>
@@ -254,12 +254,12 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
 
           {/* Glow effect on detection */}
           {scanStatus === 'detected' && (
-            <div className="absolute -inset-2 rounded-2xl" style={{ boxShadow: '0 0 40px rgba(232, 114, 28, 0.4), inset 0 0 40px rgba(232, 114, 28, 0.1)' }} />
+            <div className="absolute -inset-2 rounded-2xl" style={{ boxShadow: '0 0 40px rgba(182, 240, 116, 0.4), inset 0 0 40px rgba(182, 240, 116, 0.1)' }} />
           )}
 
           {/* Scanning line animation */}
           {isAutoScanning && scanStatus === 'scanning' && videoReady && (
-            <div className="absolute inset-x-3 h-0.5 bg-gradient-to-r from-transparent via-[#E8721C] to-transparent animate-scan-line" style={{ boxShadow: '0 0 8px rgba(232, 114, 28, 0.6)' }} />
+            <div className="absolute inset-x-3 h-0.5 bg-gradient-to-r from-transparent via-[#B6F074] to-transparent animate-scan-line" style={{ boxShadow: '0 0 8px rgba(182, 240, 116, 0.6)' }} />
           )}
         </div>
       </div>
@@ -267,10 +267,10 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
       {/* Status pill */}
       <div className="absolute bottom-32 bg-black/70 backdrop-blur-sm px-5 py-2.5 rounded-full flex items-center gap-2.5">
         {isAutoScanning && scanStatus === 'scanning' && videoReady && (
-          <div className="w-2 h-2 bg-[#E8721C] rounded-full animate-pulse" />
+          <div className="w-2 h-2 bg-[#B6F074] rounded-full animate-pulse" />
         )}
         {scanStatus === 'detected' && (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8721C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B6F074" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
         )}
         <p className="text-white text-sm">{guideText}</p>
       </div>
@@ -289,7 +289,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
           <div
             className="w-14 h-14 rounded-full shadow-lg transition-colors"
             style={{
-              background: scanStatus === 'detected' ? '#E8721C' : '#FFFFFF',
+              background: scanStatus === 'detected' ? '#B6F074' : '#FFFFFF',
             }}
           />
         </div>

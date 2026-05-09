@@ -44,8 +44,8 @@ export default function GradeBadge({ grade, score }: { grade: Grade; score: numb
       </div>
 
       {/* Score Pill */}
-      <div className="flex flex-col items-center gap-1 px-5 py-2.5 rounded-2xl bg-white" style={{ border: '1px solid #E2DDD5' }}>
-        <p className="text-sm font-semibold" style={{ color: '#1A1917' }}>Score: {score}</p>
+      <div className="flex flex-col items-center gap-1 px-5 py-2.5 rounded-2xl bg-white" style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
+        <p className="text-sm font-semibold" style={{ color: '#1A1A1A' }}>Score: {score}</p>
       </div>
     </div>
   )

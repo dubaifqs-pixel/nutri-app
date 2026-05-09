@@ -121,14 +121,14 @@ function ScanContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1A1917] flex flex-col items-center justify-center gap-6 px-8">
+      <div className="min-h-screen bg-[#1A1A1A] flex flex-col items-center justify-center gap-6 px-8">
         {/* Animated rings */}
         <div className="relative w-20 h-20 flex items-center justify-center">
-          <div className="absolute inset-0 border-2 border-[#E8721C]/20 rounded-full" />
-          <div className="absolute inset-0 border-2 border-[#E8721C] border-t-transparent rounded-full animate-spin" />
-          <div className="absolute inset-2 border-2 border-[#F5C4A0]/20 rounded-full" />
-          <div className="absolute inset-2 border-2 border-[#F5C4A0] border-t-transparent rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8721C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+          <div className="absolute inset-0 border-2 border-[#B6F074]/20 rounded-full" />
+          <div className="absolute inset-0 border-2 border-[#B6F074] border-t-transparent rounded-full animate-spin" />
+          <div className="absolute inset-2 border-2 border-[#D4F5A8]/20 rounded-full" />
+          <div className="absolute inset-2 border-2 border-[#D4F5A8] border-t-transparent rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B6F074" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
         </div>
         <div className="text-center">
           <p className="text-white text-sm font-medium">{status}</p>
@@ -167,7 +167,7 @@ function ScanContent() {
 
 export default function ScanPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#1A1917] flex items-center justify-center"><div className="w-10 h-10 border-2 border-[#E8721C] border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#1A1A1A] flex items-center justify-center"><div className="w-10 h-10 border-2 border-[#B6F074] border-t-transparent rounded-full animate-spin" /></div>}>
       <ScanContent />
     </Suspense>
   )

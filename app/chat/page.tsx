@@ -78,15 +78,15 @@ function ChatContent() {
   }
 
   return (
-    <div className="h-dvh flex flex-col" style={{ background: '#F1EEE8' }}>
+    <div className="h-dvh flex flex-col" style={{ background: '#F5F4F0' }}>
       {/* Header */}
-      <div className="px-4 py-3 flex items-center justify-between z-10" style={{ background: '#F1EEE8', borderBottom: '1px solid #E2DDD5' }}>
-        <button onClick={() => router.push(product ? '/result' : '/')} className="text-sm flex items-center gap-1 transition-colors min-w-[44px] min-h-[44px] -ml-2 pl-2 rounded-xl" style={{ color: '#5A574F' }}>
+      <div className="px-4 py-3 flex items-center justify-between z-10" style={{ background: '#F5F4F0', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+        <button onClick={() => router.push(product ? '/result' : '/')} className="text-sm flex items-center gap-1 transition-colors min-w-[44px] min-h-[44px] -ml-2 pl-2 rounded-xl" style={{ color: '#7A7A7A' }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           {t('chat.back')}
         </button>
-        <h1 className="text-sm font-semibold flex items-center gap-1.5" style={{ color: '#1A1917' }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8721C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+        <h1 className="text-sm font-semibold flex items-center gap-1.5" style={{ color: '#1A1A1A' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
           {t('chat.title')}
         </h1>
         <div className="w-12" />
@@ -95,7 +95,7 @@ function ChatContent() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
         {messages.length === 0 && (
-          <div className="text-center text-sm mt-8 animate-fade-in" style={{ color: '#5A574F' }}>
+          <div className="text-center text-sm mt-8 animate-fade-in" style={{ color: '#7A7A7A' }}>
             <p>{product ? t('chat.empty') : t('chat.empty.general')}</p>
             <div className="flex flex-wrap gap-2 justify-center mt-4">
               {(product
@@ -106,7 +106,7 @@ function ChatContent() {
                   key={q}
                   onClick={() => sendMessage(q)}
                   className="text-xs bg-white px-3.5 py-2.5 rounded-full transition-all min-h-[44px]"
-                  style={{ color: '#1A1917', border: '1px solid #E2DDD5' }}
+                  style={{ color: '#1A1A1A', border: '1px solid rgba(0,0,0,0.06)' }}
                 >
                   {q}
                 </button>
@@ -117,11 +117,11 @@ function ChatContent() {
         {messages.map((msg, i) => (<ChatMessageComponent key={i} message={msg} />))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-white px-5 py-3 rounded-2xl rounded-bl-md text-sm" style={{ color: '#5A574F', border: '1px solid #E2DDD5' }}>
+            <div className="bg-white px-5 py-3 rounded-2xl rounded-bl-md text-sm" style={{ color: '#7A7A7A', border: '1px solid rgba(0,0,0,0.06)' }}>
               <div className="flex gap-1.5">
-                <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#9A9790' }} />
-                <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#9A9790', animationDelay: '0.15s' }} />
-                <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#9A9790', animationDelay: '0.3s' }} />
+                <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#ACACAC' }} />
+                <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#ACACAC', animationDelay: '0.15s' }} />
+                <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#ACACAC', animationDelay: '0.3s' }} />
               </div>
             </div>
           </div>
@@ -130,7 +130,7 @@ function ChatContent() {
       </div>
 
       {/* Input Bar */}
-      <div className="px-4 py-3 flex gap-2" style={{ background: '#F1EEE8', borderTop: '1px solid #E2DDD5' }}>
+      <div className="px-4 py-3 flex gap-2" style={{ background: '#F5F4F0', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
         <input
           type="text"
           value={input}
@@ -138,7 +138,7 @@ function ChatContent() {
           onKeyDown={(e) => { if (e.key === 'Enter') sendMessage() }}
           placeholder={t('chat.placeholder')}
           className="flex-1 bg-white rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 transition-all"
-          style={{ color: '#1A1917', border: '1px solid #E2DDD5' }}
+          style={{ color: '#1A1A1A', border: '1px solid rgba(0,0,0,0.06)' }}
         />
         <button
           onClick={() => sendMessage()}
@@ -155,7 +155,7 @@ function ChatContent() {
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: '#F1EEE8' }}><div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#1A1917', borderTopColor: 'transparent' }} /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F4F0' }}><div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#1A1A1A', borderTopColor: 'transparent' }} /></div>}>
       <ChatContent />
     </Suspense>
   )

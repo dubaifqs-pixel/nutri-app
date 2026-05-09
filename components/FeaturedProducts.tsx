@@ -59,10 +59,10 @@ export default function FeaturedProducts() {
     <div className="flex-shrink-0">
       <div className="flex items-center justify-between px-5 mb-2.5">
         <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#E8721C' }} />
-          <span className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: '#E8721C' }}>{t('home.featuredToday')}</span>
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#1A1A1A' }} />
+          <span className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: '#1A1A1A' }}>{t('home.featuredToday')}</span>
         </div>
-        <Link href="/browse" className="text-[10px] font-semibold transition-opacity hover:opacity-70" style={{ color: '#5A574F' }}>
+        <Link href="/browse" className="text-[10px] font-semibold transition-opacity hover:opacity-70" style={{ color: '#7A7A7A' }}>
           {t('home.seeAll')}
         </Link>
       </div>
@@ -76,9 +76,9 @@ export default function FeaturedProducts() {
               href="/browse"
               className="group shrink-0 w-[136px] h-[156px] rounded-[20px] relative overflow-hidden transition-all duration-300 hover:-translate-y-1 active:scale-[0.97]"
               style={{
-                background: 'linear-gradient(165deg, #FFFFFF 0%, #FAF8F4 100%)',
-                border: '1px solid #E2DDD5',
-                boxShadow: '0 1px 2px rgba(26,25,23,0.04), 0 8px 20px rgba(26,25,23,0.06)',
+                background: '#FFFFFF',
+                border: '1px solid rgba(0,0,0,0.06)',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
               }}
             >
               {/* Soft grade-tinted glow behind product */}
@@ -120,7 +120,7 @@ export default function FeaturedProducts() {
                   objectFit: 'contain',
                   insetInlineEnd: -10,
                   top: 14,
-                  filter: 'drop-shadow(0 6px 12px rgba(26,25,23,0.18)) drop-shadow(0 2px 4px rgba(26,25,23,0.08))',
+                  filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.12)) drop-shadow(0 2px 4px rgba(0,0,0,0.06))',
                 }}
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
               />
@@ -132,7 +132,7 @@ export default function FeaturedProducts() {
                   background: 'linear-gradient(to top, #FFFFFF 0%, #FFFFFF 70%, transparent 100%)',
                 }}
               >
-                <p className="text-[10px] font-bold leading-[1.15] line-clamp-2" style={{ color: '#1A1917' }}>
+                <p className="text-[10px] font-bold leading-[1.15] line-clamp-2" style={{ color: '#1A1A1A' }}>
                   {p.name}
                 </p>
                 <div className="flex items-center gap-1.5 mt-1">

@@ -26,8 +26,8 @@ export default function ResultPage() {
 
   if (!product || !gradeResult) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F1EEE8' }}>
-        <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#1A1917', borderTopColor: 'transparent' }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F4F0' }}>
+        <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#1A1A1A', borderTopColor: 'transparent' }} />
       </div>
     )
   }
@@ -54,15 +54,15 @@ export default function ResultPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-8 flex flex-col gap-6" style={{ background: '#F1EEE8' }}>
+    <div className="min-h-screen px-6 py-8 flex flex-col gap-6" style={{ background: '#F5F4F0' }}>
       {/* Header with eyebrow tag */}
       <div className="flex items-center gap-3 animate-fade-in">
-        <button onClick={() => router.push('/')} className="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl transition-colors" style={{ color: '#5A574F' }} aria-label="Back home">
+        <button onClick={() => router.push('/')} className="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl transition-colors" style={{ color: '#7A7A7A' }} aria-label="Back home">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <div className="flex items-center gap-2 flex-1">
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#E8721C' }} />
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E8721C' }}>{t('result.scanResult')}</span>
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#1A1A1A' }} />
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#1A1A1A' }}>{t('result.scanResult')}</span>
         </div>
       </div>
 
@@ -81,16 +81,16 @@ export default function ResultPage() {
 
       {/* Product Name + meta pills */}
       <div className="text-center animate-slide-up stagger-1">
-        <h1 className="text-xl font-bold" style={{ color: '#1A1917' }}>{product.product_name}</h1>
+        <h1 className="text-xl font-bold" style={{ color: '#1A1A1A' }}>{product.product_name}</h1>
         <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
           {product.source === 'vision' && (
-            <span className="inline-flex items-center gap-1.5 text-xs bg-white px-3 py-1.5 rounded-full" style={{ color: '#5A574F', border: '1px solid #E2DDD5' }}>
+            <span className="inline-flex items-center gap-1.5 text-xs bg-white px-3 py-1.5 rounded-full" style={{ color: '#7A7A7A', border: '1px solid rgba(0,0,0,0.06)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
               {t('result.analyzedByAI')}
             </span>
           )}
           {product.data_source && (
-            <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-white" style={{ color: '#5A574F', border: '1px solid #E2DDD5' }}>
+            <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-white" style={{ color: '#7A7A7A', border: '1px solid rgba(0,0,0,0.06)' }}>
               {product.data_source === 'AI Knowledge' && (
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
               )}
@@ -107,7 +107,7 @@ export default function ResultPage() {
             </span>
           )}
           {product.confidence === 'low' && (
-            <span className="inline-flex items-center gap-1.5 text-xs bg-white px-3 py-1.5 rounded-full" style={{ color: '#C62828', border: '1px solid #E2DDD5' }}>
+            <span className="inline-flex items-center gap-1.5 text-xs bg-white px-3 py-1.5 rounded-full" style={{ color: '#C62828', border: '1px solid rgba(0,0,0,0.06)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
               {t('result.verifyData')}
             </span>
@@ -121,7 +121,7 @@ export default function ResultPage() {
       </div>
 
       {/* Nutrition Breakdown */}
-      <div className="bg-white rounded-[28px] p-5 animate-slide-up stagger-3" style={{ border: '1px solid #E2DDD5' }}>
+      <div className="bg-white rounded-[28px] p-5 animate-slide-up stagger-3" style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
         <NutritionBreakdown gradeResult={gradeResult} nutrition={product.nutrition} />
       </div>
 
@@ -148,7 +148,7 @@ export default function ResultPage() {
       <button onClick={handleShare} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-6">
         {shareState === 'copied' ? (
           <>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8721C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             {t('result.copied')}
           </>
         ) : (

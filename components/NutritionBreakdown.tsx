@@ -11,11 +11,11 @@ interface Props {
 const MAX_NEGATIVE_POINTS = 10
 
 const NUTRIENT_COLORS = {
-  energy: '#9A9790',
+  energy: '#ACACAC',
   sugars: '#C62828',
   saturated_fat: '#E65100',
   sodium: '#F9A825',
-  protein: '#E8721C',
+  protein: '#4A9E3F',
   fiber: '#2E7D32',
 }
 
@@ -29,11 +29,11 @@ function NutrientRow({ label, value, unit, points, isPositive, delay, color, pts
     : Math.min((points / MAX_NEGATIVE_POINTS) * 100, 100)
 
   const barColor = isPositive
-    ? (points > 0 ? '#E8721C' : '#D0D0D0')
-    : (points > 5 ? '#E53935' : points > 2 ? '#F9A825' : '#E8721C')
+    ? (points > 0 ? '#4A9E3F' : '#D0D0D0')
+    : (points > 5 ? '#E53935' : points > 2 ? '#F9A825' : '#4A9E3F')
 
   const textColor = isPositive
-    ? (points > 0 ? 'text-[#2E7D32]' : 'text-[#9A9790]')
+    ? (points > 0 ? 'text-[#2E7D32]' : 'text-[#ACACAC]')
     : (points > 5 ? 'text-[#C62828]' : points > 2 ? 'text-[#E65100]' : 'text-[#2E7D32]')
 
   return (
@@ -44,11 +44,11 @@ function NutrientRow({ label, value, unit, points, isPositive, delay, color, pts
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
-          <span className="text-sm font-medium text-[#1A1917]">{label}</span>
+          <span className="text-sm font-medium text-[#1A1A1A]">{label}</span>
         </div>
         <span className={`text-sm font-bold ${textColor}`} dir="ltr">{value}{unit}</span>
       </div>
-      <div className="relative h-2 rounded-full overflow-hidden bg-[#F1EEE8]">
+      <div className="relative h-2 rounded-full overflow-hidden bg-[#F5F4F0]">
         <div
           className="absolute inset-y-0 rounded-full transition-all duration-700 ease-out"
           style={{
@@ -70,8 +70,8 @@ export default function NutritionBreakdown({ gradeResult, nutrition }: Props) {
   const ptsLabel = t('nutri.points')
   return (
     <div className="flex flex-col gap-2.5">
-      <h3 className="text-sm font-semibold text-[#1A1917] mb-1 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A9790" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+      <h3 className="text-sm font-semibold text-[#1A1A1A] mb-1 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ACACAC" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
         {t('nutri.analysis')}
       </h3>
       <NutrientRow label={t('nutri.energy')} value={nutrition.energy_kcal} unit={` ${t('nutri.unit.kcal')}`} points={gradeResult.negative_points.energy} isPositive={false} delay={50} color={NUTRIENT_COLORS.energy} ptsLabel={ptsLabel} />
@@ -81,7 +81,7 @@ export default function NutritionBreakdown({ gradeResult, nutrition }: Props) {
 
       <div className="flex items-center gap-3 my-1 px-1">
         <div className="flex-1 h-px bg-[rgba(0,0,0,0.06)]" />
-        <span className="text-[10px] text-[#9A9790] uppercase tracking-widest">{t('nutri.positive')}</span>
+        <span className="text-[10px] text-[#ACACAC] uppercase tracking-widest">{t('nutri.positive')}</span>
         <div className="flex-1 h-px bg-[rgba(0,0,0,0.06)]" />
       </div>
 
@@ -95,7 +95,7 @@ export default function NutritionBreakdown({ gradeResult, nutrition }: Props) {
         </div>
       )}
       {!gradeResult.protein_counted && nutrition.protein_g !== null && (
-        <div className="bg-white flex items-start gap-2.5 text-xs text-[#9A9790] px-4 py-3 rounded-2xl" style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
+        <div className="bg-white flex items-start gap-2.5 text-xs text-[#ACACAC] px-4 py-3 rounded-2xl" style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
           {t('nutri.proteinNotCounted')}
         </div>

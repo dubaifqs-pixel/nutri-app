@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#F1EEE8',
+  themeColor: '#F5F4F0',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -19,6 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
+        {/* Google Fonts — Nunito (Circular Std free alternative) */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         {/* Inline script reads stored language and sets dir/lang BEFORE first paint, avoiding RTL flash */}
         <script
           dangerouslySetInnerHTML={{
@@ -26,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="antialiased bg-[#F1EEE8] text-[#1A1917] max-w-md mx-auto min-h-screen">
+      <body className="antialiased bg-[#F5F4F0] text-[#1A1A1A] max-w-md mx-auto min-h-screen">
         <LangSync />
         {children}
       </body>
