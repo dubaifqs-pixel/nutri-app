@@ -5,21 +5,21 @@ import LangToggle from '@/components/LangToggle'
 import { useT } from '@/lib/i18n'
 import { DEMO_PRODUCTS } from '@/lib/demo-products'
 import { calculateGrade } from '@/lib/scoring'
-import { getCategoryImage } from '@/lib/product-images'
+import { getProductImage } from '@/lib/product-images'
 import { GRADE_COLORS, type Grade, type NutritionData } from '@/lib/types'
 import { useState, useRef, useCallback } from 'react'
 
-// Pick featured products
+// Pick featured products — each with a distinct image
 const FEATURED = [
-  { ...DEMO_PRODUCTS.dairy[0], cat: 'dairy' },
-  { ...DEMO_PRODUCTS.beverages[1], cat: 'beverages' },
-  { ...DEMO_PRODUCTS.snacks[0], cat: 'snacks' },
-  { ...DEMO_PRODUCTS.cereals[0], cat: 'cereals' },
-  { ...DEMO_PRODUCTS.dairy[2], cat: 'dairy' },
-  { ...DEMO_PRODUCTS.beverages[0], cat: 'beverages' },
-].map(p => {
+  DEMO_PRODUCTS.dairy[0],     // Al Ain Full Cream Milk → cat-milk
+  DEMO_PRODUCTS.beverages[0], // Coca-Cola → cat-softdrink
+  DEMO_PRODUCTS.snacks[1],    // KitKat → cat-chocolate
+  DEMO_PRODUCTS.cereals[0],   // Quaker/Kellogg's → cat-cereal
+  DEMO_PRODUCTS.beverages[3], // Rani Orange Juice → cat-juice
+  DEMO_PRODUCTS.snacks[0],    // Lay's Chips → cat-chips
+].filter(Boolean).map(p => {
   const g = calculateGrade(p.nutrition)
-  return { ...p, grade: g.grade as Grade, score: g.score, image: getCategoryImage(p.cat) }
+  return { ...p, grade: g.grade as Grade, score: g.score, image: getProductImage(p.product_name, g.grade as Grade) }
 })
 
 // Generate "why" label from nutrition
@@ -209,10 +209,10 @@ export default function Home() {
                 draggable={false}
                 style={{
                   position: 'absolute',
-                  right: '-20px',
-                  bottom: '-16px',
-                  width: '220px',
-                  height: '220px',
+                  right: '-24px',
+                  bottom: '-20px',
+                  width: '260px',
+                  height: '260px',
                   objectFit: 'contain',
                   filter: 'drop-shadow(0 14px 28px rgba(0,0,0,0.14))',
                   pointerEvents: 'none',
