@@ -7,7 +7,7 @@ import { DEMO_PRODUCTS } from '@/lib/demo-products'
 import { calculateGrade } from '@/lib/scoring'
 import { getCategoryImage } from '@/lib/product-images'
 import { GRADE_COLORS, type Grade, type NutritionData } from '@/lib/types'
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 
 // Pick featured products
 const FEATURED = [
@@ -64,16 +64,43 @@ function ScoreArc({ grade, score }: { grade: Grade; score: number }) {
 
 export default function Home() {
   const t = useT()
-  const [current, setCurrent] = useState(0)
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [dragX, setDragX] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null)
+  const startXRef = useRef(0)
 
-  const handleScroll = () => {
-    if (!scrollRef.current) return
-    const el = scrollRef.current
-    const cardWidth = el.scrollWidth / FEATURED.length
-    const idx = Math.round(el.scrollLeft / cardWidth)
-    setCurrent(idx)
-  }
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    setIsDragging(true)
+    startXRef.current = e.clientX
+    setExitDir(null)
+  }, [])
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isDragging) return
+    setDragX(e.clientX - startXRef.current)
+  }, [isDragging])
+
+  const handlePointerUp = useCallback(() => {
+    if (!isDragging) return
+    setIsDragging(false)
+    if (Math.abs(dragX) > 80) {
+      const dir = dragX > 0 ? 'right' : 'left'
+      setExitDir(dir)
+      setTimeout(() => {
+        setCurrentIndex(prev => prev < FEATURED.length - 1 ? prev + 1 : 0)
+        setDragX(0)
+        setExitDir(null)
+      }, 250)
+    } else {
+      setDragX(0)
+    }
+  }, [isDragging, dragX])
+
+  const currentProduct = FEATURED[currentIndex]
+  const nextProduct = FEATURED[(currentIndex + 1) % FEATURED.length]
+  const rotation = dragX * 0.06
+  const opacity = 1 - Math.abs(dragX) / 500
 
   return (
     <div className="flex flex-col" style={{ background: '#F5F4F0', height: '100dvh', overflow: 'hidden' }}>
@@ -118,77 +145,121 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Product cards — fills remaining space */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="flex gap-4 overflow-x-auto px-5 flex-1"
-          style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none', alignItems: 'stretch' }}
-        >
-          <style>{`div::-webkit-scrollbar { display: none; }`}</style>
-          {FEATURED.map((product, i) => (
-            <Link
-              key={i}
-              href="/browse"
-              className="shrink-0 relative bg-white active:scale-[0.98] transition-transform flex flex-col"
+      {/* Tinder-style stacked cards — fills remaining space */}
+      <div className="flex-1 flex flex-col min-h-0 px-5">
+        <div className="relative flex-1">
+          {/* Counter */}
+          <div className="absolute top-0 right-0 z-10">
+            <span className="text-[11px] font-semibold" style={{ color: '#ACACAC' }}>{currentIndex + 1}/{FEATURED.length}</span>
+          </div>
+
+          {/* Next card (behind) */}
+          {nextProduct && (
+            <div
+              className="absolute inset-x-0 bg-white"
               style={{
-                width: 'calc(100vw - 56px)',
-                maxWidth: '340px',
                 borderRadius: '20px',
+                top: 8,
+                bottom: 8,
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                scrollSnapAlign: 'start',
+                transform: 'scale(0.95)',
+                opacity: 0.5,
+              }}
+            >
+              <div style={{ padding: '22px 20px 0', maxWidth: '50%' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#DCDCDC', lineHeight: 1.1 }}>
+                  {nextProduct.product_name}
+                </h3>
+              </div>
+            </div>
+          )}
+
+          {/* Current card (draggable) */}
+          {currentProduct && (
+            <div
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={() => { if (isDragging) handlePointerUp() }}
+              className="absolute inset-x-0 bg-white cursor-grab active:cursor-grabbing select-none"
+              style={{
+                top: 0,
+                bottom: 0,
+                borderRadius: '20px',
+                boxShadow: isDragging ? '0 12px 32px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.05)',
+                transform: exitDir
+                  ? `translateX(${exitDir === 'right' ? '120%' : '-120%'}) rotate(${exitDir === 'right' ? '12' : '-12'}deg)`
+                  : `translateX(${dragX}px) rotate(${rotation}deg)`,
+                transition: isDragging ? 'box-shadow 0.2s' : 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                opacity: exitDir ? 0 : opacity,
                 overflow: 'visible',
+                touchAction: 'pan-y',
+                zIndex: 5,
               }}
             >
               {/* Product name */}
-              <div style={{ padding: '22px 20px 0', maxWidth: '50%' }}>
-                <h3 style={{ fontSize: '22px', fontWeight: 700, lineHeight: 1.1, color: '#1A1A1A', letterSpacing: '-0.01em' }}>
-                  {product.product_name}
+              <div style={{ padding: '24px 22px 0', maxWidth: '48%' }}>
+                <h3 style={{ fontSize: '24px', fontWeight: 700, lineHeight: 1.08, color: '#1A1A1A', letterSpacing: '-0.02em' }}>
+                  {currentProduct.product_name}
                 </h3>
-                <p style={{ fontSize: '11px', color: '#ACACAC', marginTop: '6px', fontWeight: 500 }}>
-                  {product.brand}
+                <p style={{ fontSize: '11px', color: '#ACACAC', marginTop: '8px', fontWeight: 500 }}>
+                  {currentProduct.brand}
                 </p>
               </div>
 
-              {/* Product image — massive, overlapping */}
+              {/* Product image — bigger */}
               <img
-                src={product.image}
+                src={currentProduct.image}
                 alt=""
                 draggable={false}
                 style={{
                   position: 'absolute',
-                  right: '-16px',
-                  bottom: '-12px',
-                  width: '180px',
-                  height: '180px',
+                  right: '-20px',
+                  bottom: '-16px',
+                  width: '220px',
+                  height: '220px',
                   objectFit: 'contain',
-                  filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.12))',
+                  filter: 'drop-shadow(0 14px 28px rgba(0,0,0,0.14))',
                   pointerEvents: 'none',
                 }}
               />
 
-              {/* Score Arc + Score + Why — bottom left */}
-              <div style={{ position: 'absolute', bottom: '18px', left: '20px', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 2 }}>
-                <ScoreArc grade={product.grade} score={product.score} />
+              {/* Swipe indicators */}
+              {isDragging && dragX > 30 && (
+                <div style={{ position: 'absolute', top: '20px', right: '20px', padding: '5px 14px', borderRadius: '10px', border: '2px solid #B6F074', color: '#66BB6A', fontSize: '12px', fontWeight: 700, transform: 'rotate(8deg)' }}>
+                  VIEW
+                </div>
+              )}
+              {isDragging && dragX < -30 && (
+                <div style={{ position: 'absolute', top: '20px', left: '20px', padding: '5px 14px', borderRadius: '10px', border: '2px solid #DCDCDC', color: '#ACACAC', fontSize: '12px', fontWeight: 700, transform: 'rotate(-8deg)' }}>
+                  NEXT
+                </div>
+              )}
+
+              {/* Score Arc + Score + Why */}
+              <div style={{ position: 'absolute', bottom: '20px', left: '22px', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 2 }}>
+                <ScoreArc grade={currentProduct.grade} score={currentProduct.score} />
                 <div>
                   <div style={{ fontSize: '10px', fontWeight: 600, color: '#7A7A7A', background: '#F5F4F0', padding: '3px 10px', borderRadius: '10px', display: 'inline-block' }}>
-                    Score: {product.score}
+                    Score: {currentProduct.score}
                   </div>
                   <p style={{ fontSize: '9px', color: '#ACACAC', fontWeight: 500, marginTop: '3px' }}>
-                    {getWhyLabel(product.nutrition, product.grade)}
+                    {getWhyLabel(currentProduct.nutrition, currentProduct.grade)}
                   </p>
                 </div>
               </div>
-            </Link>
-          ))}
+            </div>
+          )}
         </div>
 
-        {/* Dot indicators */}
-        <div className="flex justify-center gap-1.5 py-3 flex-shrink-0">
-          {FEATURED.map((_, i) => (
-            <div key={i} style={{ width: i === current ? 16 : 6, height: 6, borderRadius: 3, background: i === current ? '#1A1A1A' : '#DCDCDC', transition: 'all 0.3s' }} />
-          ))}
+        {/* Swipe hint + dots */}
+        <div className="flex items-center justify-between py-2 flex-shrink-0">
+          <p className="text-[9px]" style={{ color: '#DCDCDC' }}>Swipe to browse</p>
+          <div className="flex gap-1.5">
+            {FEATURED.map((_, i) => (
+              <div key={i} style={{ width: i === currentIndex ? 14 : 5, height: 5, borderRadius: 3, background: i === currentIndex ? '#1A1A1A' : '#DCDCDC', transition: 'all 0.3s' }} />
+            ))}
+          </div>
         </div>
       </div>
 
