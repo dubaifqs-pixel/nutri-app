@@ -91,7 +91,7 @@ export default function Home() {
         setCurrentIndex(prev => prev < FEATURED.length - 1 ? prev + 1 : 0)
         setDragX(0)
         setExitDir(null)
-      }, 250)
+      }, 400)
     } else {
       setDragX(0)
     }
@@ -148,11 +148,6 @@ export default function Home() {
       {/* Tinder-style stacked cards — fills remaining space */}
       <div className="flex-1 flex flex-col min-h-0 px-5">
         <div className="relative flex-1">
-          {/* Counter */}
-          <div className="absolute top-0 right-0 z-10">
-            <span className="text-[11px] font-semibold" style={{ color: '#ACACAC' }}>{currentIndex + 1}/{FEATURED.length}</span>
-          </div>
-
           {/* Next card (behind) */}
           {nextProduct && (
             <div
@@ -188,9 +183,9 @@ export default function Home() {
                 borderRadius: '20px',
                 boxShadow: isDragging ? '0 12px 32px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.05)',
                 transform: exitDir
-                  ? `translateX(${exitDir === 'right' ? '120%' : '-120%'}) rotate(${exitDir === 'right' ? '12' : '-12'}deg)`
+                  ? `translateX(${exitDir === 'right' ? '150%' : '-150%'}) rotate(${exitDir === 'right' ? '20' : '-20'}deg)`
                   : `translateX(${dragX}px) rotate(${rotation}deg)`,
-                transition: isDragging ? 'box-shadow 0.2s' : 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                transition: isDragging ? 'box-shadow 0.2s' : exitDir ? 'all 0.4s ease-in' : 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 opacity: exitDir ? 0 : opacity,
                 overflow: 'visible',
                 touchAction: 'pan-y',
@@ -252,14 +247,11 @@ export default function Home() {
           )}
         </div>
 
-        {/* Swipe hint + dots */}
-        <div className="flex items-center justify-between py-2 flex-shrink-0">
-          <p className="text-[9px]" style={{ color: '#DCDCDC' }}>Swipe to browse</p>
-          <div className="flex gap-1.5">
-            {FEATURED.map((_, i) => (
-              <div key={i} style={{ width: i === currentIndex ? 14 : 5, height: 5, borderRadius: 3, background: i === currentIndex ? '#1A1A1A' : '#DCDCDC', transition: 'all 0.3s' }} />
-            ))}
-          </div>
+        {/* Dots only */}
+        <div className="flex justify-center gap-1.5 py-2 flex-shrink-0">
+          {FEATURED.map((_, i) => (
+            <div key={i} style={{ width: i === currentIndex ? 16 : 5, height: 5, borderRadius: 3, background: i === currentIndex ? '#1A1A1A' : '#DCDCDC', transition: 'all 0.3s' }} />
+          ))}
         </div>
       </div>
 
