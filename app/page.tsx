@@ -150,11 +150,11 @@ export default function Home() {
             <div style={{
               position: 'absolute', top: '0', right: '0', zIndex: 20,
               background: '#FFFFFF',
-              borderBottomLeftRadius: '16px',
-              padding: '6px 10px 8px 12px',
+              borderBottomLeftRadius: '12px',
+              padding: '3px 6px 5px 8px',
             }}>
-              <span style={{ fontSize: '20px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '9px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
+              <span style={{ fontSize: '16px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '8px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
             {/* Info area — generous padding */}
