@@ -206,13 +206,13 @@ export default function Home() {
               {/* Fact banner — thin strip, darker shade of product bg */}
               <div style={{
                 background: darkenColor(product.bg),
-                padding: '2px 10px',
+                padding: '1.5px 8px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}>
-                <span style={{ fontSize: '6.5px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', fontStyle: 'italic', lineHeight: 1 }}>{facts[product.product_name] || product.fact}</span>
+                <span style={{ fontSize: '5.5px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.2px', fontStyle: 'italic', lineHeight: 1 }}>{facts[product.product_name] || product.fact}</span>
               </div>
             </div>
 
