@@ -53,6 +53,16 @@ const GRADE_LABEL: Record<Grade, string> = {
   A: 'Great', B: 'Good', C: 'Okay', D: 'Poor', E: 'Bad',
 }
 
+// Fun facts per product
+const PRODUCT_FACTS: Record<string, string> = {
+  'Al Ain Full Cream Milk': 'Sourced from Al Ain farms since 1981',
+  'Coca-Cola Original': 'Invented in 1886 · Sold in 200+ countries',
+  'KitKat 4 Finger': '17 billion fingers are made every year',
+  "Kellogg's Corn Flakes": 'Accidentally invented in 1894',
+  'Rani Orange Juice': 'Made with real fruit pieces inside',
+  "Lay's Classic Chips": 'World\'s best-selling chip brand',
+}
+
 // Featured products
 const FEATURED = [
   DEMO_PRODUCTS.dairy[0],
@@ -70,6 +80,7 @@ const FEATURED = [
     image: getProductImage(p.product_name, g.grade as Grade),
     bg: getProductBg(p.product_name),
     tags: getNutritionTags(p.nutrition),
+    fact: PRODUCT_FACTS[p.product_name] || 'Scanned & verified by nutri',
   }
 })
 
@@ -136,24 +147,35 @@ export default function Home() {
               <span style={{ fontSize: '7px', fontWeight: 500, color: '#999', marginTop: '2px' }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
-            {/* Image area — matching inspiration proportions */}
+            {/* Image area */}
             <div
-              className="flex items-end justify-center"
               style={{
                 margin: '8px',
                 borderRadius: '16px',
                 minHeight: '230px',
-                padding: '20px 12px 12px',
                 background: product.bg,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
-              <img
-                src={product.image}
-                alt={product.product_name}
-                className="max-h-[185px] object-contain"
-                style={{ filter: 'drop-shadow(2px 6px 14px rgba(0,0,0,0.18))' }}
-                loading="lazy"
-              />
+              <div className="flex items-end justify-center flex-1" style={{ padding: '20px 12px 12px' }}>
+                <img
+                  src={product.image}
+                  alt={product.product_name}
+                  className="max-h-[170px] object-contain"
+                  style={{ filter: 'drop-shadow(2px 6px 14px rgba(0,0,0,0.18))' }}
+                  loading="lazy"
+                />
+              </div>
+              {/* Fact banner */}
+              <div style={{
+                background: 'rgba(0,0,0,0.12)',
+                padding: '5px 12px',
+                textAlign: 'center',
+              }}>
+                <span style={{ fontSize: '8px', fontWeight: 500, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px' }}>{product.fact}</span>
+              </div>
             </div>
 
             {/* Info area — compact */}
