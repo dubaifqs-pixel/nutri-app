@@ -124,17 +124,19 @@ export default function Home() {
             className="block relative transition-transform active:scale-[0.97]"
             style={{ borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
-            {/* Grade — plain text, no background, like "$10" */}
-            <div style={{ position: 'absolute', top: '14px', right: '16px', zIndex: 10 }}>
-              <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A1A1A' }}>{product.grade}</span>
-              <span style={{ fontSize: '11px', fontWeight: 500, color: '#1A1A1A', opacity: 0.5 }}>{GRADE_LABEL[product.grade]}</span>
+            {/* White top area with grade — like inspiration */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 16px 6px', background: '#FFFFFF' }}>
+              <div>
+                <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A1A1A' }}>{product.grade}</span>
+                <span style={{ fontSize: '11px', fontWeight: 500, color: '#1A1A1A', opacity: 0.5 }}>{GRADE_LABEL[product.grade]}</span>
+              </div>
             </div>
 
             {/* Image area — curved top-right corner like inspiration */}
             <div
               className="relative flex items-center justify-center"
               style={{
-                margin: '8px 8px 0',
+                margin: '0 8px',
                 borderRadius: '18px',
                 borderTopRightRadius: '44px',
                 overflow: 'hidden',
