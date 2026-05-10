@@ -124,10 +124,10 @@ export default function Home() {
             className="block relative transition-transform active:scale-[0.97]"
             style={{ borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
-            {/* Grade — in curved white space, letter big, label below smaller */}
-            <div style={{ position: 'absolute', top: '10px', right: '14px', zIndex: 10, textAlign: 'center' }}>
-              <div style={{ fontSize: '24px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</div>
-              <div style={{ fontSize: '9px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4, marginTop: '1px' }}>{GRADE_LABEL[product.grade]}</div>
+            {/* Grade — one line like "$10", letter big + label as subscript */}
+            <div style={{ position: 'absolute', top: '10px', right: '12px', zIndex: 10 }}>
+              <span style={{ fontSize: '26px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '12px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4, verticalAlign: 'sub' }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
             {/* Image area — tall, large curve top-right */}
