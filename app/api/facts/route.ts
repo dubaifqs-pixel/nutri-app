@@ -9,7 +9,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No products' }, { status: 400 })
     }
 
-    const prompt = `Give me one short fun fact (under 8 words) about each of these food products. Make them interesting, surprising, or historical — NOT about nutrition or health. Return ONLY valid JSON object mapping product name to fact string, no markdown.
+    const prompt = `Give me one short nutrition fact (MAXIMUM 5 words) about each food product. Focus on key nutritional info like calories, vitamins, minerals, sugar, protein content. Keep it very short. Return ONLY valid JSON object mapping product name to fact string, no markdown.
 
 Products: ${products.join(', ')}`
 

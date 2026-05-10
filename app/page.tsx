@@ -61,14 +61,14 @@ const GRADE_LABEL: Record<Grade, string> = {
   A: 'Great', B: 'Good', C: 'Okay', D: 'Poor', E: 'Bad',
 }
 
-// Fallback facts (used while Gemini loads or if it fails)
+// Fallback nutrition facts (under 6 words)
 const FALLBACK_FACTS: Record<string, string> = {
-  'Al Ain Full Cream Milk': 'Sourced from Al Ain farms since 1981',
-  'Coca-Cola Original': 'Invented in 1886 · Sold in 200+ countries',
-  'KitKat 4 Finger': '17 billion fingers are made every year',
-  "Kellogg's Corn Flakes": 'Accidentally invented in 1894',
-  'Rani Orange Juice': 'Made with real fruit pieces inside',
-  "Lay's Classic Chips": 'World\'s best-selling chip brand',
+  'Al Ain Full Cream Milk': 'Rich in calcium & protein',
+  'Coca-Cola Original': '39g sugar per 330ml can',
+  'KitKat 4 Finger': '218 calories per bar',
+  "Kellogg's Corn Flakes": 'Fortified with iron & vitamins',
+  'Rani Orange Juice': 'Contains real fruit pieces',
+  "Lay's Classic Chips": 'High in sodium & fat',
 }
 
 // Featured products
@@ -200,13 +200,16 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              {/* Fact banner — solid darker shade of product bg */}
+              {/* Fact banner — thin strip, darker shade of product bg */}
               <div style={{
                 background: darkenColor(product.bg, 0.68),
-                padding: '6px 14px',
+                padding: '4px 10px',
                 textAlign: 'center',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}>
-                <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
+                <span style={{ fontSize: '7px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
               </div>
             </div>
 
