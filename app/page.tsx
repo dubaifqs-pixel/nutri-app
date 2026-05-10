@@ -25,13 +25,15 @@ const PRODUCT_BG: Record<string, string> = {
   frozen: '#D0D8E0', icecream: '#E8D0D8',
 }
 
-// Darken a hex color warmly — reduce brightness while keeping warmth
+// Saturate + slightly darken a color — stronger, not darker
 function darkenColor(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
   const b = parseInt(hex.slice(5, 7), 16)
-  // Darken but keep red/green channels warmer than blue
-  return `rgb(${Math.round(r * 0.72)},${Math.round(g * 0.70)},${Math.round(b * 0.62)})`
+  const avg = (r + g + b) / 3
+  // Push each channel away from average (increase saturation) and darken slightly
+  const boost = (c: number) => Math.min(255, Math.max(0, Math.round(c * 0.85 + (c - avg) * 0.4)))
+  return `rgb(${boost(r)},${boost(g)},${boost(b)})`
 }
 
 function getProductBg(name: string): string {
