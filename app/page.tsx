@@ -7,115 +7,85 @@ import { DEMO_PRODUCTS } from '@/lib/demo-products'
 import { calculateGrade } from '@/lib/scoring'
 import { getProductImage } from '@/lib/product-images'
 import { GRADE_COLORS, type Grade, type NutritionData } from '@/lib/types'
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 
-// Pick featured products — each with a distinct image
+// Product background colors matched to category
+const PRODUCT_BG: Record<string, string> = {
+  milk: '#EDE5D8', dairy: '#EDE5D8', laban: '#EDE5D8', cream: '#EDE5D8', yogurt: '#E8DDE8',
+  cheese: '#F0E8D8', butter: '#F5EDD8',
+  chocolate: '#D8CCC0', kitkat: '#D8CCC0', cocoa: '#D8CCC0', nutella: '#D8CCC0',
+  snickers: '#D8CCC0', oreo: '#C8C0B8', cookie: '#D8CCC0',
+  juice: '#F5D8A8', orange: '#F5D8A8', rani: '#F5D8A8', vimto: '#E0C0D0',
+  cola: '#DBC0B0', coca: '#DBC0B0', pepsi: '#C0C8D8', soda: '#DBC0B0',
+  water: '#D0E0E8', redbull: '#C8D0E0', energy: '#C8D0E0',
+  chips: '#EEE0A8', lays: '#EEE0A8', pringles: '#EEE0A8', doritos: '#E8C8A0',
+  cereal: '#C8D8B0', oats: '#D0D8B8', quaker: '#D0D8B8', kellogg: '#C8D8B0',
+  bread: '#E8D8C0', chicken: '#E0D0C0', meat: '#E0D0C0',
+  fruit: '#D0E8C8', apple: '#D0E8C8', banana: '#F0E8C0',
+  frozen: '#D0D8E0', icecream: '#E8D0D8',
+}
+
+function getProductBg(name: string): string {
+  const lower = name.toLowerCase()
+  for (const [key, color] of Object.entries(PRODUCT_BG)) {
+    if (lower.includes(key)) return color
+  }
+  return '#E8E0D8'
+}
+
+// Generate nutrition tags
+function getNutritionTags(n: NutritionData): string[] {
+  const tags: string[] = []
+  if (n.sugars_g !== null) tags.push(n.sugars_g > 15 ? 'High sugar' : n.sugars_g <= 5 ? 'Low sugar' : 'Sugar')
+  if (n.saturated_fat_g !== null) tags.push(n.saturated_fat_g > 5 ? 'High fat' : n.saturated_fat_g <= 2 ? 'Low fat' : 'Fat')
+  if (n.protein_g !== null && n.protein_g > 5) tags.push('Protein')
+  if (n.fiber_g !== null && n.fiber_g > 3) tags.push('Fiber')
+  if (n.sodium_mg !== null && n.sodium_mg > 500) tags.push('High sodium')
+  if (n.energy_kcal !== null && n.energy_kcal <= 100) tags.push('Low cal')
+  return tags.slice(0, 3)
+}
+
+// Grade text colors
+const GRADE_TEXT: Record<Grade, string> = {
+  A: '#2E7D32', B: '#558B2F', C: '#F9A825', D: '#E65100', E: '#C62828',
+}
+const GRADE_LABEL: Record<Grade, string> = {
+  A: 'Great', B: 'Good', C: 'Okay', D: 'Poor', E: 'Bad',
+}
+
+// Featured products
 const FEATURED = [
-  DEMO_PRODUCTS.dairy[0],     // Al Ain Full Cream Milk → cat-milk
-  DEMO_PRODUCTS.beverages[0], // Coca-Cola → cat-softdrink
-  DEMO_PRODUCTS.snacks[1],    // KitKat → cat-chocolate
-  DEMO_PRODUCTS.cereals[0],   // Quaker/Kellogg's → cat-cereal
-  DEMO_PRODUCTS.beverages[3], // Rani Orange Juice → cat-juice
-  DEMO_PRODUCTS.snacks[0],    // Lay's Chips → cat-chips
+  DEMO_PRODUCTS.dairy[0],
+  DEMO_PRODUCTS.beverages[0],
+  DEMO_PRODUCTS.snacks[1],
+  DEMO_PRODUCTS.cereals[0],
+  DEMO_PRODUCTS.beverages[3],
+  DEMO_PRODUCTS.snacks[0],
 ].filter(Boolean).map(p => {
   const g = calculateGrade(p.nutrition)
-  return { ...p, grade: g.grade as Grade, score: g.score, image: getProductImage(p.product_name, g.grade as Grade) }
+  return {
+    ...p,
+    grade: g.grade as Grade,
+    score: g.score,
+    image: getProductImage(p.product_name, g.grade as Grade),
+    bg: getProductBg(p.product_name),
+    tags: getNutritionTags(p.nutrition),
+  }
 })
-
-// Generate "why" label from nutrition
-function getWhyLabel(n: NutritionData, grade: Grade): string {
-  const bad: string[] = []
-  const good: string[] = []
-  if (n.sugars_g !== null && n.sugars_g > 15) bad.push('High sugar')
-  if (n.saturated_fat_g !== null && n.saturated_fat_g > 5) bad.push('High fat')
-  if (n.sodium_mg !== null && n.sodium_mg > 500) bad.push('High sodium')
-  if (n.sugars_g !== null && n.sugars_g <= 5) good.push('Low sugar')
-  if (n.protein_g !== null && n.protein_g > 5) good.push('Good protein')
-  if (n.fiber_g !== null && n.fiber_g > 3) good.push('High fiber')
-  if (grade === 'A' || grade === 'B') return good.slice(0, 2).join(', ') || 'Healthy choice'
-  return bad.slice(0, 2).join(', ') || 'Check nutrition'
-}
-
-// Score arc dashoffset (lower score = more fill = better)
-function getArcOffset(score: number): number {
-  // Score range roughly -15 to 40. Map to dashoffset 10 (full) to 130 (empty)
-  const clamped = Math.max(-15, Math.min(40, score))
-  const normalized = (clamped + 15) / 55 // 0 to 1
-  return 10 + normalized * 120 // 10 (best) to 130 (worst)
-}
-
-function ScoreArc({ grade, score }: { grade: Grade; score: number }) {
-  const color = GRADE_COLORS[grade]
-  const offset = getArcOffset(score)
-  return (
-    <div className="relative flex items-center justify-center" style={{ width: 44, height: 44 }}>
-      <svg viewBox="0 0 56 56" className="absolute inset-0 w-full h-full">
-        <circle cx="28" cy="28" r="24" fill="none" stroke="#E8E8E8" strokeWidth="3.5" />
-        <circle cx="28" cy="28" r="24" fill="none" stroke={color} strokeWidth="3.5"
-          strokeDasharray="150.8" strokeDashoffset={offset}
-          strokeLinecap="round" transform="rotate(-90 28 28)"
-          style={{ transition: 'stroke-dashoffset 0.8s ease' }}
-        />
-      </svg>
-      <span className="relative text-[16px] font-black" style={{ color }}>{grade}</span>
-    </div>
-  )
-}
 
 export default function Home() {
   const t = useT()
 
-  // Preload all product images on mount
+  // Preload images
   useEffect(() => {
-    FEATURED.forEach(p => {
-      const img = new Image()
-      img.src = p.image
-    })
+    FEATURED.forEach(p => { const img = new Image(); img.src = p.image })
   }, [])
-
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [dragX, setDragX] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null)
-  const startXRef = useRef(0)
-
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    setIsDragging(true)
-    startXRef.current = e.clientX
-    setExitDir(null)
-  }, [])
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging) return
-    setDragX(e.clientX - startXRef.current)
-  }, [isDragging])
-
-  const handlePointerUp = useCallback(() => {
-    if (!isDragging) return
-    setIsDragging(false)
-    if (Math.abs(dragX) > 80) {
-      const dir = dragX > 0 ? 'right' : 'left'
-      setExitDir(dir)
-      setTimeout(() => {
-        setCurrentIndex(prev => prev < FEATURED.length - 1 ? prev + 1 : 0)
-        setDragX(0)
-        setExitDir(null)
-      }, 400)
-    } else {
-      setDragX(0)
-    }
-  }, [isDragging, dragX])
-
-  const currentProduct = FEATURED[currentIndex]
-  const nextProduct = FEATURED[(currentIndex + 1) % FEATURED.length]
-  const rotation = dragX * 0.06
-  const opacity = 1 - Math.abs(dragX) / 500
 
   return (
-    <div className="flex flex-col" style={{ background: '#F5F4F0', height: '100dvh', overflow: 'hidden' }}>
+    <div className="min-h-screen flex flex-col pb-[64px]" style={{ background: '#F5F4F0' }}>
 
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-6 pb-1 flex-shrink-0">
+      <div className="flex items-center justify-between px-5 pt-7 pb-1 flex-shrink-0">
         <div>
           <p className="text-[11px] font-medium" style={{ color: '#ACACAC' }}>Welcome back</p>
           <p className="text-[15px] font-bold" style={{ color: '#1A1A1A' }}>nutri</p>
@@ -123,10 +93,10 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <LangToggle />
           <button className="w-9 h-9 rounded-full flex items-center justify-center border" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           </button>
           <button className="w-9 h-9 rounded-full flex items-center justify-center border" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
           </button>
         </div>
       </div>
@@ -139,133 +109,67 @@ export default function Home() {
         </p>
       </div>
 
-      {/* Stats row */}
-      <div className="flex items-center gap-3 px-5 pt-2 pb-3 flex-shrink-0">
-        <span className="text-[32px] font-extrabold leading-none" style={{ color: '#1A1A1A' }}>{FEATURED.length}</span>
-        <span className="text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-full" style={{ background: '#FFEC89', color: '#1A1A1A' }}>Featured</span>
-        <div className="flex items-center gap-1 ml-auto">
-          <span className="text-[9px] font-medium mr-1" style={{ color: '#ACACAC' }}>Your grades</span>
-          <div className="flex -space-x-1">
-            {FEATURED.slice(0, 3).map((p, i) => (
-              <div key={i} className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px] font-bold border" style={{ background: GRADE_COLORS[p.grade], borderColor: '#F5F4F0' }}>{p.grade}</div>
-            ))}
-            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[7px] font-bold border" style={{ background: '#E8E8E8', color: '#ACACAC', borderColor: '#F5F4F0' }}>{FEATURED.length - 3}+</div>
-          </div>
-        </div>
+      {/* Stats */}
+      <div className="flex items-center gap-3 px-5 pt-2 pb-4 flex-shrink-0">
+        <span className="text-[28px] font-extrabold leading-none" style={{ color: '#1A1A1A' }}>{FEATURED.length}</span>
+        <span className="text-[8px] font-bold uppercase tracking-wider px-3 py-1 rounded-full" style={{ background: '#FFEC89', color: '#1A1A1A' }}>Featured</span>
       </div>
 
-      {/* Tinder-style stacked cards — fills remaining space */}
-      <div className="flex-1 flex flex-col min-h-0 px-5">
-        <div className="relative flex-1">
-          {/* Next card (behind) */}
-          {nextProduct && (
+      {/* Pinterest Grid */}
+      <div className="grid grid-cols-2 gap-3 px-4">
+        {FEATURED.map((product, i) => (
+          <Link
+            key={i}
+            href="/browse"
+            className="block transition-transform active:scale-[0.97]"
+            style={{ borderRadius: '18px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
+          >
+            {/* Image area — rounded inside the card */}
             <div
-              className="absolute inset-x-0 bg-white"
-              style={{
-                borderRadius: '20px',
-                top: 8,
-                bottom: 8,
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                transform: 'scale(0.95)',
-                opacity: 0.5,
-              }}
+              className="relative flex items-center justify-center"
+              style={{ margin: '8px 8px 0', borderRadius: '14px', overflow: 'hidden', minHeight: '150px', padding: '16px 8px', background: product.bg }}
             >
-              <div style={{ padding: '22px 20px 0', maxWidth: '50%' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#DCDCDC', lineHeight: 1.1 }}>
-                  {nextProduct.product_name}
-                </h3>
-              </div>
-            </div>
-          )}
-
-          {/* Current card (draggable) */}
-          {currentProduct && (
-            <div
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerLeave={() => { if (isDragging) handlePointerUp() }}
-              className="absolute inset-x-0 bg-white cursor-grab active:cursor-grabbing select-none"
-              style={{
-                top: 0,
-                bottom: 0,
-                borderRadius: '20px',
-                boxShadow: isDragging ? '0 12px 32px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.05)',
-                transform: exitDir
-                  ? `translateX(${exitDir === 'right' ? '150%' : '-150%'}) rotate(${exitDir === 'right' ? '20' : '-20'}deg)`
-                  : `translateX(${dragX}px) rotate(${rotation}deg)`,
-                transition: isDragging ? 'box-shadow 0.2s' : exitDir ? 'all 0.4s ease-in' : 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                opacity: exitDir ? 0 : opacity,
-                overflow: 'visible',
-                touchAction: 'pan-y',
-                zIndex: 5,
-              }}
-            >
-              {/* Product name */}
-              <div style={{ padding: '24px 22px 0', maxWidth: '48%' }}>
-                <h3 style={{ fontSize: '24px', fontWeight: 700, lineHeight: 1.08, color: '#1A1A1A', letterSpacing: '-0.02em' }}>
-                  {currentProduct.product_name}
-                </h3>
-                <p style={{ fontSize: '11px', color: '#ACACAC', marginTop: '8px', fontWeight: 500 }}>
-                  {currentProduct.brand}
-                </p>
+              {/* Grade — top right like "$10" */}
+              <div className="absolute top-3 right-3 text-right" style={{ color: GRADE_TEXT[product.grade] }}>
+                <div className="text-[18px] font-extrabold leading-none">{product.grade}</div>
+                <div className="text-[10px] font-semibold">{GRADE_LABEL[product.grade]}</div>
               </div>
 
-              {/* Product image — bigger */}
               <img
-                src={currentProduct.image}
-                alt=""
-                draggable={false}
-                style={{
-                  position: 'absolute',
-                  right: '-24px',
-                  bottom: '-20px',
-                  width: '260px',
-                  height: '260px',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 14px 28px rgba(0,0,0,0.14))',
-                  pointerEvents: 'none',
-                }}
+                src={product.image}
+                alt={product.product_name}
+                className="max-h-[120px] object-contain"
+                style={{ filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.15))' }}
+                loading="lazy"
               />
+            </div>
 
-              {/* Swipe indicators */}
-              {isDragging && dragX > 30 && (
-                <div style={{ position: 'absolute', top: '20px', right: '20px', padding: '5px 14px', borderRadius: '10px', border: '2px solid #B6F074', color: '#66BB6A', fontSize: '12px', fontWeight: 700, transform: 'rotate(8deg)' }}>
-                  VIEW
-                </div>
-              )}
-              {isDragging && dragX < -30 && (
-                <div style={{ position: 'absolute', top: '20px', left: '20px', padding: '5px 14px', borderRadius: '10px', border: '2px solid #DCDCDC', color: '#ACACAC', fontSize: '12px', fontWeight: 700, transform: 'rotate(-8deg)' }}>
-                  NEXT
-                </div>
-              )}
+            {/* Info area */}
+            <div style={{ padding: '12px 14px 14px' }}>
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-[14px] font-bold leading-tight" style={{ color: '#1A1A1A' }}>{product.product_name}</p>
+                <span className="text-[10px] font-semibold shrink-0 mt-0.5" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '2px' }}>View ↗</span>
+              </div>
 
-              {/* Score Arc + Score + Why */}
-              <div style={{ position: 'absolute', bottom: '20px', left: '22px', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 2 }}>
-                <ScoreArc grade={currentProduct.grade} score={currentProduct.score} />
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#7A7A7A', background: '#F5F4F0', padding: '3px 10px', borderRadius: '10px', display: 'inline-block' }}>
-                    Score: {currentProduct.score}
-                  </div>
-                  <p style={{ fontSize: '9px', color: '#ACACAC', fontWeight: 500, marginTop: '3px' }}>
-                    {getWhyLabel(currentProduct.nutrition, currentProduct.grade)}
-                  </p>
-                </div>
+              {/* Tags */}
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
+                {product.tags.map((tag, j) => (
+                  <span
+                    key={j}
+                    className="text-[9px] font-medium px-2.5 py-1"
+                    style={{ borderRadius: '16px', background: '#F0EFEB', color: '#5A5A5A' }}
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Dots only */}
-        <div className="flex justify-center gap-1.5 py-2 flex-shrink-0">
-          {FEATURED.map((_, i) => (
-            <div key={i} style={{ width: i === currentIndex ? 16 : 5, height: 5, borderRadius: 3, background: i === currentIndex ? '#1A1A1A' : '#DCDCDC', transition: 'all 0.3s' }} />
-          ))}
-        </div>
+          </Link>
+        ))}
       </div>
 
       {/* Bottom Navigation */}
-      <div className="flex-shrink-0">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40">
         <div className="flex items-center justify-around px-4 py-2" style={{ background: '#F5F4F0', borderTop: '1px solid rgba(0,0,0,0.06)', height: '56px' }}>
           <Link href="/" className="flex flex-col items-center gap-0.5 py-1 min-w-[48px]">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
