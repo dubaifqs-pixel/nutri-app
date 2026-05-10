@@ -25,15 +25,15 @@ const PRODUCT_BG: Record<string, string> = {
   frozen: '#D0D8E0', icecream: '#E8D0D8',
 }
 
-// Create a stronger, more saturated + slightly darker version of bg
+// Darken + saturate while preserving hue
 function darkenColor(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
   const b = parseInt(hex.slice(5, 7), 16)
-  // Find dominant channel and boost it while darkening others more
-  const max = Math.max(r, g, b)
-  const strengthen = (c: number) => Math.round(c === max ? c * 0.75 : c * 0.6)
-  return `rgb(${strengthen(r)},${strengthen(g)},${strengthen(b)})`
+  const avg = (r + g + b) / 3
+  // Darken to 70% and push channels away from average to increase saturation
+  const f = (c: number) => Math.min(255, Math.max(0, Math.round(c * 0.7 + (c - avg) * 0.5)))
+  return `rgb(${f(r)},${f(g)},${f(b)})`
 }
 
 function getProductBg(name: string): string {
