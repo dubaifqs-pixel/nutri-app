@@ -142,7 +142,6 @@ export default function Home() {
               style={{
                 margin: '8px',
                 borderRadius: '16px',
-                borderTopRightRadius: '68px',
                 minHeight: '230px',
                 padding: '20px 12px 12px',
                 background: product.bg,
