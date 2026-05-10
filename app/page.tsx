@@ -194,11 +194,10 @@ export default function Home() {
                 minHeight: '230px',
                 background: product.bg,
                 overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
+                position: 'relative',
               }}
             >
-              <div className="flex items-end justify-center flex-1" style={{ padding: '20px 12px 12px' }}>
+              <div className="flex items-end justify-center" style={{ padding: '20px 12px 28px', minHeight: '230px' }}>
                 <img
                   src={product.image}
                   alt={product.product_name}
@@ -207,8 +206,12 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              {/* Fact banner */}
+              {/* Fact banner — overlaid at bottom */}
               <div style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
                 background: BANNER_COLORS[product.bg] || '#8A7D65',
                 padding: '4px 12px',
                 textAlign: 'center',
