@@ -140,7 +140,7 @@ export default function Home() {
             <div
               className="flex items-end justify-center"
               style={{
-                margin: '8px 8px 0',
+                margin: '8px',
                 borderRadius: '16px',
                 borderTopRightRadius: '68px',
                 minHeight: '230px',
