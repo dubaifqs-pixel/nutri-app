@@ -122,35 +122,34 @@ export default function Home() {
             key={i}
             href="/browse"
             className="block relative transition-transform active:scale-[0.97]"
-            style={{ borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
+            style={{ borderRadius: '20px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}
           >
-            {/* Grade — in exposed white area top-right */}
+            {/* Grade — in exposed white pocket */}
             <div style={{
-              position: 'absolute', top: '10px', right: '14px', zIndex: 20,
-              display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+              position: 'absolute', top: '8px', right: '10px', zIndex: 20,
+              textAlign: 'right',
             }}>
-              <span style={{ fontSize: '22px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '8px', fontWeight: 500, color: '#888', marginTop: '2px' }}>{GRADE_LABEL[product.grade]}</span>
+              <span style={{ fontSize: '20px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
             </div>
 
-            {/* Image area — large borderTopRightRadius creates the organic curve */}
+            {/* Image area */}
             <div
-              className="flex items-center justify-center"
+              className="flex items-end justify-center"
               style={{
-                margin: '6px 6px 0',
-                borderRadius: '18px',
-                borderTopRightRadius: '80px',
-                minHeight: '240px',
-                padding: '20px 16px',
+                margin: '8px 8px 0',
+                borderRadius: '16px',
+                borderTopRightRadius: '72px',
+                minHeight: '220px',
+                padding: '16px 10px 10px',
                 background: product.bg,
-                overflow: 'hidden',
+                position: 'relative',
               }}
             >
               <img
                 src={product.image}
                 alt={product.product_name}
-                className="max-h-[190px] object-contain"
-                style={{ filter: 'drop-shadow(4px 8px 16px rgba(0,0,0,0.18))' }}
+                className="max-h-[175px] object-contain"
+                style={{ filter: 'drop-shadow(2px 6px 12px rgba(0,0,0,0.18))' }}
                 loading="lazy"
               />
             </div>
@@ -158,17 +157,17 @@ export default function Home() {
             {/* Info area */}
             <div style={{ padding: '12px 14px 14px' }}>
               <div className="flex items-baseline justify-between gap-2">
-                <p className="text-[15px] font-bold leading-snug" style={{ color: '#1A1A1A' }}>{product.product_name}</p>
-                <span className="text-[10px] font-semibold shrink-0" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '2px' }}>View ↗</span>
+                <p className="text-[14px] font-bold leading-snug" style={{ color: '#1A1A1A' }}>{product.product_name}</p>
+                <span className="text-[9px] font-semibold shrink-0" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '2px' }}>View ↗</span>
               </div>
 
-              {/* Tags — outlined pills in single row */}
+              {/* Tags — outlined pills */}
               <div className="flex gap-1.5 mt-3 overflow-hidden">
                 {product.tags.map((tag, j) => (
                   <span
                     key={j}
-                    className="text-[9px] font-medium px-2.5 py-1 whitespace-nowrap"
-                    style={{ borderRadius: '20px', border: '1px solid rgba(0,0,0,0.12)', color: '#6A6A6A', background: 'transparent' }}
+                    className="text-[8px] font-medium px-2 py-[3px] whitespace-nowrap"
+                    style={{ borderRadius: '14px', border: '1px solid rgba(0,0,0,0.13)', color: '#7A7A7A', background: 'transparent' }}
                   >
                     {tag}
                   </span>
