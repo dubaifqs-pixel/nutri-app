@@ -210,7 +210,7 @@ export default function Home() {
               {/* Fact banner */}
               <div style={{
                 background: BANNER_COLORS[product.bg] || '#8A7D65',
-                padding: '5px 12px',
+                padding: '0 12px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
