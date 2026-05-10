@@ -124,19 +124,16 @@ export default function Home() {
             className="block relative transition-transform active:scale-[0.97]"
             style={{ borderRadius: '18px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
-            {/* Grade — top right, on white area ABOVE image, inside card padding */}
-            <div className="flex justify-end pt-2 pr-3">
-              <div className="text-right" style={{ color: GRADE_TEXT[product.grade] }}>
-                <div className="text-[22px] font-extrabold leading-none">{product.grade}</div>
-                <div className="text-[9px] font-semibold" style={{ opacity: 0.8 }}>{GRADE_LABEL[product.grade]}</div>
-              </div>
-            </div>
-
             {/* Image area — rounded inside the card */}
             <div
               className="relative flex items-center justify-center"
-              style={{ margin: '0 8px', borderRadius: '14px', overflow: 'hidden', minHeight: '150px', padding: '16px 8px', background: product.bg }}
+              style={{ margin: '8px 8px 0', borderRadius: '14px', overflow: 'visible', minHeight: '150px', padding: '16px 8px', background: product.bg, borderTopRightRadius: '14px' }}
             >
+              {/* Grade — overlapping top-right corner of image area, like "$10" */}
+              <div className="absolute -top-3 -right-2 text-right z-10" style={{ color: GRADE_TEXT[product.grade] }}>
+                <div className="text-[22px] font-extrabold leading-none">{product.grade}</div>
+                <div className="text-[9px] font-semibold" style={{ opacity: 0.8 }}>{GRADE_LABEL[product.grade]}</div>
+              </div>
               <img
                 src={product.image}
                 alt={product.product_name}
