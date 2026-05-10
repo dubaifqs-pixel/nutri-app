@@ -28,7 +28,7 @@ npm install
 
 ### Create `.env.local` if missing:
 ```bash
-echo "GEMINI_API_KEY=AIzaSyAewvSEFVVM6nIpXkhwS-xDutW1NMwqtME" > .env.local
+echo "GEMINI_API_KEY=YOUR_API_KEY" > .env.local
 ```
 
 ### Start working:
