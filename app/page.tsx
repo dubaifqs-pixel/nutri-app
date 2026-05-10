@@ -124,50 +124,50 @@ export default function Home() {
             className="block relative transition-transform active:scale-[0.97]"
             style={{ borderRadius: '20px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}
           >
-            {/* Grade — in exposed white pocket */}
+            {/* Grade — in the white pocket created by curve */}
             <div style={{
-              position: 'absolute', top: '8px', right: '10px', zIndex: 20,
-              textAlign: 'right',
+              position: 'absolute', top: '8px', right: '12px', zIndex: 20,
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
             }}>
-              <span style={{ fontSize: '20px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '22px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '7px', fontWeight: 500, color: '#999', marginTop: '1px', letterSpacing: '0.3px' }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
-            {/* Image area */}
+            {/* Image area — matching inspiration proportions */}
             <div
               className="flex items-end justify-center"
               style={{
                 margin: '8px 8px 0',
                 borderRadius: '16px',
-                borderTopRightRadius: '72px',
-                minHeight: '220px',
-                padding: '16px 10px 10px',
+                borderTopRightRadius: '68px',
+                minHeight: '230px',
+                padding: '20px 12px 12px',
                 background: product.bg,
-                position: 'relative',
               }}
             >
               <img
                 src={product.image}
                 alt={product.product_name}
-                className="max-h-[175px] object-contain"
-                style={{ filter: 'drop-shadow(2px 6px 12px rgba(0,0,0,0.18))' }}
+                className="max-h-[185px] object-contain"
+                style={{ filter: 'drop-shadow(2px 6px 14px rgba(0,0,0,0.18))' }}
                 loading="lazy"
               />
             </div>
 
-            {/* Info area */}
-            <div style={{ padding: '12px 14px 14px' }}>
+            {/* Info area — compact */}
+            <div style={{ padding: '10px 12px 12px' }}>
               <div className="flex items-baseline justify-between gap-2">
                 <p className="text-[14px] font-bold leading-snug" style={{ color: '#1A1A1A' }}>{product.product_name}</p>
                 <span className="text-[9px] font-semibold shrink-0" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '2px' }}>View ↗</span>
               </div>
 
-              {/* Tags — outlined pills */}
-              <div className="flex gap-1.5 mt-3 overflow-hidden">
+              {/* Tags — outlined pills like inspiration */}
+              <div className="flex gap-1.5 mt-2.5 overflow-hidden">
                 {product.tags.map((tag, j) => (
                   <span
                     key={j}
-                    className="text-[8px] font-medium px-2 py-[3px] whitespace-nowrap"
-                    style={{ borderRadius: '14px', border: '1px solid rgba(0,0,0,0.13)', color: '#7A7A7A', background: 'transparent' }}
+                    className="text-[8px] font-medium px-2.5 py-[4px] whitespace-nowrap"
+                    style={{ borderRadius: '16px', border: '1px solid rgba(0,0,0,0.15)', color: '#7A7A7A', background: 'transparent' }}
                   >
                     {tag}
                   </span>
