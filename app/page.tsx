@@ -48,15 +48,22 @@ function getProductBg(name: string): string {
   return '#E8E0D8'
 }
 
-// Generate nutrition tags
-function getNutritionTags(n: NutritionData): string[] {
-  const tags: string[] = []
-  if (n.sugars_g !== null) tags.push(n.sugars_g > 15 ? 'High sugar' : n.sugars_g <= 5 ? 'Low sugar' : 'Sugar')
-  if (n.saturated_fat_g !== null) tags.push(n.saturated_fat_g > 5 ? 'High fat' : n.saturated_fat_g <= 2 ? 'Low fat' : 'Fat')
-  if (n.protein_g !== null && n.protein_g > 5) tags.push('Protein')
-  if (n.fiber_g !== null && n.fiber_g > 3) tags.push('Fiber')
-  if (n.sodium_mg !== null && n.sodium_mg > 500) tags.push('High sodium')
-  if (n.energy_kcal !== null && n.energy_kcal <= 100) tags.push('Low cal')
+// Generate nutrition tags with colors
+type NTag = { label: string; color: string }
+function getNutritionTags(n: NutritionData): NTag[] {
+  const tags: NTag[] = []
+  if (n.sugars_g !== null) tags.push(n.sugars_g > 15
+    ? { label: 'High sugar', color: '#ef4444' }
+    : n.sugars_g <= 5 ? { label: 'Low sugar', color: '#10b981' }
+    : { label: 'Sugar', color: '#f59e0b' })
+  if (n.saturated_fat_g !== null) tags.push(n.saturated_fat_g > 5
+    ? { label: 'High fat', color: '#ef4444' }
+    : n.saturated_fat_g <= 2 ? { label: 'Low fat', color: '#10b981' }
+    : { label: 'Fat', color: '#f59e0b' })
+  if (n.protein_g !== null && n.protein_g > 5) tags.push({ label: 'Protein', color: '#8b5cf6' })
+  if (n.fiber_g !== null && n.fiber_g > 3) tags.push({ label: 'Fiber', color: '#06b6d4' })
+  if (n.sodium_mg !== null && n.sodium_mg > 500) tags.push({ label: 'High sodium', color: '#ef4444' })
+  if (n.energy_kcal !== null && n.energy_kcal <= 100) tags.push({ label: 'Low cal', color: '#10b981' })
   return tags.slice(0, 3)
 }
 
@@ -182,17 +189,16 @@ export default function Home() {
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.03)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)' }}
           >
-            {/* Grade badge — top-right with shadow */}
+            {/* Grade badge — round circle */}
             <div style={{
-              position: 'absolute', top: '0', right: '0', zIndex: 20,
+              position: 'absolute', top: '10px', right: '10px', zIndex: 20,
+              width: '36px', height: '36px',
               background: '#FFFFFF',
-              borderBottomLeftRadius: '12px',
-              padding: '5px 9px 6px 10px',
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.12)',
             }}>
-              <span style={{ fontSize: '18px', fontWeight: 800, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '6px', fontWeight: 600, color: '#AAA', marginTop: '1px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{GRADE_LABEL[product.grade]}</span>
+              <span style={{ fontSize: '16px', fontWeight: 800, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
             </div>
 
             {/* Image area */}
@@ -243,21 +249,22 @@ export default function Home() {
                 }}>View ↗</span>
               </div>
 
-              {/* Tags — filled muted pills */}
+              {/* Tags — colored tinted pills */}
               <div className="flex gap-1.5 mt-2 overflow-hidden">
                 {product.tags.map((tag, j) => (
                   <span
                     key={j}
                     className="whitespace-nowrap"
                     style={{
-                      fontSize: '7px', fontWeight: 500,
+                      fontSize: '7px', fontWeight: 600,
                       padding: '2px 7px',
                       borderRadius: '10px',
-                      background: 'rgba(0,0,0,0.04)',
-                      color: '#888',
+                      border: `1px solid ${tag.color}30`,
+                      background: `${tag.color}10`,
+                      color: tag.color,
                     }}
                   >
-                    {tag}
+                    {tag.label}
                   </span>
                 ))}
               </div>
