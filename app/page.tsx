@@ -124,48 +124,48 @@ export default function Home() {
             className="block relative transition-transform active:scale-[0.97]"
             style={{ borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
-            {/* Grade — sits in the white space created by curved corner */}
-            <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}>
-              <span style={{ fontSize: '20px', fontWeight: 700, color: '#1A1A1A' }}>{product.grade}</span>
-              <span style={{ fontSize: '10px', fontWeight: 500, color: '#1A1A1A', opacity: 0.45 }}>{GRADE_LABEL[product.grade]}</span>
+            {/* Grade — in curved white space, letter big, label below smaller */}
+            <div style={{ position: 'absolute', top: '10px', right: '14px', zIndex: 10, textAlign: 'center' }}>
+              <div style={{ fontSize: '24px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</div>
+              <div style={{ fontSize: '9px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4, marginTop: '1px' }}>{GRADE_LABEL[product.grade]}</div>
             </div>
 
-            {/* Image area — starts at top, curved top-right corner creates white space for grade */}
+            {/* Image area — tall, large curve top-right */}
             <div
               className="relative flex items-center justify-center"
               style={{
-                margin: '8px 8px 0',
-                borderRadius: '18px',
-                borderTopRightRadius: '44px',
+                margin: '6px 6px 0',
+                borderRadius: '20px',
+                borderTopRightRadius: '52px',
                 overflow: 'hidden',
-                minHeight: '170px',
-                padding: '20px 12px',
+                minHeight: '200px',
+                padding: '24px 12px',
                 background: product.bg,
               }}
             >
               <img
                 src={product.image}
                 alt={product.product_name}
-                className="max-h-[130px] object-contain"
-                style={{ filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.15))' }}
+                className="max-h-[160px] object-contain"
+                style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.15))' }}
                 loading="lazy"
               />
             </div>
 
-            {/* Info area */}
-            <div style={{ padding: '14px 14px 16px' }}>
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-[15px] font-bold leading-tight" style={{ color: '#1A1A1A', fontStyle: 'italic' }}>{product.product_name}</p>
-                <span className="text-[10px] font-semibold shrink-0 mt-0.5" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '2px' }}>View ↗</span>
+            {/* Info area — generous padding */}
+            <div style={{ padding: '16px 16px 18px' }}>
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-[16px] font-bold leading-snug" style={{ color: '#1A1A1A' }}>{product.product_name}</p>
+                <span className="text-[10px] font-semibold shrink-0 mt-1" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '2px' }}>View ↗</span>
               </div>
 
-              {/* Tags — with outline border like inspiration */}
+              {/* Tags — filled pills, no border, muted color matching product */}
               <div className="flex flex-wrap gap-2 mt-3">
                 {product.tags.map((tag, j) => (
                   <span
                     key={j}
                     className="text-[10px] font-medium px-3 py-1.5"
-                    style={{ borderRadius: '20px', background: 'rgba(0,0,0,0.02)', color: '#5A5A5A', border: '1px solid #D8D5CE' }}
+                    style={{ borderRadius: '20px', background: product.bg, color: '#5A5A5A', border: 'none', opacity: 0.8 }}
                   >
                     {tag}
                   </span>
