@@ -206,20 +206,20 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              {/* Fact banner — overlaid at bottom */}
+              {/* Fact banner — overlaid with gradient blend */}
               <div style={{
                 position: 'absolute',
                 bottom: 0,
                 left: 0,
                 right: 0,
-                background: BANNER_COLORS[product.bg] || '#8A7D65',
-                padding: '4px 12px',
+                background: `linear-gradient(to bottom, transparent 0%, ${BANNER_COLORS[product.bg] || '#8A7D65'}88 30%, ${BANNER_COLORS[product.bg] || '#8A7D65'} 60%)`,
+                padding: '10px 12px 5px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}>
-                <span style={{ fontSize: '7px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
+                <span style={{ fontSize: '7px', fontWeight: 400, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
               </div>
             </div>
 
