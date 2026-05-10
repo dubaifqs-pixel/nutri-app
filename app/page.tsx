@@ -25,12 +25,13 @@ const PRODUCT_BG: Record<string, string> = {
   frozen: '#D0D8E0', icecream: '#E8D0D8',
 }
 
-// Darken a hex color by a factor (0-1, where 0.7 = 30% darker)
-function darkenColor(hex: string, factor: number): string {
-  const r = Math.round(parseInt(hex.slice(1, 3), 16) * factor)
-  const g = Math.round(parseInt(hex.slice(3, 5), 16) * factor)
-  const b = Math.round(parseInt(hex.slice(5, 7), 16) * factor)
-  return `rgb(${r},${g},${b})`
+// Darken a hex color warmly — reduce brightness while keeping warmth
+function darkenColor(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  // Darken but keep red/green channels warmer than blue
+  return `rgb(${Math.round(r * 0.72)},${Math.round(g * 0.70)},${Math.round(b * 0.62)})`
 }
 
 function getProductBg(name: string): string {
@@ -202,7 +203,7 @@ export default function Home() {
               </div>
               {/* Fact banner — thin strip, darker shade of product bg */}
               <div style={{
-                background: darkenColor(product.bg, 0.78),
+                background: darkenColor(product.bg),
                 padding: '4px 10px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
