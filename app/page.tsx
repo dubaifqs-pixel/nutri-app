@@ -122,40 +122,50 @@ export default function Home() {
             key={i}
             href="/browse"
             className="block relative transition-transform active:scale-[0.97]"
-            style={{ borderRadius: '18px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
+            style={{ borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
-            {/* Image area — rounded inside the card */}
+            {/* Grade — top right on white area */}
+            <div style={{ position: 'absolute', top: '12px', right: '14px', zIndex: 10, textAlign: 'right', color: GRADE_TEXT[product.grade] }}>
+              <div style={{ fontSize: '24px', fontWeight: 800, lineHeight: 1 }}>{product.grade}</div>
+              <div style={{ fontSize: '9px', fontWeight: 600, opacity: 0.7, marginTop: '1px' }}>{GRADE_LABEL[product.grade]}</div>
+            </div>
+
+            {/* Image area — curved top-right corner like inspiration */}
             <div
               className="relative flex items-center justify-center"
-              style={{ margin: '10px 10px 0', borderRadius: '16px', overflow: 'hidden', minHeight: '160px', padding: '20px 10px', background: product.bg }}
+              style={{
+                margin: '8px 8px 0',
+                borderRadius: '18px',
+                borderTopRightRadius: '44px',
+                overflow: 'hidden',
+                minHeight: '170px',
+                padding: '20px 12px',
+                background: product.bg,
+              }}
             >
-              {/* Grade — at top-right corner of image area, overlapping into white card */}
-              <div className="absolute z-10 text-right" style={{ top: '-16px', right: '-2px' }}>
-                <div className="text-[28px] font-extrabold leading-none" style={{ color: '#1A1A1A' }}>{product.grade}</div>
-              </div>
               <img
                 src={product.image}
                 alt={product.product_name}
-                className="max-h-[120px] object-contain"
+                className="max-h-[130px] object-contain"
                 style={{ filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.15))' }}
                 loading="lazy"
               />
             </div>
 
             {/* Info area */}
-            <div style={{ padding: '12px 14px 14px' }}>
+            <div style={{ padding: '14px 14px 16px' }}>
               <div className="flex items-start justify-between gap-2">
-                <p className="text-[14px] font-bold leading-tight" style={{ color: '#1A1A1A' }}>{product.product_name}</p>
+                <p className="text-[15px] font-bold leading-tight" style={{ color: '#1A1A1A', fontStyle: 'italic' }}>{product.product_name}</p>
                 <span className="text-[10px] font-semibold shrink-0 mt-0.5" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '2px' }}>View ↗</span>
               </div>
 
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1.5 mt-2.5">
+              {/* Tags — with outline border like inspiration */}
+              <div className="flex flex-wrap gap-2 mt-3">
                 {product.tags.map((tag, j) => (
                   <span
                     key={j}
-                    className="text-[9px] font-medium px-2.5 py-1"
-                    style={{ borderRadius: '16px', background: '#F0EFEB', color: '#5A5A5A' }}
+                    className="text-[10px] font-medium px-3 py-1.5"
+                    style={{ borderRadius: '20px', background: 'rgba(0,0,0,0.02)', color: '#5A5A5A', border: '1px solid #D8D5CE' }}
                   >
                     {tag}
                   </span>
