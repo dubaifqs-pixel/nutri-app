@@ -146,15 +146,15 @@ export default function Home() {
               />
             </div>
 
-            {/* Grade — white bg ensures it's always on white, like $10 */}
+            {/* Grade — tight white area like "$10" */}
             <div style={{
               position: 'absolute', top: '0', right: '0', zIndex: 20,
               background: '#FFFFFF',
-              borderBottomLeftRadius: '20px',
-              padding: '10px 14px 12px 16px',
+              borderBottomLeftRadius: '16px',
+              padding: '6px 10px 8px 12px',
             }}>
-              <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '10px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
+              <span style={{ fontSize: '20px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '9px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
             {/* Info area — generous padding */}
