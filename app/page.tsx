@@ -124,14 +124,10 @@ export default function Home() {
             className="block relative transition-transform active:scale-[0.97]"
             style={{ borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
-            {/* Grade — small white badge top right */}
-            <div style={{
-              position: 'absolute', top: '10px', right: '10px', zIndex: 10,
-              background: '#FFFFFF', borderRadius: '12px', padding: '4px 10px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.08)', textAlign: 'center',
-            }}>
-              <div style={{ fontSize: '16px', fontWeight: 800, lineHeight: 1, color: GRADE_TEXT[product.grade] }}>{product.grade}</div>
-              <div style={{ fontSize: '8px', fontWeight: 600, color: GRADE_TEXT[product.grade], opacity: 0.7 }}>{GRADE_LABEL[product.grade]}</div>
+            {/* Grade — plain text, no background, like "$10" */}
+            <div style={{ position: 'absolute', top: '14px', right: '16px', zIndex: 10 }}>
+              <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A1A1A' }}>{product.grade}</span>
+              <span style={{ fontSize: '11px', fontWeight: 500, color: '#1A1A1A', opacity: 0.5 }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
             {/* Image area — curved top-right corner like inspiration */}
