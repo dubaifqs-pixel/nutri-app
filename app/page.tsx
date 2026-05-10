@@ -124,19 +124,17 @@ export default function Home() {
             className="block relative transition-transform active:scale-[0.97]"
             style={{ borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
-            {/* White top area with grade — like inspiration */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 16px 6px', background: '#FFFFFF' }}>
-              <div>
-                <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A1A1A' }}>{product.grade}</span>
-                <span style={{ fontSize: '11px', fontWeight: 500, color: '#1A1A1A', opacity: 0.5 }}>{GRADE_LABEL[product.grade]}</span>
-              </div>
+            {/* Grade — sits in the white space created by curved corner */}
+            <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}>
+              <span style={{ fontSize: '20px', fontWeight: 700, color: '#1A1A1A' }}>{product.grade}</span>
+              <span style={{ fontSize: '10px', fontWeight: 500, color: '#1A1A1A', opacity: 0.45 }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
-            {/* Image area — curved top-right corner like inspiration */}
+            {/* Image area — starts at top, curved top-right corner creates white space for grade */}
             <div
               className="relative flex items-center justify-center"
               style={{
-                margin: '0 8px',
+                margin: '8px 8px 0',
                 borderRadius: '18px',
                 borderTopRightRadius: '44px',
                 overflow: 'hidden',
