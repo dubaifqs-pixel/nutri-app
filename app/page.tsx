@@ -7,7 +7,7 @@ import { DEMO_PRODUCTS } from '@/lib/demo-products'
 import { calculateGrade } from '@/lib/scoring'
 import { getProductImage } from '@/lib/product-images'
 import { GRADE_COLORS, type Grade, type NutritionData } from '@/lib/types'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 // Product background colors matched to category
 const PRODUCT_BG: Record<string, string> = {
@@ -53,8 +53,8 @@ const GRADE_LABEL: Record<Grade, string> = {
   A: 'Great', B: 'Good', C: 'Okay', D: 'Poor', E: 'Bad',
 }
 
-// Fun facts per product
-const PRODUCT_FACTS: Record<string, string> = {
+// Fallback facts (used while Gemini loads or if it fails)
+const FALLBACK_FACTS: Record<string, string> = {
   'Al Ain Full Cream Milk': 'Sourced from Al Ain farms since 1981',
   'Coca-Cola Original': 'Invented in 1886 · Sold in 200+ countries',
   'KitKat 4 Finger': '17 billion fingers are made every year',
@@ -80,16 +80,40 @@ const FEATURED = [
     image: getProductImage(p.product_name, g.grade as Grade),
     bg: getProductBg(p.product_name),
     tags: getNutritionTags(p.nutrition),
-    fact: PRODUCT_FACTS[p.product_name] || 'Scanned & verified by nutri',
+    fact: FALLBACK_FACTS[p.product_name] || 'Scanned & verified by nutri',
   }
 })
 
 export default function Home() {
   const t = useT()
+  const [facts, setFacts] = useState<Record<string, string>>(FALLBACK_FACTS)
 
-  // Preload images
   useEffect(() => {
+    // Preload images
     FEATURED.forEach(p => { const img = new Image(); img.src = p.image })
+
+    // Load Gemini facts (cached in localStorage for 24h)
+    const CACHE_KEY = 'nutri_facts'
+    const cached = localStorage.getItem(CACHE_KEY)
+    if (cached) {
+      try {
+        const { facts: f, ts } = JSON.parse(cached)
+        if (Date.now() - ts < 86400000) { setFacts(f); return }
+      } catch {}
+    }
+    fetch('/api/facts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ products: FEATURED.map(p => p.product_name) }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d.facts) {
+          setFacts(d.facts)
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ facts: d.facts, ts: Date.now() }))
+        }
+      })
+      .catch(() => {})
   }, [])
 
   return (
@@ -174,7 +198,7 @@ export default function Home() {
                 padding: '5px 12px',
                 textAlign: 'center',
               }}>
-                <span style={{ fontSize: '8px', fontWeight: 500, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px' }}>{product.fact}</span>
+                <span style={{ fontSize: '8px', fontWeight: 500, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px' }}>{facts[product.product_name] || product.fact}</span>
               </div>
             </div>
 
