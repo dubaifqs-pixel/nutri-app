@@ -190,7 +190,7 @@ export default function Home() {
             <div
               style={{
                 margin: '8px',
-                borderRadius: '16px',
+                borderRadius: '12px',
                 minHeight: '230px',
                 background: product.bg,
                 overflow: 'hidden',
@@ -210,13 +210,13 @@ export default function Home() {
               {/* Fact banner */}
               <div style={{
                 background: BANNER_COLORS[product.bg] || '#8A7D65',
-                padding: '6px 12px',
+                padding: '4px 12px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}>
-                <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
+                <span style={{ fontSize: '7px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
               </div>
             </div>
 
