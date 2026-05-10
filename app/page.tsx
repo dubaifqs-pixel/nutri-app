@@ -210,13 +210,13 @@ export default function Home() {
               {/* Fact banner */}
               <div style={{
                 background: BANNER_COLORS[product.bg] || '#8A7D65',
-                padding: '3px 12px',
+                padding: '6px 12px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}>
-                <span style={{ fontSize: '7px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.2px', fontStyle: 'italic', lineHeight: '1' }}>{facts[product.product_name] || product.fact}</span>
+                <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
               </div>
             </div>
 
