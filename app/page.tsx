@@ -32,7 +32,7 @@ function darkenColor(hex: string): string {
   const b = parseInt(hex.slice(5, 7), 16)
   const avg = (r + g + b) / 3
   // Darken to 70% and push channels away from average to increase saturation
-  const f = (c: number) => Math.min(255, Math.max(0, Math.round(c * 0.7 + (c - avg) * 0.5)))
+  const f = (c: number) => Math.min(255, Math.max(0, Math.round(c * 0.75 + (c - avg) * 0.6)))
   return `rgb(${f(r)},${f(g)},${f(b)})`
 }
 
@@ -203,7 +203,7 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              {/* Fact banner — matching inspiration proportions */}
+              {/* Fact banner */}
               <div style={{
                 background: darkenColor(product.bg),
                 padding: '5px 12px',
@@ -211,9 +211,8 @@ export default function Home() {
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                borderRadius: '0 0 16px 16px',
               }}>
-                <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
+                <span style={{ fontSize: '8px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
               </div>
             </div>
 
