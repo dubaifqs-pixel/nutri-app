@@ -101,7 +101,7 @@ export default function Home() {
     FEATURED.forEach(p => { const img = new Image(); img.src = p.image })
 
     // Load Gemini facts (cached in localStorage for 24h)
-    const CACHE_KEY = 'nutri_facts'
+    const CACHE_KEY = 'nutri_facts_v2'
     const cached = localStorage.getItem(CACHE_KEY)
     if (cached) {
       try {
@@ -202,7 +202,7 @@ export default function Home() {
               </div>
               {/* Fact banner — thin strip, darker shade of product bg */}
               <div style={{
-                background: darkenColor(product.bg, 0.68),
+                background: darkenColor(product.bg, 0.78),
                 padding: '4px 10px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
