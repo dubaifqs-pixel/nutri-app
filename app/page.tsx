@@ -124,19 +124,19 @@ export default function Home() {
             className="block relative transition-transform active:scale-[0.97]"
             style={{ borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
-            {/* Grade — one line like "$10", letter big + label as subscript */}
-            <div style={{ position: 'absolute', top: '10px', right: '12px', zIndex: 10 }}>
-              <span style={{ fontSize: '26px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '12px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4, verticalAlign: 'sub' }}>{GRADE_LABEL[product.grade]}</span>
+            {/* Grade — on white card, exposed by image's large curved corner */}
+            <div style={{ position: 'absolute', top: '12px', right: '10px', zIndex: 5, textAlign: 'center' }}>
+              <span style={{ fontSize: '24px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '11px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
-            {/* Image area — tall, large curve top-right */}
+            {/* Image area — large curve exposes white card behind grade */}
             <div
               className="relative flex items-center justify-center"
               style={{
                 margin: '6px 6px 0',
                 borderRadius: '20px',
-                borderTopRightRadius: '52px',
+                borderTopRightRadius: '64px',
                 overflow: 'hidden',
                 minHeight: '200px',
                 padding: '24px 12px',
