@@ -124,62 +124,51 @@ export default function Home() {
             className="block relative transition-transform active:scale-[0.97]"
             style={{ borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
-            {/* Image area with organic concave curve */}
-            <div style={{ position: 'relative', margin: '6px', marginBottom: 0 }}>
-              {/* Colored background with rounded corners */}
-              <div
-                className="flex items-center justify-center"
-                style={{
-                  borderRadius: '18px',
-                  minHeight: '230px',
-                  padding: '24px 12px 16px',
-                  background: product.bg,
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                <img
-                  src={product.image}
-                  alt={product.product_name}
-                  className="max-h-[180px] object-contain"
-                  style={{ filter: 'drop-shadow(4px 8px 16px rgba(0,0,0,0.2))' }}
-                  loading="lazy"
-                />
-              </div>
+            {/* Grade — in exposed white area top-right */}
+            <div style={{
+              position: 'absolute', top: '10px', right: '14px', zIndex: 20,
+              display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+            }}>
+              <span style={{ fontSize: '22px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '8px', fontWeight: 500, color: '#888', marginTop: '2px' }}>{GRADE_LABEL[product.grade]}</span>
+            </div>
 
-              {/* White concave cutout — large circle for deep organic curve */}
-              <div style={{
-                position: 'absolute', top: '-60px', right: '-60px',
-                width: '140px', height: '140px',
-                borderRadius: '50%',
-                background: '#FFFFFF',
-                zIndex: 10,
-              }} />
-
-              {/* Grade — centered in the white concave pocket */}
-              <div style={{
-                position: 'absolute', top: '8px', right: '8px', zIndex: 20,
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-              }}>
-                <span style={{ fontSize: '24px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
-                <span style={{ fontSize: '9px', fontWeight: 600, color: '#1A1A1A', opacity: 0.35, marginTop: '2px' }}>{GRADE_LABEL[product.grade]}</span>
-              </div>
+            {/* Image area — large borderTopRightRadius creates the organic curve */}
+            <div
+              className="flex items-center justify-center"
+              style={{
+                margin: '6px 6px 0',
+                borderRadius: '18px',
+                borderTopRightRadius: '80px',
+                minHeight: '240px',
+                padding: '20px 16px',
+                background: product.bg,
+                overflow: 'hidden',
+              }}
+            >
+              <img
+                src={product.image}
+                alt={product.product_name}
+                className="max-h-[190px] object-contain"
+                style={{ filter: 'drop-shadow(4px 8px 16px rgba(0,0,0,0.18))' }}
+                loading="lazy"
+              />
             </div>
 
             {/* Info area */}
-            <div style={{ padding: '14px 14px 16px' }}>
-              <div className="flex items-start justify-between gap-2">
+            <div style={{ padding: '12px 14px 14px' }}>
+              <div className="flex items-baseline justify-between gap-2">
                 <p className="text-[15px] font-bold leading-snug" style={{ color: '#1A1A1A' }}>{product.product_name}</p>
-                <span className="text-[10px] font-semibold shrink-0 mt-1" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '2px' }}>View ↗</span>
+                <span className="text-[10px] font-semibold shrink-0" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '2px' }}>View ↗</span>
               </div>
 
-              {/* Tags — outlined pills */}
-              <div className="flex flex-wrap gap-1.5 mt-3">
+              {/* Tags — outlined pills in single row */}
+              <div className="flex gap-1.5 mt-3 overflow-hidden">
                 {product.tags.map((tag, j) => (
                   <span
                     key={j}
-                    className="text-[9px] font-medium px-2.5 py-1"
-                    style={{ borderRadius: '20px', border: '1px solid rgba(0,0,0,0.12)', color: '#5A5A5A', background: 'transparent' }}
+                    className="text-[9px] font-medium px-2.5 py-1 whitespace-nowrap"
+                    style={{ borderRadius: '20px', border: '1px solid rgba(0,0,0,0.12)', color: '#6A6A6A', background: 'transparent' }}
                   >
                     {tag}
                   </span>
