@@ -166,54 +166,63 @@ export default function Home() {
       </div>
 
       {/* Pinterest Grid */}
-      <div className="grid grid-cols-2 gap-3 px-4">
+      <div className="grid grid-cols-2 gap-2.5 px-4">
         {FEATURED.map((product, i) => (
           <Link
             key={i}
             href="/browse"
-            className="block relative transition-transform active:scale-[0.97]"
-            style={{ borderRadius: '20px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}
+            className="block relative active:scale-[0.97]"
+            style={{
+              borderRadius: '18px',
+              overflow: 'hidden',
+              background: '#FFFFFF',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.03)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)' }}
           >
-            {/* Grade — white background badge at top-right */}
+            {/* Grade badge — top-right with shadow */}
             <div style={{
               position: 'absolute', top: '0', right: '0', zIndex: 20,
               background: '#FFFFFF',
-              borderBottomLeftRadius: '14px',
-              padding: '6px 10px 8px 12px',
+              borderBottomLeftRadius: '12px',
+              padding: '5px 9px 6px 10px',
               display: 'flex', flexDirection: 'column', alignItems: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
             }}>
-              <span style={{ fontSize: '20px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '7px', fontWeight: 500, color: '#999', marginTop: '2px' }}>{GRADE_LABEL[product.grade]}</span>
+              <span style={{ fontSize: '18px', fontWeight: 800, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '6px', fontWeight: 600, color: '#AAA', marginTop: '1px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
             {/* Image area */}
             <div
               style={{
-                margin: '8px',
-                borderRadius: '12px',
-                minHeight: '230px',
+                margin: '6px',
+                borderRadius: '14px',
+                minHeight: '220px',
                 background: product.bg,
                 overflow: 'hidden',
                 position: 'relative',
               }}
             >
-              <div className="flex items-end justify-center" style={{ padding: '20px 12px 28px', minHeight: '230px' }}>
+              <div className="flex items-end justify-center" style={{ padding: '16px 10px 24px', minHeight: '220px' }}>
                 <img
                   src={product.image}
                   alt={product.product_name}
-                  className="max-h-[170px] object-contain"
+                  className="max-h-[165px] object-contain"
                   style={{ filter: 'drop-shadow(2px 6px 14px rgba(0,0,0,0.18))' }}
                   loading="lazy"
                 />
               </div>
-              {/* Fact banner — solid strip overlaid at bottom */}
+              {/* Fact banner */}
               <div style={{
                 position: 'absolute',
                 bottom: 0,
                 left: 0,
                 right: 0,
                 background: BANNER_COLORS[product.bg] || '#8A7D65',
-                padding: '4px 12px',
+                padding: '4px 10px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
@@ -223,20 +232,30 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Info area — compact */}
-            <div style={{ padding: '10px 12px 12px' }}>
+            {/* Info area */}
+            <div style={{ padding: '8px 12px 10px' }}>
               <div className="flex items-baseline justify-between gap-2">
-                <p className="text-[14px] font-bold leading-snug" style={{ color: '#1A1A1A' }}>{product.product_name}</p>
-                <span className="text-[9px] font-semibold shrink-0" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '2px' }}>View ↗</span>
+                <p className="text-[13px] leading-snug" style={{ color: '#1A1A1A', fontWeight: 700 }}>{product.product_name}</p>
+                <span className="shrink-0" style={{
+                  fontSize: '8px', fontWeight: 600, color: '#1A1A1A',
+                  border: '1px solid rgba(0,0,0,0.12)', borderRadius: '10px',
+                  padding: '2px 7px', whiteSpace: 'nowrap',
+                }}>View ↗</span>
               </div>
 
-              {/* Tags — outlined pills like inspiration */}
-              <div className="flex gap-1.5 mt-2.5 overflow-hidden">
+              {/* Tags — filled muted pills */}
+              <div className="flex gap-1.5 mt-2 overflow-hidden">
                 {product.tags.map((tag, j) => (
                   <span
                     key={j}
-                    className="text-[8px] font-medium px-2.5 py-[4px] whitespace-nowrap"
-                    style={{ borderRadius: '16px', border: '1px solid rgba(0,0,0,0.15)', color: '#7A7A7A', background: 'transparent' }}
+                    className="whitespace-nowrap"
+                    style={{
+                      fontSize: '7px', fontWeight: 500,
+                      padding: '2px 7px',
+                      borderRadius: '10px',
+                      background: 'rgba(0,0,0,0.04)',
+                      color: '#888',
+                    }}
                   >
                     {tag}
                   </span>
