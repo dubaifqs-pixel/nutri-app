@@ -192,13 +192,16 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              {/* Fact banner */}
+              {/* Fact banner — darker shade of product bg */}
               <div style={{
-                background: 'rgba(0,0,0,0.12)',
-                padding: '5px 12px',
+                background: 'rgba(0,0,0,0.15)',
+                backgroundBlendMode: 'darken',
+                padding: '6px 14px',
                 textAlign: 'center',
+                backdropFilter: 'brightness(0.82)',
+                WebkitBackdropFilter: 'brightness(0.82)',
               }}>
-                <span style={{ fontSize: '8px', fontWeight: 500, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px' }}>{facts[product.product_name] || product.fact}</span>
+                <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.4px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
               </div>
             </div>
 
