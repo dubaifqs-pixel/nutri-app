@@ -220,14 +220,14 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              {/* Fact banner */}
+              {/* Fact banner — gradient fade */}
               <div style={{
                 position: 'absolute',
                 bottom: 0,
                 left: 0,
                 right: 0,
-                background: BANNER_COLORS[product.bg] || '#8A7D65',
-                padding: '4px 10px',
+                background: `linear-gradient(to bottom, transparent 0%, ${BANNER_COLORS[product.bg] || '#8A7D65'}90 40%, ${BANNER_COLORS[product.bg] || '#8A7D65'} 100%)`,
+                padding: '12px 10px 5px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
