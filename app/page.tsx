@@ -121,20 +121,20 @@ export default function Home() {
           <Link
             key={i}
             href="/browse"
-            className="block transition-transform active:scale-[0.97]"
-            style={{ borderRadius: '18px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
+            className="block relative transition-transform active:scale-[0.97]"
+            style={{ borderRadius: '18px', overflow: 'visible', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
+            {/* Grade — top right, OUTSIDE image area, on the white card like "$10" */}
+            <div className="absolute -top-1 -right-1 text-right z-10" style={{ color: GRADE_TEXT[product.grade] }}>
+              <div className="text-[20px] font-extrabold leading-none">{product.grade}</div>
+              <div className="text-[10px] font-semibold">{GRADE_LABEL[product.grade]}</div>
+            </div>
+
             {/* Image area — rounded inside the card */}
             <div
               className="relative flex items-center justify-center"
               style={{ margin: '8px 8px 0', borderRadius: '14px', overflow: 'hidden', minHeight: '150px', padding: '16px 8px', background: product.bg }}
             >
-              {/* Grade — top right like "$10" */}
-              <div className="absolute top-3 right-3 text-right" style={{ color: GRADE_TEXT[product.grade] }}>
-                <div className="text-[18px] font-extrabold leading-none">{product.grade}</div>
-                <div className="text-[10px] font-semibold">{GRADE_LABEL[product.grade]}</div>
-              </div>
-
               <img
                 src={product.image}
                 alt={product.product_name}
