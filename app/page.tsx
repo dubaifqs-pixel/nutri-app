@@ -189,16 +189,17 @@ export default function Home() {
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.03)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)' }}
           >
-            {/* Grade badge — round circle */}
+            {/* Grade badge — white corner with shadow */}
             <div style={{
-              position: 'absolute', top: '10px', right: '10px', zIndex: 20,
-              width: '36px', height: '36px',
+              position: 'absolute', top: '0', right: '0', zIndex: 20,
               background: '#FFFFFF',
-              borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.12)',
+              borderBottomLeftRadius: '14px',
+              padding: '6px 10px 8px 12px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
             }}>
-              <span style={{ fontSize: '16px', fontWeight: 800, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '20px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '7px', fontWeight: 500, color: '#999', marginTop: '2px' }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
             {/* Image area */}
