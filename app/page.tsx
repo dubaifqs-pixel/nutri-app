@@ -203,9 +203,10 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              {/* Fact banner */}
+              {/* Fact banner — product bg with warm dark overlay */}
               <div style={{
-                background: darkenColor(product.bg),
+                background: product.bg,
+                boxShadow: 'inset 0 0 0 100px rgba(40,38,25,0.35)',
                 padding: '5px 12px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
