@@ -124,53 +124,58 @@ export default function Home() {
             className="block relative transition-transform active:scale-[0.97]"
             style={{ borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
-            {/* Image area — large curve exposes white card at top-right */}
-            <div
-              className="flex items-center justify-center"
-              style={{
-                margin: '6px 6px 0',
-                borderRadius: '20px',
-                borderTopRightRadius: '64px',
-                overflow: 'hidden',
-                minHeight: '200px',
-                padding: '24px 12px',
-                background: product.bg,
-              }}
-            >
-              <img
-                src={product.image}
-                alt={product.product_name}
-                className="max-h-[160px] object-contain"
-                style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.15))' }}
-                loading="lazy"
-              />
-            </div>
-
-            {/* Grade — tight white area like "$10" */}
+            {/* Grade — sits in white area exposed by curve */}
             <div style={{
-              position: 'absolute', top: '0', right: '0', zIndex: 20,
-              background: '#FFFFFF',
-              borderBottomLeftRadius: '12px',
-              padding: '3px 6px 5px 8px',
+              position: 'absolute', top: '8px', right: '12px', zIndex: 20,
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
             }}>
-              <span style={{ fontSize: '16px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '8px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
+              <span style={{ fontSize: '20px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '8px', fontWeight: 600, color: '#1A1A1A', opacity: 0.4, marginTop: '1px' }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
-            {/* Info area — generous padding */}
-            <div style={{ padding: '16px 16px 18px' }}>
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-[16px] font-bold leading-snug" style={{ color: '#1A1A1A' }}>{product.product_name}</p>
+            {/* Image area — large organic curve via SVG clip path */}
+            <div style={{ position: 'relative', margin: '6px 6px 0', overflow: 'hidden' }}>
+              <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+                <defs>
+                  <clipPath id={`curve-${i}`} clipPathUnits="objectBoundingBox">
+                    <path d="M 0,0 L 0.72,0 C 0.76,0 0.78,0.02 0.78,0.06 L 0.78,0.08 C 0.78,0.16 0.86,0.22 0.94,0.22 L 1,0.22 L 1,1 C 1,1 1,1 1,1 L 0,1 Z" />
+                  </clipPath>
+                </defs>
+              </svg>
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  clipPath: `url(#curve-${i})`,
+                  borderRadius: '18px',
+                  minHeight: '220px',
+                  padding: '20px 12px 16px',
+                  background: product.bg,
+                }}
+              >
+                <img
+                  src={product.image}
+                  alt={product.product_name}
+                  className="max-h-[180px] object-contain"
+                  style={{ filter: 'drop-shadow(4px 8px 16px rgba(0,0,0,0.2))' }}
+                  loading="lazy"
+                />
+              </div>
+            </div>
+
+            {/* Info area */}
+            <div style={{ padding: '14px 14px 16px' }}>
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-[15px] font-bold leading-snug" style={{ color: '#1A1A1A' }}>{product.product_name}</p>
                 <span className="text-[10px] font-semibold shrink-0 mt-1" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '2px' }}>View ↗</span>
               </div>
 
-              {/* Tags — filled pills, no border, muted color matching product */}
-              <div className="flex flex-wrap gap-2 mt-3">
+              {/* Tags — outlined pills like inspiration */}
+              <div className="flex flex-wrap gap-1.5 mt-3">
                 {product.tags.map((tag, j) => (
                   <span
                     key={j}
-                    className="text-[10px] font-medium px-3 py-1.5"
-                    style={{ borderRadius: '20px', background: product.bg, color: '#5A5A5A', border: 'none', opacity: 0.8 }}
+                    className="text-[9px] font-medium px-2.5 py-1"
+                    style={{ borderRadius: '20px', border: '1px solid rgba(0,0,0,0.12)', color: '#5A5A5A', background: 'transparent' }}
                   >
                     {tag}
                   </span>
