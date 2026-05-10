@@ -25,6 +25,14 @@ const PRODUCT_BG: Record<string, string> = {
   frozen: '#D0D8E0', icecream: '#E8D0D8',
 }
 
+// Darken a hex color by a factor (0-1, where 0.7 = 30% darker)
+function darkenColor(hex: string, factor: number): string {
+  const r = Math.round(parseInt(hex.slice(1, 3), 16) * factor)
+  const g = Math.round(parseInt(hex.slice(3, 5), 16) * factor)
+  const b = Math.round(parseInt(hex.slice(5, 7), 16) * factor)
+  return `rgb(${r},${g},${b})`
+}
+
 function getProductBg(name: string): string {
   const lower = name.toLowerCase()
   for (const [key, color] of Object.entries(PRODUCT_BG)) {
@@ -192,16 +200,13 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              {/* Fact banner — darker shade of product bg */}
+              {/* Fact banner — solid darker shade of product bg */}
               <div style={{
-                background: 'rgba(0,0,0,0.15)',
-                backgroundBlendMode: 'darken',
+                background: darkenColor(product.bg, 0.68),
                 padding: '6px 14px',
                 textAlign: 'center',
-                backdropFilter: 'brightness(0.82)',
-                WebkitBackdropFilter: 'brightness(0.82)',
               }}>
-                <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.4px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
+                <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
               </div>
             </div>
 
