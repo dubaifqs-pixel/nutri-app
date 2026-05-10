@@ -124,15 +124,9 @@ export default function Home() {
             className="block relative transition-transform active:scale-[0.97]"
             style={{ borderRadius: '24px', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
           >
-            {/* Grade — on white card, exposed by image's large curved corner */}
-            <div style={{ position: 'absolute', top: '12px', right: '10px', zIndex: 5, textAlign: 'center' }}>
-              <span style={{ fontSize: '24px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '11px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
-            </div>
-
-            {/* Image area — large curve exposes white card behind grade */}
+            {/* Image area — large curve exposes white card at top-right */}
             <div
-              className="relative flex items-center justify-center"
+              className="flex items-center justify-center"
               style={{
                 margin: '6px 6px 0',
                 borderRadius: '20px',
@@ -150,6 +144,17 @@ export default function Home() {
                 style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.15))' }}
                 loading="lazy"
               />
+            </div>
+
+            {/* Grade — white bg ensures it's always on white, like $10 */}
+            <div style={{
+              position: 'absolute', top: '0', right: '0', zIndex: 20,
+              background: '#FFFFFF',
+              borderBottomLeftRadius: '20px',
+              padding: '10px 14px 12px 16px',
+            }}>
+              <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '10px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
             {/* Info area — generous padding */}
