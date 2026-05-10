@@ -147,22 +147,22 @@ export default function Home() {
                 />
               </div>
 
-              {/* White concave cutout — circle trick to create organic curve */}
+              {/* White concave cutout — large circle for deep organic curve */}
               <div style={{
-                position: 'absolute', top: '-40px', right: '-40px',
-                width: '110px', height: '110px',
+                position: 'absolute', top: '-60px', right: '-60px',
+                width: '140px', height: '140px',
                 borderRadius: '50%',
                 background: '#FFFFFF',
                 zIndex: 10,
               }} />
 
-              {/* Grade — inside the white concave area */}
+              {/* Grade — centered in the white concave pocket */}
               <div style={{
-                position: 'absolute', top: '6px', right: '6px', zIndex: 20,
+                position: 'absolute', top: '8px', right: '8px', zIndex: 20,
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
               }}>
-                <span style={{ fontSize: '22px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
-                <span style={{ fontSize: '8px', fontWeight: 600, color: '#1A1A1A', opacity: 0.35, marginTop: '2px' }}>{GRADE_LABEL[product.grade]}</span>
+                <span style={{ fontSize: '24px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
+                <span style={{ fontSize: '9px', fontWeight: 600, color: '#1A1A1A', opacity: 0.35, marginTop: '2px' }}>{GRADE_LABEL[product.grade]}</span>
               </div>
             </div>
 
