@@ -25,14 +25,15 @@ const PRODUCT_BG: Record<string, string> = {
   frozen: '#D0D8E0', icecream: '#E8D0D8',
 }
 
-// Create a richer, stronger version of the bg color for the banner
+// Create a stronger, more saturated + slightly darker version of bg
 function darkenColor(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
   const b = parseInt(hex.slice(5, 7), 16)
-  // Mix with a warm olive tone (#8B7D5A) at 45% to add richness
-  const mix = (c: number, t: number) => Math.round(c * 0.55 + t * 0.45)
-  return `rgb(${mix(r, 139)},${mix(g, 125)},${mix(b, 90)})`
+  // Find dominant channel and boost it while darkening others more
+  const max = Math.max(r, g, b)
+  const strengthen = (c: number) => Math.round(c === max ? c * 0.75 : c * 0.6)
+  return `rgb(${strengthen(r)},${strengthen(g)},${strengthen(b)})`
 }
 
 function getProductBg(name: string): string {
@@ -205,7 +206,7 @@ export default function Home() {
               {/* Fact banner — thin strip, darker shade of product bg */}
               <div style={{
                 background: darkenColor(product.bg),
-                padding: '4px 10px',
+                padding: '3px 10px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
