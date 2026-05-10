@@ -25,15 +25,19 @@ const PRODUCT_BG: Record<string, string> = {
   frozen: '#D0D8E0', icecream: '#E8D0D8',
 }
 
-// Darken + saturate while preserving hue
-function darkenColor(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  const avg = (r + g + b) / 3
-  // Darken to 70% and push channels away from average to increase saturation
-  const f = (c: number) => Math.min(255, Math.max(0, Math.round(c * 0.75 + (c - avg) * 0.6)))
-  return `rgb(${f(r)},${f(g)},${f(b)})`
+// Banner colors — handpicked to match each product bg
+const BANNER_COLORS: Record<string, string> = {
+  '#EDE5D8': '#B8A88E', // beige → warm sand
+  '#DBC0B0': '#A8856E', // pinkish-brown → warm terracotta
+  '#D8CCC0': '#A89078', // brown → warm mocha
+  '#C8D8B0': '#6B7D55', // sage green → olive green (matching inspiration)
+  '#F5D8A8': '#C4A060', // gold → warm amber
+  '#E8E0D8': '#B0A090', // light beige → taupe
+  '#D0E8C8': '#5E8A4A', // light green → forest green
+  '#C8D0E0': '#7888A0', // light blue → slate blue
+  '#E0D0C0': '#A88868', // tan → warm brown
+  '#EEE0A8': '#B8A050', // yellow → golden brown
+  '#F0E8C0': '#C0A860', // cream → amber
 }
 
 function getProductBg(name: string): string {
@@ -203,10 +207,9 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              {/* Fact banner — product bg with warm dark overlay */}
+              {/* Fact banner */}
               <div style={{
-                background: product.bg,
-                boxShadow: 'inset 0 0 0 100px rgba(40,38,25,0.35)',
+                background: BANNER_COLORS[product.bg] || '#8A7D65',
                 padding: '5px 12px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
