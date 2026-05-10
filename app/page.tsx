@@ -7,7 +7,7 @@ import { DEMO_PRODUCTS } from '@/lib/demo-products'
 import { calculateGrade } from '@/lib/scoring'
 import { getProductImage } from '@/lib/product-images'
 import { GRADE_COLORS, type Grade, type NutritionData } from '@/lib/types'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 
 // Product background colors matched to category
 const PRODUCT_BG: Record<string, string> = {
@@ -109,6 +109,34 @@ const FEATURED = [
 export default function Home() {
   const t = useT()
   const [facts, setFacts] = useState<Record<string, string>>(FALLBACK_FACTS)
+  const [activeCard, setActiveCard] = useState(0)
+  const touchStart = useRef(0)
+  const touchDelta = useRef(0)
+  const [dragging, setDragging] = useState(false)
+  const [dragX, setDragX] = useState(0)
+
+  const swipe = useCallback((dir: 1 | -1) => {
+    setActiveCard(prev => Math.max(0, Math.min(FEATURED.length - 1, prev + dir)))
+  }, [])
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStart.current = e.touches[0].clientX
+    setDragging(true)
+  }, [])
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    touchDelta.current = e.touches[0].clientX - touchStart.current
+    setDragX(touchDelta.current)
+  }, [])
+
+  const onTouchEnd = useCallback(() => {
+    setDragging(false)
+    setDragX(0)
+    if (Math.abs(touchDelta.current) > 60) {
+      swipe(touchDelta.current < 0 ? 1 : -1)
+    }
+    touchDelta.current = 0
+  }, [swipe])
 
   useEffect(() => {
     // Preload images
@@ -172,22 +200,31 @@ export default function Home() {
         <span className="text-[8px] font-bold uppercase tracking-wider px-3 py-1 rounded-full" style={{ background: '#FFEC89', color: '#1A1A1A' }}>Featured</span>
       </div>
 
-      {/* Pinterest Grid */}
-      <div className="grid grid-cols-2 gap-2.5 px-4">
+      {/* Swipeable Card Carousel */}
+      <div
+        className="relative overflow-hidden"
+        style={{ padding: '0 20px' }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        <div style={{
+          display: 'flex',
+          transition: dragging ? 'none' : 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+          transform: `translateX(calc(-${activeCard * 100}% + ${dragX}px))`,
+        }}>
         {FEATURED.map((product, i) => (
+          <div key={i} style={{ minWidth: '100%', padding: '0 4px' }}>
           <Link
-            key={i}
             href="/browse"
-            className="block relative active:scale-[0.97]"
+            className="block relative active:scale-[0.98]"
             style={{
-              borderRadius: '18px',
+              borderRadius: '20px',
               overflow: 'hidden',
               background: '#FFFFFF',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              boxShadow: '0 2px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)',
+              transition: 'transform 0.2s ease',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.03)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)' }}
           >
             {/* Grade badge — white corner */}
             <div style={{
@@ -196,8 +233,8 @@ export default function Home() {
               borderBottomLeftRadius: '14px',
               padding: '3px 6px 5px 8px',
             }}>
-              <span style={{ fontSize: '16px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '8px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
+              <span style={{ fontSize: '22px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '9px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
             {/* Image area */}
@@ -205,17 +242,17 @@ export default function Home() {
               style={{
                 margin: '6px',
                 borderRadius: '14px',
-                minHeight: '220px',
+                minHeight: '300px',
                 background: product.bg,
                 overflow: 'hidden',
                 position: 'relative',
               }}
             >
-              <div className="flex items-end justify-center" style={{ padding: '16px 10px 24px', minHeight: '220px' }}>
+              <div className="flex items-end justify-center" style={{ padding: '20px 16px 30px', minHeight: '300px' }}>
                 <img
                   src={product.image}
                   alt={product.product_name}
-                  className="max-h-[165px] object-contain"
+                  className="max-h-[240px] object-contain"
                   style={{ filter: 'drop-shadow(2px 6px 14px rgba(0,0,0,0.18))' }}
                   loading="lazy"
                 />
@@ -238,25 +275,25 @@ export default function Home() {
             </div>
 
             {/* Info area */}
-            <div style={{ padding: '8px 12px 10px' }}>
-              <div className="flex items-baseline justify-between gap-2">
-                <p className="text-[13px] leading-snug" style={{ color: '#1A1A1A', fontWeight: 700 }}>{product.product_name}</p>
+            <div style={{ padding: '12px 16px 14px' }}>
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="text-[18px] leading-snug" style={{ color: '#1A1A1A', fontWeight: 700 }}>{product.product_name}</p>
                 <span className="shrink-0" style={{
-                  fontSize: '8px', fontWeight: 600, color: '#1A1A1A',
-                  border: '1px solid rgba(0,0,0,0.12)', borderRadius: '10px',
-                  padding: '2px 7px', whiteSpace: 'nowrap',
+                  fontSize: '10px', fontWeight: 600, color: '#1A1A1A',
+                  border: '1px solid rgba(0,0,0,0.12)', borderRadius: '12px',
+                  padding: '4px 10px', whiteSpace: 'nowrap',
                 }}>View ↗</span>
               </div>
 
               {/* Tags — colored tinted pills */}
-              <div className="flex gap-1.5 mt-2 overflow-hidden">
+              <div className="flex gap-2 mt-3 overflow-hidden">
                 {product.tags.map((tag, j) => (
                   <span
                     key={j}
                     className="whitespace-nowrap"
                     style={{
-                      fontSize: '7px', fontWeight: 600,
-                      padding: '2px 7px',
+                      fontSize: '10px', fontWeight: 600,
+                      padding: '4px 10px',
                       borderRadius: '10px',
                       border: `1px solid ${tag.color}30`,
                       background: `${tag.color}10`,
@@ -269,7 +306,28 @@ export default function Home() {
               </div>
             </div>
           </Link>
+          </div>
         ))}
+        </div>
+
+        {/* Dot indicators */}
+        <div className="flex justify-center gap-1.5 mt-4">
+          {FEATURED.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveCard(i)}
+              style={{
+                width: i === activeCard ? '18px' : '6px',
+                height: '6px',
+                borderRadius: '3px',
+                background: i === activeCard ? '#1A1A1A' : 'rgba(0,0,0,0.15)',
+                transition: 'all 0.3s ease',
+                border: 'none',
+                padding: 0,
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Bottom Navigation */}
