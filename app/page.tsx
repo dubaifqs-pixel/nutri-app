@@ -203,16 +203,17 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-              {/* Fact banner — thin strip, darker shade of product bg */}
+              {/* Fact banner — matching inspiration proportions */}
               <div style={{
                 background: darkenColor(product.bg),
-                padding: '1.5px 8px',
+                padding: '5px 12px',
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                borderRadius: '0 0 16px 16px',
               }}>
-                <span style={{ fontSize: '5.5px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.2px', fontStyle: 'italic', lineHeight: 1 }}>{facts[product.product_name] || product.fact}</span>
+                <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
               </div>
             </div>
 
