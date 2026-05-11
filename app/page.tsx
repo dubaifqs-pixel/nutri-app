@@ -243,8 +243,8 @@ export default function Home() {
               borderBottomLeftRadius: '14px',
               padding: '3px 6px 5px 8px',
             }}>
-              <span style={{ fontSize: '22px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '9px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
+              <span style={{ fontSize: '18px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
+              <span style={{ fontSize: '8px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
             </div>
 
             {/* Image area */}
