@@ -215,9 +215,20 @@ export default function Home() {
         }}>
         {FEATURED.map((product, i) => (
           <div key={i} style={{ minWidth: '100%', padding: '0 4px' }}>
-          <Link
-            href="/browse"
-            className="block relative active:scale-[0.98]"
+          <a
+            onClick={(e) => {
+              e.preventDefault()
+              sessionStorage.setItem('dfqs_product', JSON.stringify({
+                product_name: product.product_name,
+                nutrition: product.nutrition,
+              }))
+              sessionStorage.setItem('dfqs_grade', JSON.stringify({
+                grade: product.grade,
+                score: product.score,
+              }))
+              window.location.href = '/result'
+            }}
+            className="block relative active:scale-[0.98] cursor-pointer"
             style={{
               borderRadius: '20px',
               overflow: 'hidden',
@@ -305,7 +316,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
-          </Link>
+          </a>
           </div>
         ))}
         </div>
