@@ -280,7 +280,7 @@ export default function Home() {
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}>
-                <span style={{ fontSize: '7px', fontWeight: 400, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
+                <span style={{ fontSize: '11px', fontWeight: 400, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
               </div>
             </div>
 
