@@ -218,14 +218,13 @@ export default function Home() {
           <a
             onClick={(e) => {
               e.preventDefault()
+              const gradeResult = calculateGrade(product.nutrition)
               sessionStorage.setItem('dfqs_product', JSON.stringify({
                 product_name: product.product_name,
                 nutrition: product.nutrition,
+                source: 'manual',
               }))
-              sessionStorage.setItem('dfqs_grade', JSON.stringify({
-                grade: product.grade,
-                score: product.score,
-              }))
+              sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
               window.location.href = '/result'
             }}
             className="block relative active:scale-[0.98] cursor-pointer"
