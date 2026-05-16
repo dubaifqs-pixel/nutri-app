@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
     let category: string | null = null
     try {
       const catResult = await geminiFlash.generateContent(
-        `What food category does '${product_name}' belong to? Reply with one word only, lowercase: dairy, beverages, snacks, cereals, bread, meat, fruits, or frozen`
+        `What food category does '${product_name}' belong to? Reply with one word only, lowercase. Choose from: dairy, beverages, snacks, confectionery, cereals, bread, meat, fruits, frozen. Use 'confectionery' for chocolate bars, candy, sweets, or biscuits. Use 'snacks' for chips, crackers, savory snacks. Use 'frozen' only for frozen meals or ice cream.`
       )
       const catText = catResult.response.text().trim().toLowerCase()
-      const validCategories = ['dairy', 'beverages', 'snacks', 'cereals', 'bread', 'meat', 'fruits', 'frozen']
+      const validCategories = ['dairy', 'beverages', 'snacks', 'confectionery', 'cereals', 'bread', 'meat', 'fruits', 'frozen']
       if (validCategories.includes(catText)) {
         category = catText
       }

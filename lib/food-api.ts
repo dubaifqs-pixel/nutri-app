@@ -471,6 +471,19 @@ export async function searchAlternatives(
     const prompt = `Suggest 10 healthier alternatives to "${productName}" (currently grade ${currentGrade}) available in UAE supermarkets (Carrefour, Lulu, Spinneys, Choithrams). Include both local and international brands.
 ${category ? `Category: ${category}` : ''}
 
+CRITICAL: Alternatives MUST be the same TYPE of product as "${productName}", just healthier. Stay inside the same product category.
+Examples of correct same-type alternatives:
+- Chocolate bar → healthier chocolate bars (dark chocolate ≥70% cacao, lower-sugar chocolate, protein chocolate bars)
+- Soda → healthier sodas (zero-sugar soda, flavored sparkling water, kombucha)
+- Potato chips → healthier chips (baked chips, lentil/chickpea chips, popcorn, vegetable crisps)
+- Sugary cereal → healthier cereals (rolled oats, low-sugar whole-grain cereal, muesli)
+- Full-cream milk → skim or low-fat milk, almond milk, plain yogurt
+- Cookies / biscuits → healthier biscuits (whole-grain, oat-based, low-sugar)
+- Juice → 100% juice or water-based fruit drinks with no added sugar
+- Ice cream → low-sugar / Greek yogurt / sorbet alternatives
+
+Do NOT suggest products from a different food type. If "${productName}" is a chocolate, every alternative must be a chocolate or chocolate-style snack. If it is a beverage, every alternative must be a beverage.
+
 Return ONLY valid JSON array (no markdown):
 [
   {
@@ -492,7 +505,8 @@ Rules:
 - All values per 100g
 - Focus on products with BETTER nutrition (lower sugar, less saturated fat, less sodium)
 - Include REAL products with accurate nutrition values
-- Products must be commonly available in UAE`
+- Products must be commonly available in UAE
+- Every item must be the same product type as "${productName}"`
 
     const result = await geminiFlash.generateContent(prompt)
     const text = cleanJsonResponse(result.response.text())
