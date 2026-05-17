@@ -1,10 +1,10 @@
 'use client'
 
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useRef, useState, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import Scanner from '@/components/Scanner'
 import { addToHistory } from '@/lib/history'
-import type { Grade, GradeResult } from '@/lib/types'
+import type { GradeResult } from '@/lib/types'
 
 function ScanContent() {
   const searchParams = useSearchParams()
@@ -20,8 +20,11 @@ function ScanContent() {
   const [pendingMatch, setPendingMatch] = useState<any | null>(null)
   const [pendingGrade, setPendingGrade] = useState<GradeResult | null>(null)
   const [unknownBarcode, setUnknownBarcode] = useState<string | null>(null)
-  const autoContinueRef = useRef<number | null>(null)
-  const cancelledRef = useRef(false)
+  // Prefilled product context — set when the label scanner is reached from
+  // the barcode "verify with label" path.
+  const prefilledName = searchParams.get('prefilled_name')
+  const prefilledImage = searchParams.get('prefilled_image')
+  const prefilledBarcode = searchParams.get('barcode')
 
   const lookupBarcode = async (barcode: string) => {
     setStatus(`Looking up product: ${barcode}...`)
@@ -67,16 +70,13 @@ function ScanContent() {
     setDetectedBarcode(barcode)
     try {
       const product = await lookupBarcode(barcode)
-      // Verify-before-navigate: show the user what was found for a beat so they can spot wrong matches.
+      // Hold here. The verify screen lets the user choose:
+      //   - "Scan label for accuracy" (primary) — route to label mode and read the
+      //     printed nutrition values (regulated truth), reusing the barcode-derived name.
+      //   - "Use database values" (secondary) — accept the OFF/AI nutrition as-is.
       setPendingMatch(product)
       const gradeResult = await getGrade(product.nutrition)
       setPendingGrade(gradeResult)
-      // Auto-continue after 1.6s — tap "Wrong?" to stop and rescan.
-      autoContinueRef.current = window.setTimeout(() => {
-        if (!cancelledRef.current) {
-          goToResult(product, gradeResult)
-        }
-      }, 1600)
     } catch (err) {
       const e = err as Error & { reason?: string; barcode?: string }
       if (e.reason === 'unknown_barcode') {
@@ -90,16 +90,28 @@ function ScanContent() {
   }
 
   const cancelMatch = () => {
-    cancelledRef.current = true
-    if (autoContinueRef.current) {
-      clearTimeout(autoContinueRef.current)
-      autoContinueRef.current = null
-    }
     setPendingMatch(null)
     setPendingGrade(null)
     setDetectedBarcode(null)
-    cancelledRef.current = false
     setLoading(false)
+  }
+
+  // Continue with the database values — accept OFF/AI nutrition as the source of truth.
+  const useDatabaseValues = () => {
+    if (!pendingMatch || !pendingGrade) return
+    goToResult(pendingMatch, pendingGrade)
+  }
+
+  // Route the user to label mode, preserving the product name + image we already have.
+  // The label scanner will skip stage 1 and read nutrition values from the printed label.
+  const verifyWithLabel = () => {
+    if (!pendingMatch) return
+    const params = new URLSearchParams()
+    params.set('mode', 'label')
+    if (pendingMatch.product_name) params.set('prefilled_name', pendingMatch.product_name)
+    if (pendingMatch.image_url) params.set('prefilled_image', pendingMatch.image_url)
+    if (pendingMatch.barcode || detectedBarcode) params.set('barcode', pendingMatch.barcode || detectedBarcode || '')
+    router.push(`/scan?${params.toString()}`)
   }
 
   const handleCapture = async (imageBase64: string) => {
@@ -152,12 +164,17 @@ function ScanContent() {
         setStatus('Calculating grade...')
         const raw = await res.json()
         const product = {
-          product_name: raw.product_name,
+          // Prefer the prefilled name (from barcode → verify-with-label path) over what the
+          // OCR read off the label, since the barcode-derived name is usually more complete.
+          product_name: prefilledName || raw.product_name,
           nutrition: raw.nutrition, // per 100g — used by the grade algorithm
           serving_nutrition: raw.serving_nutrition ?? null,
           serving_size_g: raw.serving_size_g ?? null,
           serving_size_ml: raw.serving_size_ml ?? null,
+          image_url: prefilledImage || undefined,
+          barcode: prefilledBarcode || undefined,
           source: raw.source || 'vision',
+          data_source: prefilledBarcode ? 'Label Scan (verified)' : 'Label Scan',
         }
         const gradeResult = await getGrade(product.nutrition)
         goToResult(product, gradeResult)
@@ -193,29 +210,37 @@ function ScanContent() {
     )
   }
 
-  // Verify-before-navigate — barcode found, briefly show match before opening result.
+  // Verify-before-navigate — barcode found, choose data source.
   if (pendingMatch && pendingGrade) {
-    const grade = pendingGrade.grade as Grade
-    const gradeColors: Record<Grade, string> = { A: '#2E7D32', B: '#558B2F', C: '#F9A825', D: '#E65100', E: '#C62828' }
     return (
-      <div className="min-h-screen bg-[#1A1A1A] flex flex-col items-center justify-center gap-6 px-8 text-center animate-fade-in">
-        <div className="w-20 h-20 rounded-3xl flex flex-col items-center justify-center text-white font-extrabold" style={{ background: gradeColors[grade], boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
-          <span className="text-3xl leading-none">{grade}</span>
-        </div>
-        <div className="max-w-xs">
-          <p className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Found</p>
+      <div className="min-h-screen bg-[#1A1A1A] flex flex-col items-center justify-center gap-5 px-8 text-center animate-fade-in pb-8">
+        <div className="max-w-xs flex flex-col items-center gap-3">
+          <p className="text-white/40 text-[10px] uppercase tracking-widest">Found via barcode</p>
           <p className="text-white text-lg font-bold leading-tight">{pendingMatch.product_name}</p>
-          {detectedBarcode && <p className="text-white/40 text-[10px] mt-1.5" dir="ltr">{detectedBarcode}</p>}
+          {detectedBarcode && <p className="text-white/40 text-[10px]" dir="ltr">{detectedBarcode}</p>}
         </div>
-        <div className="flex gap-2.5 w-full max-w-xs">
-          <button onClick={cancelMatch} className="flex-1 py-3 rounded-2xl text-white/60 text-sm hover:text-white transition-colors min-h-[44px]" style={{ border: '1px solid rgba(255,255,255,0.12)' }}>
-            Wrong product
+
+        <div className="w-full max-w-xs p-4 rounded-2xl text-left" style={{ background: 'rgba(255,193,7,0.08)', border: '1px solid rgba(255,193,7,0.2)' }}>
+          <div className="flex items-start gap-2.5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFC107" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <p className="text-white/80 text-[12px] leading-relaxed">
+              Database values can be wrong. For accuracy, scan the printed nutrition label on the back of the package.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2.5 w-full max-w-xs">
+          <button onClick={verifyWithLabel} className="w-full py-3.5 rounded-2xl btn-accent text-sm flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Scan label for accuracy
           </button>
-          <button onClick={() => { if (autoContinueRef.current) clearTimeout(autoContinueRef.current); goToResult(pendingMatch, pendingGrade) }} className="flex-1 py-3 rounded-2xl btn-accent text-sm">
-            Continue →
+          <button onClick={useDatabaseValues} className="w-full py-3 rounded-2xl text-white/70 text-sm hover:text-white transition-colors min-h-[44px]" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            Use database values anyway
+          </button>
+          <button onClick={cancelMatch} className="w-full py-2 rounded-2xl text-white/40 text-[12px] hover:text-white/60 transition-colors min-h-[40px]">
+            Wrong product — rescan
           </button>
         </div>
-        <p className="text-white/30 text-[11px]">Continuing automatically…</p>
       </div>
     )
   }
@@ -246,6 +271,7 @@ function ScanContent() {
       </button>
       <Scanner
         mode={mode}
+        skipNameStage={!!prefilledName}
         onBarcode={handleBarcode}
         onCapture={handleCapture}
         onAutoDetect={mode === 'label' ? async (data: any) => {
@@ -253,12 +279,16 @@ function ScanContent() {
           setStatus('Label detected! Calculating grade...')
           try {
             const product = {
-              product_name: data.product_name,
+              // Prefilled name (from barcode verify-with-label) wins over OCR-read name.
+              product_name: prefilledName || data.product_name,
               nutrition: data.nutrition, // per 100g
               serving_nutrition: data.serving_nutrition ?? null,
               serving_size_g: data.serving_size_g ?? null,
               serving_size_ml: data.serving_size_ml ?? null,
+              image_url: prefilledImage || undefined,
+              barcode: prefilledBarcode || undefined,
               source: data.source,
+              data_source: prefilledBarcode ? 'Label Scan (verified)' : 'Label Scan',
             }
             const gradeResult = await getGrade(product.nutrition)
             goToResult(product, gradeResult)

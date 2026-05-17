@@ -8,11 +8,15 @@ interface Props {
   onAutoDetect?: (data: any) => void
   mode: 'barcode' | 'label'
   startManual?: boolean
+  // When set, the label-mode flow skips Stage 1 (name detection) and goes
+  // straight to Stage 2 (nutrition extraction). Used when arriving via the
+  // barcode "verify with label" path where the product name is already known.
+  skipNameStage?: boolean
 }
 
 type Stage = 'name' | 'nutrition'
 
-export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, startManual = false }: Props) {
+export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, startManual = false, skipNameStage = false }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -21,7 +25,9 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
   const [showManual, setShowManual] = useState(startManual)
   const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'detected'>('idle')
   const [scanAttempts, setScanAttempts] = useState(0)
-  const [stage, setStage] = useState<Stage>('name')
+  // When the caller already has a product name (e.g. from a barcode scan),
+  // jump straight to Stage 2 — no need to look for the front of the package.
+  const [stage, setStage] = useState<Stage>(skipNameStage ? 'nutrition' : 'name')
   const [stageFlash, setStageFlash] = useState(false) // brief tick when stage 1 completes
   const capturedNameRef = useRef<string | null>(null)
   const capturedServingRef = useRef<{ g: number | null; ml: number | null }>({ g: null, ml: null })
