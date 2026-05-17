@@ -1,9 +1,16 @@
 import type { NutritionData, Grade, GradeResult } from './types'
 
+// Solid-food Nutri-Score thresholds (per 100g)
 const ENERGY_THRESHOLDS = [80, 160, 240, 320, 400, 480, 560, 640, 720, 800]
 const SUGAR_THRESHOLDS = [4.5, 9, 13.5, 18, 22.5, 27, 31, 36, 40, 45]
 const SAT_FAT_THRESHOLDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 const SODIUM_THRESHOLDS = [90, 180, 270, 360, 450, 540, 630, 720, 810, 900]
+
+// Beverage-specific thresholds (per 100ml) — Nutri-Score 2017 beverage scale.
+// Sugar in particular is far tighter for drinks: 13.5g/100ml is 10 points
+// here vs 3 points on the solid scale, which is what makes a Coke score E.
+const BEVERAGE_ENERGY_THRESHOLDS = [0, 7, 14, 21, 28, 35, 42, 49, 56, 63]
+const BEVERAGE_SUGAR_THRESHOLDS = [0, 1.5, 3, 4.5, 6, 7.5, 9, 10.5, 12, 13.5]
 
 const FIBER_THRESHOLDS = [0.9, 1.9, 2.8, 3.7, 4.7]
 const PROTEIN_THRESHOLDS = [1.6, 3.2, 4.8, 6.4, 8.0]
@@ -28,8 +35,11 @@ function scoreFruitsVeg(percent: number): number {
 }
 
 export function calculateNegativePoints(nutrition: NutritionData) {
-  const energy = nutrition.energy_kcal !== null ? scoreFromThresholds(nutrition.energy_kcal, ENERGY_THRESHOLDS) : 0
-  const sugars = nutrition.sugars_g !== null ? scoreFromThresholds(nutrition.sugars_g, SUGAR_THRESHOLDS) : 0
+  const isBev = !!nutrition.is_beverage
+  const energyThresholds = isBev ? BEVERAGE_ENERGY_THRESHOLDS : ENERGY_THRESHOLDS
+  const sugarThresholds = isBev ? BEVERAGE_SUGAR_THRESHOLDS : SUGAR_THRESHOLDS
+  const energy = nutrition.energy_kcal !== null ? scoreFromThresholds(nutrition.energy_kcal, energyThresholds) : 0
+  const sugars = nutrition.sugars_g !== null ? scoreFromThresholds(nutrition.sugars_g, sugarThresholds) : 0
   const saturated_fat = nutrition.saturated_fat_g !== null ? scoreFromThresholds(nutrition.saturated_fat_g, SAT_FAT_THRESHOLDS) : 0
   const sodium = nutrition.sodium_mg !== null ? scoreFromThresholds(nutrition.sodium_mg, SODIUM_THRESHOLDS) : 0
   return { energy, sugars, saturated_fat, sodium, total: energy + sugars + saturated_fat + sodium }
@@ -52,11 +62,29 @@ function scoreToGrade(score: number): Grade {
   return 'E'
 }
 
+// Beverage grading uses tighter bands so almost no sweetened drink hits A or B.
+// Source: Santé publique France beverage scale.
+function beverageScoreToGrade(score: number): Grade {
+  if (score <= 1) return 'B'   // Reserved for unsweetened drinks; pure water is overridden to A above.
+  if (score <= 5) return 'C'
+  if (score <= 9) return 'D'
+  return 'E'
+}
+
 export function calculateGrade(nutrition: NutritionData): GradeResult {
   const negative = calculateNegativePoints(nutrition)
   const positive = calculatePositivePoints(nutrition, negative.total)
   const score = negative.total - positive.total
-  const grade = scoreToGrade(score)
+  const isBev = !!nutrition.is_beverage
+  // Pure water is the only drink Nutri-Score awards an A.
+  let grade: Grade
+  if (nutrition.is_water) {
+    grade = 'A'
+  } else if (isBev) {
+    grade = beverageScoreToGrade(score)
+  } else {
+    grade = scoreToGrade(score)
+  }
   const requiredFields = [nutrition.energy_kcal, nutrition.sugars_g, nutrition.saturated_fat_g, nutrition.sodium_mg]
   const partial_data = requiredFields.some((f) => f === null)
   return {

@@ -6,7 +6,25 @@ export interface NutritionData {
   protein_g: number | null
   fiber_g: number | null
   fruits_veg_percent: number | null
+  // Optional: marks this product as a beverage so Nutri-Score uses the
+  // beverage-specific thresholds (much tighter on sugar/energy) and caps
+  // the grade at C. Defaults to false when omitted.
+  is_beverage?: boolean
+  // Optional: pure water gets an automatic A in the official Nutri-Score
+  // beverage rules.
+  is_water?: boolean
 }
+
+// Numeric keys of NutritionData, useful for callers that iterate the per-nutrient
+// values and need a precise type that excludes the boolean flags.
+export type NutrientKey =
+  | 'energy_kcal'
+  | 'sugars_g'
+  | 'saturated_fat_g'
+  | 'sodium_mg'
+  | 'protein_g'
+  | 'fiber_g'
+  | 'fruits_veg_percent'
 
 export type Grade = 'A' | 'B' | 'C' | 'D' | 'E'
 

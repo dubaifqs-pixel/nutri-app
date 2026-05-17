@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { getHistory, type HistoryEntry } from '@/lib/history'
-import { GRADE_GRADIENTS, GRADE_GLOWS, type Grade, type NutritionData, type GradeResult } from '@/lib/types'
+import { GRADE_GRADIENTS, GRADE_GLOWS, type Grade, type NutritionData, type GradeResult, type NutrientKey } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
 import { useT } from '@/lib/i18n'
 import BottomNav from '@/components/BottomNav'
@@ -19,7 +19,7 @@ interface CompareProduct {
 
 const GRADE_ORDER = ['A', 'B', 'C', 'D', 'E']
 
-const NUTRIENTS: { key: keyof NutritionData; label: string; unit: string; lowerIsBetter: boolean; max: number }[] = [
+const NUTRIENTS: { key: NutrientKey; label: string; unit: string; lowerIsBetter: boolean; max: number }[] = [
   { key: 'energy_kcal', label: 'Calories', unit: 'kcal', lowerIsBetter: true, max: 800 },
   { key: 'sugars_g', label: 'Sugar', unit: 'g', lowerIsBetter: true, max: 50 },
   { key: 'saturated_fat_g', label: 'Sat. Fat', unit: 'g', lowerIsBetter: true, max: 20 },

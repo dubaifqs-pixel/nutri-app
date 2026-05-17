@@ -147,6 +147,7 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
         protein_g: 0,
         fiber_g: 0,
         fruits_veg_percent: 0,
+        is_beverage: true,
       },
     },
     {
@@ -162,6 +163,7 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
         protein_g: 0.1,
         fiber_g: 0,
         fruits_veg_percent: 5,
+        is_beverage: true,
       },
     },
     {
@@ -177,6 +179,8 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
         protein_g: 0,
         fiber_g: 0,
         fruits_veg_percent: 0,
+        is_beverage: true,
+      is_water: true,
       },
     },
     {
@@ -192,6 +196,7 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
         protein_g: 0.3,
         fiber_g: 0.2,
         fruits_veg_percent: 30,
+        is_beverage: true,
       },
     },
     {
@@ -207,6 +212,7 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
         protein_g: 0,
         fiber_g: 0,
         fruits_veg_percent: 0,
+        is_beverage: true,
       },
     },
     {
@@ -222,6 +228,7 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
         protein_g: 0,
         fiber_g: 0,
         fruits_veg_percent: 0,
+        is_beverage: true,
       },
     },
     {
@@ -237,6 +244,7 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
         protein_g: 0.3,
         fiber_g: 0,
         fruits_veg_percent: 0,
+        is_beverage: true,
       },
     },
     {
@@ -252,6 +260,8 @@ export const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
         protein_g: 0,
         fiber_g: 0,
         fruits_veg_percent: 0,
+        is_beverage: true,
+      is_water: true,
       },
     },
   ],
