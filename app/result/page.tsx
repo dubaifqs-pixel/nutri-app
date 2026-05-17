@@ -79,9 +79,14 @@ export default function ResultPage() {
         </div>
       </div>
 
-      {/* Product Name + meta pills */}
+      {/* Product Name + serving line + meta pills */}
       <div className="text-center animate-slide-up stagger-1">
         <h1 className="text-xl font-bold" style={{ color: '#1A1A1A' }}>{product.product_name}</h1>
+        {(product.serving_size_g || product.serving_size_ml) && (
+          <p className="text-[11px] font-semibold mt-1.5 tracking-wide uppercase" style={{ color: '#7A7A7A' }}>
+            Per serving · {product.serving_size_g ? `${product.serving_size_g}g` : `${product.serving_size_ml}ml`}
+          </p>
+        )}
         <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
           {product.source === 'vision' && (
             <span className="inline-flex items-center gap-1.5 text-xs bg-white px-3 py-1.5 rounded-full" style={{ color: '#7A7A7A', border: '1px solid rgba(0,0,0,0.06)' }}>
@@ -120,9 +125,12 @@ export default function ResultPage() {
         <GradeBadge grade={gradeResult.grade} score={gradeResult.score} />
       </div>
 
-      {/* Nutrition Breakdown */}
+      {/* Nutrition Breakdown — show values exactly as printed on the label (per serving when known) */}
       <div className="bg-white rounded-[28px] p-5 animate-slide-up stagger-3" style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
-        <NutritionBreakdown gradeResult={gradeResult} nutrition={product.nutrition} />
+        <NutritionBreakdown
+          gradeResult={gradeResult}
+          nutrition={product.serving_nutrition || product.nutrition}
+        />
       </div>
 
       {/* Action Buttons */}

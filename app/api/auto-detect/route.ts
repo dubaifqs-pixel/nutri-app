@@ -98,10 +98,21 @@ export async function POST(request: NextRequest) {
       productName = null
     }
 
+    const serving_nutrition = {
+      energy_kcal: energyServing,
+      sugars_g: n(ps.sugars_g),
+      saturated_fat_g: n(ps.saturated_fat_g),
+      sodium_mg: sodiumServing,
+      protein_g: n(ps.protein_g),
+      fiber_g: n(ps.fiber_g),
+      fruits_veg_percent: n(parsed.fruits_veg_percent),
+    }
+
     return NextResponse.json({
       detected: true,
       product_name: productName || 'Scanned Product',
-      nutrition,
+      nutrition, // per 100g
+      serving_nutrition, // per one serving (matches label)
       serving_size_g: parsed.serving_size_g ?? null,
       serving_size_ml: parsed.serving_size_ml ?? null,
       source: 'vision',

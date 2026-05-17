@@ -32,7 +32,11 @@ export interface GradeResult {
 
 export interface ProductData {
   product_name: string
-  nutrition: NutritionData
+  nutrition: NutritionData // per 100g/ml — used by the grade algorithm
+  serving_nutrition?: NutritionData // exact values printed on the label, per one serving
+  serving_size_g?: number | null // serving size in grams (e.g. 55 for a 55g bar)
+  serving_size_ml?: number | null // serving size in millilitres (e.g. 240 for a glass)
+  serving_label?: string | null // free-text "1 bar", "1 cup", "1 piece" if known
   image_url?: string
   barcode?: string
   source: 'barcode' | 'vision' | 'manual'

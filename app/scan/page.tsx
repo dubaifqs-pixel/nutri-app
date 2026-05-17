@@ -109,7 +109,15 @@ function ScanContent() {
           return
         }
         setStatus('Calculating grade...')
-        const product = await res.json()
+        const raw = await res.json()
+        const product = {
+          product_name: raw.product_name,
+          nutrition: raw.nutrition, // per 100g — used by the grade algorithm
+          serving_nutrition: raw.serving_nutrition ?? null,
+          serving_size_g: raw.serving_size_g ?? null,
+          serving_size_ml: raw.serving_size_ml ?? null,
+          source: raw.source || 'vision',
+        }
         const gradeResult = await getGrade(product.nutrition)
         goToResult(product, gradeResult)
       } catch (err) {
@@ -151,7 +159,14 @@ function ScanContent() {
           setLoading(true)
           setStatus('Label detected! Calculating grade...')
           try {
-            const product = { product_name: data.product_name, nutrition: data.nutrition, source: data.source }
+            const product = {
+              product_name: data.product_name,
+              nutrition: data.nutrition, // per 100g
+              serving_nutrition: data.serving_nutrition ?? null,
+              serving_size_g: data.serving_size_g ?? null,
+              serving_size_ml: data.serving_size_ml ?? null,
+              source: data.source,
+            }
             const gradeResult = await getGrade(product.nutrition)
             goToResult(product, gradeResult)
           } catch (err) {

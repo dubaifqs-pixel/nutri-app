@@ -141,9 +141,21 @@ export async function POST(request: NextRequest) {
       productName = null
     }
 
+    // Per-serving values shaped to the NutritionData type the UI expects.
+    const serving_nutrition = {
+      energy_kcal: ps.energy_kcal,
+      sugars_g: ps.sugars_g,
+      saturated_fat_g: ps.saturated_fat_g,
+      sodium_mg: ps.sodium_mg,
+      protein_g: ps.protein_g,
+      fiber_g: ps.fiber_g,
+      fruits_veg_percent: n(parsed.fruits_veg_percent),
+    }
+
     return NextResponse.json({
       product_name: productName || 'Scanned Product',
-      nutrition,
+      nutrition, // per 100g — required for Nutri-Score
+      serving_nutrition, // exact values printed on the label
       serving_size_g: parsed.serving_size_g ?? null,
       serving_size_ml: parsed.serving_size_ml ?? null,
       per_serving: ps,
