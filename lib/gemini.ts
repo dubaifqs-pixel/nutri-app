@@ -6,31 +6,51 @@ export const geminiFlash = genAI.getGenerativeModel({
   model: 'gemini-2.5-flash',
 })
 
-export const VISION_PROMPT = `You are a precise nutrition label reader. Carefully examine every detail of this food product photo.
+export const VISION_PROMPT = `You are a precise nutrition label OCR. Read this food package photo and return the EXACT numbers printed on the label — do not estimate, do not infer, do not convert.
 
-Step 1: Identify the product name and brand from text VISIBLE in the image.
-  - Look for the brand wordmark, product name, and flavor/variant.
-  - Read text in any language (English, Arabic, etc.).
-  - DO NOT GUESS, INFER, OR INVENT a product name based on the nutrition values alone.
-  - If only the nutrition table is visible (no brand or product text), set product_name to null.
-  - If only a partial brand or barcode is visible without a product name, set product_name to null.
-  - NEVER fabricate plausible-sounding product names — return null instead.
+Step 1 — Product name. Use text actually visible on the package (brand + product + flavor). If no brand/product text is visible, return null. DO NOT invent plausible names from nutrition values alone.
 
-Step 2: Find the nutrition facts table/panel.
-Step 3: Read EACH value precisely — do not estimate or guess.
+Step 2 — Serving size. Find the line labeled "Serving size", "Per serving", "حجم الحصة", "لكل حصة", or similar. Read the GRAM (or ML) value in parentheses very carefully — this is the most critical number on the label.
+  - "1 bar (55g)" → serving_size_g = 55
+  - "1 cup (240ml)" → serving_size_ml = 240
+  - Re-check this number digit by digit. A 1-gram error here will skew every per-100g value.
 
-Return ONLY valid JSON (no markdown, no code fences):
-{"product_name": "exact name from package" or null, "energy_kcal": number or null, "sugars_g": number or null, "saturated_fat_g": number or null, "sodium_mg": number or null, "protein_g": number or null, "fiber_g": number or null, "fruits_veg_percent": number or null}
+Step 3 — Per-serving values. Read each nutrient EXACTLY as printed in the "Amount per serving" / "Per serving" column. Do not convert. Do not round.
+
+Step 4 — Per-100g values. If the label also shows a "Per 100g" / "Per 100ml" column, copy those values. Otherwise leave them null — the server will compute them.
+
+Return ONLY this JSON (no markdown, no code fences, no commentary):
+{
+  "product_name": "exact name from package" | null,
+  "serving_size_g": number | null,
+  "serving_size_ml": number | null,
+  "per_serving": {
+    "energy_kcal": number | null,
+    "energy_kj":   number | null,
+    "sugars_g":    number | null,
+    "saturated_fat_g": number | null,
+    "sodium_mg":   number | null,
+    "salt_g":      number | null,
+    "protein_g":   number | null,
+    "fiber_g":     number | null
+  },
+  "per_100g": {
+    "energy_kcal": number | null,
+    "sugars_g":    number | null,
+    "saturated_fat_g": number | null,
+    "sodium_mg":   number | null,
+    "protein_g":   number | null,
+    "fiber_g":     number | null
+  },
+  "fruits_veg_percent": number | null
+}
 
 Critical rules:
-- All values MUST be per 100g or per 100ml.
-- If label shows "per serving", convert to per 100g using the serving size.
-- Sodium from salt: sodium_mg = salt_g × 400.
-- Energy from kJ: energy_kcal = energy_kJ / 4.184.
-- Read the EXACT numbers, do not round or estimate.
-- Product name: ONLY use text actually printed and visible on the package.
-- If you can read values in both English and Arabic, prefer the numerical values.
-- Use null when a value is not visible — never invent a value.`
+- Read every digit twice. Do not approximate ("55" is NOT "50", "190" is NOT "200").
+- Sodium from salt: if only salt is given, return salt_g — do not multiply.
+- Energy: if only kJ is given, return energy_kj — do not divide.
+- Use null when a value is truly not on the label. Never invent.
+- If both English and Arabic numerals are printed, the numerals are the same digits — read either.`
 
 export const BARCODE_VISION_PROMPT = `Read the barcode number from this image. Return ONLY the barcode digits as a plain string, nothing else. If you see multiple barcodes, return the main product barcode (EAN-13 or UPC-A). If you cannot read any barcode, return "NONE".`
 

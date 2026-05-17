@@ -1,27 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { geminiFlash } from '@/lib/gemini'
+import { geminiFlash, VISION_PROMPT } from '@/lib/gemini'
 
-const AUTO_DETECT_PROMPT = `You are a precise nutrition label reader. Carefully examine this food product photo.
+type Num = number | null
 
-Step 1: Check if there is a nutrition facts label or nutrition information table visible.
-Step 2: If yes, identify the product name and brand from the packaging text (any language).
-Step 3: Read EACH nutrition value precisely — do not estimate or guess.
+function n(x: unknown): Num {
+  if (typeof x === 'number' && Number.isFinite(x)) return x
+  if (typeof x === 'string') {
+    const v = Number(x.replace(/[^\d.\-]/g, ''))
+    return Number.isFinite(v) ? v : null
+  }
+  return null
+}
 
-If you CAN read nutrition values, return:
-{"detected":true,"product_name":"exact name from package","energy_kcal":number or null,"sugars_g":number or null,"saturated_fat_g":number or null,"sodium_mg":number or null,"protein_g":number or null,"fiber_g":number or null,"fruits_veg_percent":number or null}
+function to100g(perServing: Num, servingSize: Num): Num {
+  if (perServing === null || servingSize === null || servingSize <= 0) return null
+  return (perServing / servingSize) * 100
+}
 
-If you CANNOT read any nutrition values, return exactly: {"detected":false}
+function reconcile(per100: Num, computed: Num): Num {
+  if (computed !== null) return computed
+  return per100
+}
 
-Critical rules:
-- All values MUST be per 100g or per 100ml
-- If label shows "per serving", you MUST convert to per 100g using the serving size
-- Sodium from salt: sodium_mg = salt_g × 400
-- Energy from kJ: energy_kcal = energy_kJ / 4.184
-- Read the EXACT numbers, do not round or estimate
-- Product name: read what's printed on the package, in the original language
-- If you can read values in both English and Arabic, prefer the numerical values
-- Use null ONLY if a value is truly not visible
-- Return ONLY raw JSON, no markdown, no explanation.`
+// Auto-detect uses the same precise OCR prompt as the explicit scan.
+// We ask Gemini for serving-size + per-serving + per-100g, then compute per-100g
+// from per-serving so the per-100g math is reliable even if the label's per-100g
+// column is missing.
+const PRECISE_PROMPT = VISION_PROMPT + `\n\nADDITIONAL RULE: If you do not actually see a nutrition facts table in this photo, return exactly: {"detected":false}`
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,58 +36,74 @@ export async function POST(request: NextRequest) {
     }
 
     const base64Data = image.replace(/^data:image\/\w+;base64,/, '')
-
     const result = await geminiFlash.generateContent([
-      AUTO_DETECT_PROMPT,
+      PRECISE_PROMPT,
       { inlineData: { mimeType: 'image/jpeg', data: base64Data } },
     ])
-
     const text = result.response.text().trim()
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       return NextResponse.json({ detected: false })
     }
 
-    const parsed = JSON.parse(jsonMatch[0])
+    let parsed: any
+    try { parsed = JSON.parse(jsonMatch[0]) } catch { return NextResponse.json({ detected: false }) }
 
-    if (!parsed.detected) {
+    if (parsed.detected === false) {
       return NextResponse.json({ detected: false })
     }
 
-    // Verify we got enough data (at least 2 non-null nutrition values)
-    const values = [parsed.energy_kcal, parsed.sugars_g, parsed.saturated_fat_g, parsed.sodium_mg, parsed.protein_g, parsed.fiber_g]
-    const filledCount = values.filter((v: any) => v !== null && v !== undefined).length
-    if (filledCount < 2) {
+    const ps = parsed.per_serving || {}
+    const p100 = parsed.per_100g || {}
+    const serving: Num = n(parsed.serving_size_g) ?? n(parsed.serving_size_ml)
+
+    // Energy fallback from kJ.
+    let energyServing = n(ps.energy_kcal)
+    if (energyServing === null && n(ps.energy_kj) !== null) {
+      energyServing = (n(ps.energy_kj) as number) / 4.184
+    }
+    // Sodium fallback from salt.
+    let sodiumServing = n(ps.sodium_mg)
+    if (sodiumServing === null && n(ps.salt_g) !== null) {
+      sodiumServing = (n(ps.salt_g) as number) * 400
+    }
+
+    const computed = {
+      energy_kcal: to100g(energyServing, serving),
+      sugars_g: to100g(n(ps.sugars_g), serving),
+      saturated_fat_g: to100g(n(ps.saturated_fat_g), serving),
+      sodium_mg: to100g(sodiumServing, serving),
+      protein_g: to100g(n(ps.protein_g), serving),
+      fiber_g: to100g(n(ps.fiber_g), serving),
+    }
+
+    const nutrition = {
+      energy_kcal: reconcile(n(p100.energy_kcal), computed.energy_kcal),
+      sugars_g: reconcile(n(p100.sugars_g), computed.sugars_g),
+      saturated_fat_g: reconcile(n(p100.saturated_fat_g), computed.saturated_fat_g),
+      sodium_mg: reconcile(n(p100.sodium_mg), computed.sodium_mg),
+      protein_g: reconcile(n(p100.protein_g), computed.protein_g),
+      fiber_g: reconcile(n(p100.fiber_g), computed.fiber_g),
+      fruits_veg_percent: n(parsed.fruits_veg_percent),
+    }
+
+    // Need at least 2 nutrient values to consider this a successful detection.
+    const filled = [nutrition.energy_kcal, nutrition.sugars_g, nutrition.saturated_fat_g, nutrition.sodium_mg, nutrition.protein_g, nutrition.fiber_g].filter(v => v !== null).length
+    if (filled < 2) {
       return NextResponse.json({ detected: false })
     }
 
-    // If no product name detected, try to identify from nutrition values
-    let productName = parsed.product_name
+    let productName: string | null = parsed.product_name
     if (!productName || productName === 'null' || productName === 'Unknown Product') {
-      try {
-        const identifyResult = await geminiFlash.generateContent([
-          `Look at this food product photo. What product is this? Read any visible text, brand name, or logo. Reply with ONLY the product name, nothing else.`,
-          { inlineData: { mimeType: 'image/jpeg', data: base64Data } },
-        ])
-        const name = identifyResult.response.text().trim().replace(/['"]/g, '')
-        if (name && name.length < 60 && name !== 'Unknown') {
-          productName = name
-        }
-      } catch {}
+      productName = null
     }
 
     return NextResponse.json({
       detected: true,
       product_name: productName || 'Scanned Product',
-      nutrition: {
-        energy_kcal: parsed.energy_kcal ?? null,
-        sugars_g: parsed.sugars_g ?? null,
-        saturated_fat_g: parsed.saturated_fat_g ?? null,
-        sodium_mg: parsed.sodium_mg ?? null,
-        protein_g: parsed.protein_g ?? null,
-        fiber_g: parsed.fiber_g ?? null,
-        fruits_veg_percent: parsed.fruits_veg_percent ?? null,
-      },
+      nutrition,
+      serving_size_g: parsed.serving_size_g ?? null,
+      serving_size_ml: parsed.serving_size_ml ?? null,
       source: 'vision',
     })
   } catch (error) {
