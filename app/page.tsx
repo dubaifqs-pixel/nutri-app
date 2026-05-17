@@ -1,351 +1,411 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import LangToggle from '@/components/LangToggle'
-import BottomNav from '@/components/BottomNav'
-import RecentPills from '@/components/RecentPills'
-import { useT } from '@/lib/i18n'
+import NutriLogo from '@/components/NutriLogo'
+import HeroCard, { type HeroProduct } from '@/components/HeroCard'
+import { useT, useLang } from '@/lib/i18n'
 import { DEMO_PRODUCTS } from '@/lib/demo-products'
 import { calculateGrade } from '@/lib/scoring'
 import { getProductImage } from '@/lib/product-images'
-import { addToHistory } from '@/lib/history'
-import { GRADE_COLORS, type Grade, type NutritionData } from '@/lib/types'
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { type Grade, type NutritionData } from '@/lib/types'
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 
-// Product background colors matched to category
-const PRODUCT_BG: Record<string, string> = {
-  milk: '#EDE5D8', dairy: '#EDE5D8', laban: '#EDE5D8', cream: '#EDE5D8', yogurt: '#E8DDE8',
-  cheese: '#F0E8D8', butter: '#F5EDD8',
-  chocolate: '#D8CCC0', kitkat: '#D8CCC0', cocoa: '#D8CCC0', nutella: '#D8CCC0',
-  snickers: '#D8CCC0', oreo: '#C8C0B8', cookie: '#D8CCC0',
-  juice: '#F5D8A8', orange: '#F5D8A8', rani: '#F5D8A8', vimto: '#E0C0D0',
-  cola: '#DBC0B0', coca: '#DBC0B0', pepsi: '#C0C8D8', soda: '#DBC0B0',
-  water: '#D0E0E8', redbull: '#C8D0E0', energy: '#C8D0E0',
-  chips: '#EEE0A8', lays: '#EEE0A8', pringles: '#EEE0A8', doritos: '#E8C8A0',
-  cereal: '#C8D8B0', oats: '#D0D8B8', quaker: '#D0D8B8', kellogg: '#C8D8B0',
-  bread: '#E8D8C0', chicken: '#E0D0C0', meat: '#E0D0C0',
-  fruit: '#D0E8C8', apple: '#D0E8C8', banana: '#F0E8C0',
-  frozen: '#D0D8E0', icecream: '#E8D0D8',
+// Opinionated "take" line per product — short, punchy
+const TAKE: Record<string, string> = {
+  'Al Ain Full Cream Milk': 'Pure dairy. Nothing else.',
+  'Coca-Cola Original': '10 sugar cubes. Per can.',
+  'KitKat 4 Finger': '218 calories. Treat, not snack.',
+  "Kellogg's Corn Flakes": 'Fortified with iron & vitamins.',
+  'Rani Orange Juice': 'Real fruit pieces.',
+  "Lay's Classic Chips": 'Salt-loaded. Treat, not snack.',
 }
 
-// Banner colors — handpicked to match each product bg
-const BANNER_COLORS: Record<string, string> = {
-  '#EDE5D8': '#B8A88E', // beige → warm sand
-  '#DBC0B0': '#A8856E', // pinkish-brown → warm terracotta
-  '#D8CCC0': '#A89078', // brown → warm mocha
-  '#C8D8B0': '#6B7D55', // sage green → olive green (matching inspiration)
-  '#F5D8A8': '#C4A060', // gold → warm amber
-  '#E8E0D8': '#B0A090', // light beige → taupe
-  '#D0E8C8': '#5E8A4A', // light green → forest green
-  '#C8D0E0': '#7888A0', // light blue → slate blue
-  '#E0D0C0': '#A88868', // tan → warm brown
-  '#EEE0A8': '#B8A050', // yellow → golden brown
-  '#F0E8C0': '#C0A860', // cream → amber
+const SIZE_LABEL: Record<string, string> = {
+  'Al Ain Full Cream Milk': '1L BOTTLE',
+  'Coca-Cola Original': '330ML CAN',
+  'KitKat 4 Finger': '45G BAR',
+  "Kellogg's Corn Flakes": '500G BOX',
+  'Rani Orange Juice': '240ML PACK',
+  "Lay's Classic Chips": '40G BAG',
 }
 
-function getProductBg(name: string): string {
-  const lower = name.toLowerCase()
-  for (const [key, color] of Object.entries(PRODUCT_BG)) {
-    if (lower.includes(key)) return color
+function chipsFor(n: NutritionData): HeroProduct['chips'] {
+  const out: HeroProduct['chips'] = []
+  if (n.sugars_g !== null) {
+    if (n.sugars_g > 15) out.push({ kind: 'bad', text: `${Math.round(n.sugars_g)}g sugar` })
+    else if (n.sugars_g <= 5) out.push({ kind: 'pos', text: 'Low sugar' })
   }
-  return '#E8E0D8'
+  if (n.protein_g !== null && n.protein_g > 5 && out.length < 2) out.push({ kind: 'pos', text: `${Math.round(n.protein_g)}g protein` })
+  if (n.sodium_mg !== null && n.sodium_mg > 500 && out.length < 2) out.push({ kind: 'warn', text: 'High sodium' })
+  if (n.saturated_fat_g !== null && n.saturated_fat_g > 5 && out.length < 2) out.push({ kind: 'warn', text: 'High fat' })
+  if (n.fiber_g !== null && n.fiber_g > 3 && out.length < 2) out.push({ kind: 'pos', text: `${Math.round(n.fiber_g)}g fiber` })
+  if (out.length === 0) out.push({ kind: 'neutral', text: 'Scanned' })
+  return out.slice(0, 2)
 }
 
-// Generate nutrition tags with colors
-type TagKey = 'highSugar' | 'lowSugar' | 'sugar' | 'highFat' | 'lowFat' | 'fat' | 'protein' | 'fiber' | 'highSodium' | 'lowCal'
-type NTag = { key: TagKey; color: string }
-function getNutritionTags(n: NutritionData): NTag[] {
-  const tags: NTag[] = []
-  if (n.sugars_g !== null) tags.push(n.sugars_g > 15
-    ? { key: 'highSugar', color: '#ef4444' }
-    : n.sugars_g <= 5 ? { key: 'lowSugar', color: '#10b981' }
-    : { key: 'sugar', color: '#f59e0b' })
-  if (n.saturated_fat_g !== null) tags.push(n.saturated_fat_g > 5
-    ? { key: 'highFat', color: '#ef4444' }
-    : n.saturated_fat_g <= 2 ? { key: 'lowFat', color: '#10b981' }
-    : { key: 'fat', color: '#f59e0b' })
-  if (n.protein_g !== null && n.protein_g > 5) tags.push({ key: 'protein', color: '#8b5cf6' })
-  if (n.fiber_g !== null && n.fiber_g > 3) tags.push({ key: 'fiber', color: '#06b6d4' })
-  if (n.sodium_mg !== null && n.sodium_mg > 500) tags.push({ key: 'highSodium', color: '#ef4444' })
-  if (n.energy_kcal !== null && n.energy_kcal <= 100) tags.push({ key: 'lowCal', color: '#10b981' })
-  return tags.slice(0, 3)
+// Brand extraction — full brand prefix, not just first word
+const BRAND_MAP: Record<string, string> = {
+  'Al Ain Full Cream Milk': 'Al Ain',
+  'Coca-Cola Original': 'Coca-Cola',
+  'KitKat 4 Finger': 'KitKat',
+  "Kellogg's Corn Flakes": "Kellogg's",
+  'Rani Orange Juice': 'Rani',
+  "Lay's Classic Chips": "Lay's",
 }
-
-// Grade text colors
-const GRADE_TEXT: Record<Grade, string> = {
-  A: '#2E7D32', B: '#558B2F', C: '#F9A825', D: '#E65100', E: '#C62828',
+function brandFor(name: string): string {
+  return BRAND_MAP[name] || name.split(' ')[0]
 }
-
-// Fallback nutrition facts (under 6 words) — keyed by product so translation pulls
-// the localized string via t(`home.fact.<key>`). Keep keys here, copy in translations.
-const FACT_KEYS: Record<string, string> = {
-  'Al Ain Full Cream Milk': 'home.fact.alAinMilk',
-  'Coca-Cola Original': 'home.fact.coke',
-  'KitKat 4 Finger': 'home.fact.kitkat',
-  "Kellogg's Corn Flakes": 'home.fact.cornflakes',
-  'Rani Orange Juice': 'home.fact.rani',
-  "Lay's Classic Chips": 'home.fact.lays',
-}
-
-// Featured products
-const FEATURED = [
-  DEMO_PRODUCTS.dairy[0],
-  DEMO_PRODUCTS.beverages[0],
-  DEMO_PRODUCTS.snacks[1],
-  DEMO_PRODUCTS.cereals[0],
-  DEMO_PRODUCTS.beverages[3],
-  DEMO_PRODUCTS.snacks[0],
-].filter(Boolean).map(p => {
-  const g = calculateGrade(p.nutrition)
-  return {
-    ...p,
-    grade: g.grade as Grade,
-    score: g.score,
-    image: getProductImage(p.product_name, g.grade as Grade),
-    bg: getProductBg(p.product_name),
-    tags: getNutritionTags(p.nutrition),
-    factKey: FACT_KEYS[p.product_name],
-  }
-})
 
 export default function Home() {
+  const router = useRouter()
   const t = useT()
-  const [facts, setFacts] = useState<Record<string, string>>({})
+  const lang = useLang()
+
+  const FEATURED = useMemo<HeroProduct[]>(() => {
+    const list = [
+      DEMO_PRODUCTS.dairy[0],
+      DEMO_PRODUCTS.beverages[0],
+      DEMO_PRODUCTS.snacks[1],
+      DEMO_PRODUCTS.cereals[0],
+      DEMO_PRODUCTS.beverages[3],
+      DEMO_PRODUCTS.snacks[0],
+    ].filter(Boolean)
+    return list.map(p => {
+      const g = calculateGrade(p.nutrition)
+      return {
+        brand: brandFor(p.product_name),
+        product_name: p.product_name,
+        take: TAKE[p.product_name] || 'Scanned & verified',
+        size_label: SIZE_LABEL[p.product_name] || 'PRODUCT',
+        grade: g.grade as Grade,
+        image: getProductImage(p.product_name, g.grade as Grade),
+        chips: chipsFor(p.nutrition),
+      }
+    })
+  }, [])
+
+  // store original product nutrition for navigation
+  const rawProducts = useMemo(() => {
+    return [
+      DEMO_PRODUCTS.dairy[0],
+      DEMO_PRODUCTS.beverages[0],
+      DEMO_PRODUCTS.snacks[1],
+      DEMO_PRODUCTS.cereals[0],
+      DEMO_PRODUCTS.beverages[3],
+      DEMO_PRODUCTS.snacks[0],
+    ].filter(Boolean)
+  }, [])
+
   const [activeCard, setActiveCard] = useState(0)
+  const total = FEATURED.length
+
+  const goToProduct = useCallback((idx: number) => {
+    const p = rawProducts[idx]
+    if (!p) return
+    const gradeResult = calculateGrade(p.nutrition)
+    sessionStorage.setItem('dfqs_product', JSON.stringify({
+      product_name: p.product_name,
+      nutrition: p.nutrition,
+      source: 'manual',
+    }))
+    sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
+    router.push('/result')
+  }, [rawProducts, router])
+
+  // Touch swipe for carousel
   const touchStart = useRef(0)
   const touchDelta = useRef(0)
   const [dragging, setDragging] = useState(false)
   const [dragX, setDragX] = useState(0)
 
   const swipe = useCallback((dir: 1 | -1) => {
-    setActiveCard(prev => Math.max(0, Math.min(FEATURED.length - 1, prev + dir)))
-  }, [])
+    setActiveCard(prev => Math.max(0, Math.min(total - 1, prev + dir)))
+  }, [total])
 
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStart.current = e.touches[0].clientX
-    setDragging(true)
-  }, [])
-
-  const onTouchMove = useCallback((e: React.TouchEvent) => {
-    touchDelta.current = e.touches[0].clientX - touchStart.current
-    setDragX(touchDelta.current)
-  }, [])
-
-  const onTouchEnd = useCallback(() => {
-    setDragging(false)
-    setDragX(0)
-    if (Math.abs(touchDelta.current) > 60) {
-      swipe(touchDelta.current < 0 ? 1 : -1)
-    }
+  const onTouchStart = (e: React.TouchEvent) => { touchStart.current = e.touches[0].clientX; setDragging(true) }
+  const onTouchMove = (e: React.TouchEvent) => { touchDelta.current = e.touches[0].clientX - touchStart.current; setDragX(touchDelta.current) }
+  const onTouchEnd = () => {
+    setDragging(false); setDragX(0)
+    if (Math.abs(touchDelta.current) > 60) swipe(touchDelta.current < 0 ? 1 : -1)
     touchDelta.current = 0
-  }, [swipe])
+  }
 
   useEffect(() => {
-    // Preload images
     FEATURED.forEach(p => { const img = new Image(); img.src = p.image })
+  }, [FEATURED])
 
-    // Load Gemini facts (cached in localStorage for 24h)
-    const CACHE_KEY = 'nutri_facts_v2'
-    const cached = localStorage.getItem(CACHE_KEY)
-    if (cached) {
-      try {
-        const { facts: f, ts } = JSON.parse(cached)
-        if (Date.now() - ts < 86400000) { setFacts(f); return }
-      } catch {}
-    }
-    fetch('/api/facts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ products: FEATURED.map(p => p.product_name) }),
-    })
-      .then(r => r.json())
-      .then(d => {
-        if (d.facts) {
-          setFacts(d.facts)
-          localStorage.setItem(CACHE_KEY, JSON.stringify({ facts: d.facts, ts: Date.now() }))
-        }
-      })
-      .catch(() => {})
-  }, [])
+  // For "Also scanned" thumb strip, rotate to show non-active cards
+  const others = useMemo(() => {
+    const rotated = [...FEATURED.slice(activeCard + 1), ...FEATURED.slice(0, activeCard)]
+    return rotated
+  }, [FEATURED, activeCard])
 
   return (
-    <div className="min-h-screen flex flex-col pb-[64px]" style={{ background: '#F5F4F0' }}>
+    <div className="min-h-dvh flex flex-col" style={{ background: '#FAF7F2', paddingBottom: 0 }}>
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-7 pb-1 flex-shrink-0">
-        <div>
-          <p className="text-[11px] font-medium" style={{ color: '#ACACAC' }}>{t('home.welcome')}</p>
-          <p className="text-[15px] font-bold" style={{ color: '#1A1A1A' }}>nutri</p>
-        </div>
+      {/* Top chrome — small wordmark + lang/menu */}
+      <header className="flex items-center justify-between" style={{ padding: '12px 24px 0', gap: 12 }}>
+        <NutriLogo height={16} />
         <div className="flex items-center gap-2">
           <LangToggle />
-          <Link href="/browse" aria-label="Browse" className="w-9 h-9 rounded-full flex items-center justify-center border" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          </Link>
+          <button aria-label="Menu" className="rounded-full flex items-center justify-center" style={{ width: 32, height: 32, border: '1px solid rgba(24,20,16,0.12)', background: 'transparent' }}>
+            <svg width="14" height="10" viewBox="0 0 14 10" aria-hidden>
+              <rect x="0" y="0" width="14" height="1.4" rx="0.7" fill="#181410" />
+              <rect x="0" y="4.3" width="10" height="1.4" rx="0.7" fill="#181410" />
+              <rect x="0" y="8.6" width="14" height="1.4" rx="0.7" fill="#181410" />
+            </svg>
+          </button>
         </div>
+      </header>
+
+      {/* Greeting overline + BIG display headline */}
+      <div style={{ padding: '36px 24px 8px' }}>
+        <div className="n-mono" style={{ color: '#7A7166', marginBottom: 14 }}>
+          {t('home.greeting')}
+        </div>
+        <h1 style={{
+          margin: 0,
+          fontFamily: "'Cabinet Grotesk', system-ui, sans-serif",
+          fontWeight: 800,
+          fontSize: 44,
+          lineHeight: 0.95,
+          letterSpacing: '-0.02em',
+          color: '#181410',
+        }}>
+          {t('home.h1a')}<br />
+          <span style={{ color: '#7A7166', fontWeight: 500 }}>{t('home.h1b')}</span>
+        </h1>
       </div>
 
-      {/* Hero text */}
-      <div className="px-5 pt-3 pb-1 flex-shrink-0">
-        <p className="text-[22px] leading-[1.15]" style={{ color: '#1A1A1A', fontWeight: 400 }}>
-          <span className="font-bold">{t('home.heroLine1')}</span><br/>
-          <span className="font-bold">{t('home.heroLine2')}</span>
-        </p>
+      {/* Counter + SWIPE indicator */}
+      <div style={{ padding: '24px 24px 12px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+          <span className="n-num" style={{ fontSize: 22, lineHeight: 1, color: '#181410' }}>
+            {String(activeCard + 1).padStart(2, '0')}
+          </span>
+          <span style={{
+            fontFamily: "'Cabinet Grotesk', system-ui, sans-serif",
+            fontWeight: 500,
+            fontSize: 15,
+            fontFeatureSettings: '"tnum"',
+            fontVariantNumeric: 'tabular-nums',
+            color: '#7A7166',
+          }}>
+            / {String(total).padStart(2, '0')}
+          </span>
+        </div>
+        <div className="n-mono" style={{ color: '#7A7166' }}>{t('home.swipe')}</div>
       </div>
 
-      {/* Stats */}
-      <div className="flex items-center gap-3 px-5 pt-2 pb-4 flex-shrink-0">
-        <span className="text-[28px] font-extrabold leading-none" style={{ color: '#1A1A1A' }}>{FEATURED.length}</span>
-        <span className="text-[8px] font-bold uppercase tracking-wider px-3 py-1 rounded-full" style={{ background: '#FFEC89', color: '#1A1A1A' }}>{t('home.featuredBadge')}</span>
-      </div>
-
-      {/* Swipeable Card Carousel */}
+      {/* Hero carousel */}
       <div
-        className="relative overflow-hidden"
-        style={{ padding: '0 20px' }}
+        style={{ overflow: 'hidden', position: 'relative' }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
         <div style={{
           display: 'flex',
+          gap: 14,
+          padding: '6px 60px 12px 24px',
           transition: dragging ? 'none' : 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-          transform: `translateX(calc(-${activeCard * 100}% + ${dragX}px))`,
+          transform: `translateX(calc(${-activeCard * 316}px + ${dragX}px))`,
         }}>
-        {FEATURED.map((product, i) => (
-          <div key={i} style={{ minWidth: '100%', padding: '0 4px' }}>
-          <a
-            onClick={(e) => {
-              e.preventDefault()
-              const gradeResult = calculateGrade(product.nutrition)
-              const productData = {
-                product_name: product.product_name,
-                nutrition: product.nutrition,
-                source: 'manual' as const,
-              }
-              sessionStorage.setItem('dfqs_product', JSON.stringify(productData))
-              sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
-              addToHistory(productData, gradeResult)
-              window.location.href = '/result'
-            }}
-            className="block relative active:scale-[0.98] cursor-pointer"
-            style={{
-              borderRadius: '20px',
-              overflow: 'hidden',
-              background: '#FFFFFF',
-              boxShadow: '0 2px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)',
-              transition: 'transform 0.2s ease',
-            }}
-          >
-            {/* Grade badge — white corner */}
-            <div style={{
-              position: 'absolute', top: '0', right: '0', zIndex: 20,
-              background: '#FFFFFF',
-              borderBottomLeftRadius: '14px',
-              padding: '3px 6px 5px 8px',
-            }}>
-              <span style={{ fontSize: '18px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '8px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{t(`grade.${product.grade}` as const)}</span>
-            </div>
-
-            {/* Image area */}
+          {FEATURED.map((product, i) => (
             <div
+              key={i}
               style={{
-                margin: '6px',
-                borderRadius: '14px',
-                minHeight: '300px',
-                background: product.bg,
-                overflow: 'hidden',
-                position: 'relative',
+                transform: i === activeCard ? 'none' : 'scale(0.94)',
+                opacity: i === activeCard ? 1 : 0.7,
+                transition: 'transform 0.35s, opacity 0.35s',
+                transformOrigin: 'center bottom',
               }}
             >
-              <div className="flex items-end justify-center" style={{ padding: '20px 16px 30px', minHeight: '300px' }}>
-                <img
-                  src={product.image}
-                  alt={product.product_name}
-                  className="max-h-[240px] object-contain"
-                  style={{ filter: 'drop-shadow(2px 6px 14px rgba(0,0,0,0.18))' }}
-                  loading="lazy"
-                />
-              </div>
-              {/* Fact banner — gradient fade */}
-              <div style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                background: `linear-gradient(to bottom, transparent 0%, ${BANNER_COLORS[product.bg] || '#8A7D65'}90 40%, ${BANNER_COLORS[product.bg] || '#8A7D65'} 100%)`,
-                padding: '12px 10px 5px',
-                textAlign: 'center',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}>
-                <span style={{ fontSize: '11px', fontWeight: 400, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || (product.factKey ? t(product.factKey as any) : t('home.scanned'))}</span>
-              </div>
+              <HeroCard
+                product={product}
+                width={302}
+                height={510}
+                onTap={() => goToProduct(i)}
+                lang={lang}
+              />
             </div>
-
-            {/* Info area */}
-            <div style={{ padding: '12px 16px 14px' }}>
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="text-[18px] leading-snug" style={{ color: '#1A1A1A', fontWeight: 700 }}>{product.product_name}</p>
-                <span className="shrink-0" style={{
-                  fontSize: '10px', fontWeight: 600, color: '#1A1A1A',
-                  border: '1px solid rgba(0,0,0,0.12)', borderRadius: '12px',
-                  padding: '4px 10px', whiteSpace: 'nowrap',
-                }}>{t('home.view')} ↗</span>
-              </div>
-
-              {/* Tags — colored tinted pills */}
-              <div className="flex gap-2 mt-3 overflow-hidden">
-                {product.tags.map((tag, j) => (
-                  <span
-                    key={j}
-                    className="whitespace-nowrap"
-                    style={{
-                      fontSize: '10px', fontWeight: 600,
-                      padding: '4px 10px',
-                      borderRadius: '10px',
-                      border: `1px solid ${tag.color}30`,
-                      background: `${tag.color}10`,
-                      color: tag.color,
-                    }}
-                  >
-                    {t(`tag.${tag.key}` as const)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </a>
-          </div>
-        ))}
-        </div>
-
-        {/* Dot indicators */}
-        <div className="flex justify-center gap-1.5 mt-4">
-          {FEATURED.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveCard(i)}
-              style={{
-                width: i === activeCard ? '18px' : '6px',
-                height: '6px',
-                borderRadius: '3px',
-                background: i === activeCard ? '#1A1A1A' : 'rgba(0,0,0,0.15)',
-                transition: 'all 0.3s ease',
-                border: 'none',
-                padding: 0,
-              }}
-            />
           ))}
         </div>
       </div>
 
-      <div className="mt-3">
-        <RecentPills />
+      {/* Dot indicators */}
+      <div className="flex justify-center gap-1.5 mt-4">
+        {FEATURED.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setActiveCard(i)}
+            aria-label={`Card ${i + 1}`}
+            style={{
+              width: i === activeCard ? 18 : 6,
+              height: 6,
+              borderRadius: 3,
+              background: i === activeCard ? '#181410' : 'rgba(24,20,16,0.15)',
+              transition: 'all 0.3s ease',
+              border: 'none',
+              padding: 0,
+            }}
+          />
+        ))}
       </div>
 
-      <BottomNav active="home" />
+      {/* Also scanned thumb strip */}
+      <div style={{ flex: 1, overflow: 'hidden', paddingTop: 20 }}>
+        <div style={{ padding: '0 24px 8px' }}>
+          <span className="n-mono" style={{ color: '#7A7166' }}>{t('home.alsoScanned')}</span>
+        </div>
+        <div style={{
+          display: 'flex',
+          gap: 12,
+          padding: '0 24px 120px',
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+        }} className="no-scrollbar">
+          {others.map((p, i) => {
+            const realIdx = FEATURED.findIndex(x => x.product_name === p.product_name)
+            return (
+              <button
+                key={p.product_name}
+                onClick={() => goToProduct(realIdx)}
+                style={{
+                  flexShrink: 0,
+                  width: 72,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6,
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <div style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: 18,
+                  background: '#FFFFFF',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: '0 0 0 0.5px rgba(40,28,18,0.06), 0 4px 12px -8px rgba(40,28,18,0.12)',
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 5,
+                    left: 5,
+                    zIndex: 2,
+                    width: 24,
+                    height: 24,
+                    borderRadius: 7,
+                    background: getTileBg(p.grade),
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: "'Cabinet Grotesk', system-ui, sans-serif",
+                    fontWeight: 800,
+                    fontSize: 15,
+                    lineHeight: 1,
+                    letterSpacing: '-0.03em',
+                    boxShadow: '0 4px 10px -3px rgba(40,28,18,0.20)',
+                  }}>
+                    {p.grade}
+                  </div>
+                  <div style={{
+                    position: 'absolute',
+                    inset: '18% 14% 12%',
+                    filter: 'drop-shadow(0 6px 10px rgba(40,28,18,0.14))',
+                  }}>
+                    <img src={p.image} alt={p.product_name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  </div>
+                </div>
+                <div style={{
+                  fontFamily: "'Cabinet Grotesk', system-ui, sans-serif",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: '#3A342A',
+                  lineHeight: 1.2,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  width: '100%',
+                }}>{p.brand}</div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Floating bottom nav — elevated lime FAB */}
+      <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '28rem', zIndex: 40, pointerEvents: 'none' }}>
+        <div style={{
+          pointerEvents: 'auto',
+          margin: '0 18px 16px',
+          background: '#FFFFFF',
+          borderRadius: 28,
+          padding: '12px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: '0 1px 0 rgba(255,255,255,0.6) inset, 0 12px 30px -12px rgba(40,28,18,0.22), 0 0 0 0.5px rgba(0,0,0,0.05)',
+          position: 'relative',
+        }}>
+          <Link href="/" className="flex flex-col items-center gap-1" style={{ flex: 1, minHeight: 44, padding: '4px 0', color: '#181410' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-7h-6v7H4a1 1 0 01-1-1V10.5z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" fill="currentColor" fillOpacity={0.12} />
+            </svg>
+            <span style={{ width: 4, height: 4, background: '#181410', borderRadius: 999 }} />
+          </Link>
+          <Link href="/browse" className="flex flex-col items-center gap-1" style={{ flex: 1, minHeight: 44, padding: '4px 0', color: '#A89F93' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.7"/>
+              <rect x="13" y="3" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.7"/>
+              <rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.7"/>
+              <rect x="13" y="13" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.7"/>
+            </svg>
+          </Link>
+          <Link href="/scan?mode=label" aria-label={t('nav.scan')} style={{
+            width: 60, height: 60, borderRadius: '50%',
+            background: '#B8E845',
+            border: '4px solid #FFFFFF',
+            marginTop: -34,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 12px 22px -6px rgba(140,180,40,0.55), inset 0 -3px 0 rgba(0,0,0,0.1)',
+            flexShrink: 0,
+          }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M3 8V5a2 2 0 012-2h3M16 3h3a2 2 0 012 2v3M21 16v3a2 2 0 01-2 2h-3M8 21H5a2 2 0 01-2-2v-3" stroke="#181410" strokeWidth="2.2" strokeLinecap="round"/>
+              <path d="M3 12h18" stroke="#181410" strokeWidth="2.2" strokeLinecap="round"/>
+            </svg>
+          </Link>
+          <Link href="/compare" className="flex flex-col items-center gap-1" style={{ flex: 1, minHeight: 44, padding: '4px 0', color: '#A89F93' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M8 4v16M16 4v16M4 8l4-4 4 4M20 16l-4 4-4-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Link>
+          <Link href="/chat" className="flex flex-col items-center gap-1" style={{ flex: 1, minHeight: 44, padding: '4px 0', color: '#A89F93' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M21 12a8 8 0 11-3.5-6.6L21 4l-1 4a8 8 0 011 4z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/>
+            </svg>
+          </Link>
+        </div>
+      </div>
     </div>
   )
+}
+
+function getTileBg(grade: Grade): string {
+  switch (grade) {
+    case 'A': return '#B8E845'
+    case 'B': return '#9BC93A'
+    case 'C': return '#FFD23D'
+    case 'D': return '#FF9A4F'
+    case 'E': return '#FF5A3A'
+  }
 }

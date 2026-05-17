@@ -3,10 +3,9 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { getHistory, type HistoryEntry } from '@/lib/history'
-import { GRADE_GRADIENTS, GRADE_GLOWS, type Grade, type NutritionData, type GradeResult, type NutrientKey } from '@/lib/types'
+import { GRADE_GRADIENTS, type Grade, type NutritionData, type GradeResult, type NutrientKey } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
 import { useT } from '@/lib/i18n'
-import BottomNav from '@/components/BottomNav'
 
 interface CompareProduct {
   product_name: string
@@ -19,13 +18,13 @@ interface CompareProduct {
 
 const GRADE_ORDER = ['A', 'B', 'C', 'D', 'E']
 
-const NUTRIENTS: { key: NutrientKey; label: string; unit: string; lowerIsBetter: boolean; max: number }[] = [
-  { key: 'energy_kcal', label: 'Calories', unit: 'kcal', lowerIsBetter: true, max: 800 },
-  { key: 'sugars_g', label: 'Sugar', unit: 'g', lowerIsBetter: true, max: 50 },
-  { key: 'saturated_fat_g', label: 'Sat. Fat', unit: 'g', lowerIsBetter: true, max: 20 },
-  { key: 'sodium_mg', label: 'Sodium', unit: 'mg', lowerIsBetter: true, max: 1000 },
-  { key: 'protein_g', label: 'Protein', unit: 'g', lowerIsBetter: false, max: 30 },
-  { key: 'fiber_g', label: 'Fiber', unit: 'g', lowerIsBetter: false, max: 10 },
+const NUTRIENTS: { key: NutrientKey; label: string; unit: string; lowerIsBetter: boolean }[] = [
+  { key: 'energy_kcal', label: 'Calories', unit: 'kcal', lowerIsBetter: true },
+  { key: 'sugars_g', label: 'Sugar', unit: 'g', lowerIsBetter: true },
+  { key: 'saturated_fat_g', label: 'Sat. Fat', unit: 'g', lowerIsBetter: true },
+  { key: 'sodium_mg', label: 'Sodium', unit: 'mg', lowerIsBetter: true },
+  { key: 'protein_g', label: 'Protein', unit: 'g', lowerIsBetter: false },
+  { key: 'fiber_g', label: 'Fiber', unit: 'g', lowerIsBetter: false },
 ]
 
 function getWinner(s1: CompareProduct, s2: CompareProduct): 1 | 2 | 0 {
@@ -47,6 +46,7 @@ export default function ComparePage() {
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [verdict, setVerdict] = useState('')
   const [verdictLoading, setVerdictLoading] = useState(false)
+  const [verdictOpen, setVerdictOpen] = useState(false)
 
   useEffect(() => { setHistory(getHistory()) }, [])
 
@@ -80,7 +80,6 @@ export default function ComparePage() {
       if (!res.ok) { setVerdict(''); return }
       const data = await res.json()
       const text = data.response || ''
-      // Strip JSON if AI returned it anyway
       if (text.trim().startsWith('{')) {
         try {
           const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0] || '{}')
@@ -125,75 +124,78 @@ export default function ComparePage() {
   const winner = slot1 && slot2 ? getWinner(slot1, slot2) : 0
   const bothLoaded = !!(slot1 && slot2)
 
+  // Calculate wins per product
+  let wins1 = 0, wins2 = 0
+  if (slot1 && slot2) {
+    NUTRIENTS.forEach(({ key, lowerIsBetter }) => {
+      const v1 = slot1.nutrition[key]
+      const v2 = slot2.nutrition[key]
+      if (v1 !== null && v2 !== null) {
+        if (lowerIsBetter) { if (v1 < v2) wins1++; else if (v2 < v1) wins2++ }
+        else { if (v1 > v2) wins1++; else if (v2 > v1) wins2++ }
+      }
+    })
+  }
+
   return (
-    <div className="min-h-screen px-5 py-6 flex flex-col gap-5 mesh-bg pb-[80px]">
+    <div className="h-dvh flex flex-col overflow-hidden" style={{ background: '#F5F4F0' }}>
       {/* Header */}
-      <div className="flex items-center gap-3 animate-fade-in">
+      <div className="flex items-center gap-3 px-5 pt-5 pb-2 flex-shrink-0">
         <button onClick={() => router.push('/')} className="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl transition-colors" style={{ color: '#7A7A7A' }} aria-label="Back home">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-0.5 flex-1">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#B6F074' }} />
             <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#B6F074' }}>{t('compare.section')}</span>
           </div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A1A1A' }}>{t('compare.title')}</h1>
+          <h1 className="text-[20px] font-extrabold" style={{ color: '#1A1A1A', letterSpacing: '-0.02em' }}>{t('compare.title')}</h1>
         </div>
       </div>
 
-      {!slot1 && !slot2 && (
-        <p className="text-[13px] text-[#7A7A7A] -mt-3 leading-snug animate-fade-in">
-          {t('compare.helper') || 'Tap a slot below to add a product. Scan a label, a barcode, or pick from the catalog — we’ll tell you which one is better.'}
-        </p>
-      )}
-
-      {/* Product Cards -- Side by Side */}
-      <div className="grid grid-cols-2 gap-3 animate-slide-up stagger-1">
+      {/* Compact product cards row */}
+      <div className="grid grid-cols-2 gap-2 px-5 pb-2 flex-shrink-0">
         {([1, 2] as const).map((slotNum) => {
           const product = slotNum === 1 ? slot1 : slot2
           const isWinner = winner === slotNum
+          const wins = slotNum === 1 ? wins1 : wins2
           return (
             <div
               key={slotNum}
-              className="relative flex flex-col items-center gap-2 p-4 rounded-2xl transition-all"
+              className="relative flex items-center gap-2.5 p-2.5 rounded-2xl transition-all"
               style={{
-                background: isWinner ? 'rgba(182, 240, 116, 0.06)' : 'rgba(253, 252, 250, 0.7)',
-                backdropFilter: 'blur(20px)',
-                border: isWinner ? '2px solid rgba(182, 240, 116, 0.3)' : '1px solid rgba(0,0,0,0.06)',
-                boxShadow: isWinner ? '0 8px 32px rgba(182, 240, 116, 0.12)' : '0 4px 24px rgba(0,0,0,0.03)',
+                background: '#FFFFFF',
+                border: isWinner ? '1.5px solid #B6F074' : '1px solid rgba(0,0,0,0.06)',
+                boxShadow: isWinner ? '0 4px 14px rgba(182, 240, 116, 0.25)' : '0 1px 4px rgba(0,0,0,0.04)',
               }}
             >
-              {/* Winner crown */}
-              {isWinner && bothLoaded && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 animate-scale-in">
-                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
-                    style={{ background: 'linear-gradient(135deg, #B6F074, #A8E866)', color: '#1A1A1A', boxShadow: '0 4px 12px rgba(182, 240, 116, 0.4)' }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-                    {t('compare.better')}
-                  </div>
-                </div>
-              )}
-
               {product ? (
                 <>
-                  {/* Grade */}
+                  {/* Grade tile */}
                   <div
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white ${bothLoaded ? 'animate-grade-reveal' : ''}`}
-                    style={{ background: GRADE_GRADIENTS[product.grade], boxShadow: GRADE_GLOWS[product.grade] }}
+                    className="shrink-0 w-12 h-12 rounded-xl flex flex-col items-center justify-center text-white"
+                    style={{ background: GRADE_GRADIENTS[product.grade] }}
                   >
-                    <span className="text-3xl font-bold" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>{product.grade}</span>
+                    <span className="text-xl font-extrabold leading-none">{product.grade}</span>
                   </div>
-                  <p className="text-[11px] font-semibold text-[#1A1A1A] text-center line-clamp-2 mt-1">{product.product_name}</p>
-                  <button onClick={() => clearSlot(slotNum)} className="text-[10px] text-[#ACACAC] hover:text-red-400 min-h-[36px] px-2 flex items-center transition-colors">
-                    {t('compare.remove')}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-bold leading-tight line-clamp-2" style={{ color: '#1A1A1A' }}>{product.product_name}</p>
+                    {bothLoaded && (
+                      <p className="text-[10px] mt-0.5" style={{ color: isWinner ? '#558B2F' : '#7A7A7A', fontWeight: 700 }}>
+                        {wins} {t('compare.wins')}
+                      </p>
+                    )}
+                  </div>
+                  <button onClick={() => clearSlot(slotNum)} className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center" style={{ color: '#ACACAC' }} aria-label="Remove">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                   </button>
                 </>
               ) : (
-                <button onClick={() => setShowModal(slotNum)} className="flex flex-col items-center justify-center gap-2 w-full py-8 text-[#7A7A7A] transition-colors hover:text-[#7A7A7A]">
-                  <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-[rgba(0,0,0,0.06)] flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                <button onClick={() => setShowModal(slotNum)} className="flex items-center gap-2 w-full py-2 text-[#7A7A7A] transition-colors">
+                  <div className="w-12 h-12 rounded-xl border-2 border-dashed flex items-center justify-center" style={{ borderColor: 'rgba(0,0,0,0.12)' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                   </div>
-                  <span className="text-xs font-medium">{t('compare.addProduct')}</span>
+                  <span className="text-[12px] font-semibold">{t('compare.addProduct')}</span>
                 </button>
               )}
             </div>
@@ -201,150 +203,113 @@ export default function ComparePage() {
         })}
       </div>
 
-      {/* VS Badge */}
-      {bothLoaded && (
-        <div className="flex items-center -my-2 animate-scale-in">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[rgba(0,0,0,0.06)] to-transparent" />
-          <span className="mx-3 text-sm font-bold px-4 py-1.5 rounded-full animate-tangerine-pulse"
-            style={{ background: 'linear-gradient(135deg, #B6F074, #A8E866)', color: '#1A1A1A', boxShadow: '0 4px 16px rgba(182, 240, 116, 0.35)' }}>
-            VS
-          </span>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[rgba(0,0,0,0.06)] to-transparent" />
-        </div>
-      )}
-
-      {/* Head-to-Head Nutrient Bars */}
+      {/* Stat-by-stat split rows */}
       {bothLoaded && slot1 && slot2 && (
-        <div className="flex flex-col gap-2.5 animate-slide-up stagger-3">
-          <h3 className="text-xs font-semibold text-[#7A7A7A] uppercase tracking-wider px-1">{t('compare.headToHead')}</h3>
-          {NUTRIENTS.map(({ key, label, unit, lowerIsBetter, max }, i) => {
-            const v1 = slot1.nutrition[key]
-            const v2 = slot2.nutrition[key]
-            const n1 = v1 !== null ? v1 : 0
-            const n2 = v2 !== null ? v2 : 0
-            const maxVal = Math.max(n1, n2, 1)
-
-            let winner1 = false, winner2 = false
-            if (v1 !== null && v2 !== null) {
-              if (lowerIsBetter) { if (n1 < n2) winner1 = true; else if (n2 < n1) winner2 = true }
-              else { if (n1 > n2) winner1 = true; else if (n2 > n1) winner2 = true }
-            }
-
-            return (
-              <div key={key} className="glass-subtle rounded-xl p-3 animate-slide-up" style={{ animationDelay: `${0.3 + i * 0.08}s` }}>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
-                  <span className="text-[10px] text-[#ACACAC]">{lowerIsBetter ? t('compare.lowerIsBetter') : t('compare.higherIsBetter')}</span>
-                </div>
-
-                {/* Product 1 bar */}
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[10px] w-10 text-right text-[#7A7A7A] shrink-0">{v1 !== null ? `${Math.round(v1)}${unit}` : '--'}</span>
-                  <div className="flex-1 h-3 rounded-full overflow-hidden" style={{ background: 'rgba(45, 42, 38, 0.04)' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${Math.min((n1 / maxVal) * 100, 100)}%`,
-                        background: winner1
-                          ? 'linear-gradient(90deg, #3B8C3A, #2E7D32)'
-                          : winner2
-                            ? 'linear-gradient(90deg, #FF9800, #E65100)'
-                            : 'linear-gradient(90deg, #ACACAC, #7A7A7A)',
-                        boxShadow: winner1 ? '0 0 8px rgba(46, 125, 50, 0.3)' : 'none',
-                      }}
-                    />
-                  </div>
-                  {winner1 && (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                  )}
-                </div>
-
-                {/* Product 2 bar */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] w-10 text-right text-[#7A7A7A] shrink-0">{v2 !== null ? `${Math.round(v2)}${unit}` : '--'}</span>
-                  <div className="flex-1 h-3 rounded-full overflow-hidden" style={{ background: 'rgba(45, 42, 38, 0.04)' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${Math.min((n2 / maxVal) * 100, 100)}%`,
-                        background: winner2
-                          ? 'linear-gradient(90deg, #3B8C3A, #2E7D32)'
-                          : winner1
-                            ? 'linear-gradient(90deg, #FF9800, #E65100)'
-                            : 'linear-gradient(90deg, #ACACAC, #7A7A7A)',
-                        boxShadow: winner2 ? '0 0 8px rgba(46, 125, 50, 0.3)' : 'none',
-                      }}
-                    />
-                  </div>
-                  {winner2 && (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                  )}
-                </div>
-
-                {/* Labels */}
-                <div className="flex justify-between mt-1">
-                  <span className={`text-[9px] ${winner1 ? 'text-[#2E7D32] font-semibold' : 'text-[#7A7A7A]'}`}>{slot1.product_name.split(' ').slice(0, 2).join(' ')}</span>
-                  <span className={`text-[9px] ${winner2 ? 'text-[#2E7D32] font-semibold' : 'text-[#7A7A7A]'}`}>{slot2.product_name.split(' ').slice(0, 2).join(' ')}</span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Scorecard Summary */}
-      {bothLoaded && slot1 && slot2 && (
-        <div className="animate-slide-up stagger-5">
-          {(() => {
-            let wins1 = 0, wins2 = 0
-            NUTRIENTS.forEach(({ key, lowerIsBetter }) => {
+        <div className="flex-1 overflow-hidden px-5 pb-2 flex flex-col gap-1.5 min-h-0">
+          <div className="flex items-center justify-between px-1 pb-0.5 flex-shrink-0">
+            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#ACACAC' }}>{t('compare.headToHead')}</span>
+          </div>
+          <div className="flex-1 flex flex-col gap-1.5 min-h-0">
+            {NUTRIENTS.map(({ key, label, unit, lowerIsBetter }) => {
               const v1 = slot1.nutrition[key]
               const v2 = slot2.nutrition[key]
+              const n1 = v1 !== null ? v1 : 0
+              const n2 = v2 !== null ? v2 : 0
+              const maxVal = Math.max(n1, n2, 1)
+
+              let winner1 = false, winner2 = false
               if (v1 !== null && v2 !== null) {
-                if (lowerIsBetter) { if (v1 < v2) wins1++; else if (v2 < v1) wins2++ }
-                else { if (v1 > v2) wins1++; else if (v2 > v1) wins2++ }
+                if (lowerIsBetter) { if (n1 < n2) winner1 = true; else if (n2 < n1) winner2 = true }
+                else { if (n1 > n2) winner1 = true; else if (n2 > n1) winner2 = true }
               }
-            })
-            return (
-              <div className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(45, 42, 38, 0.9), rgba(74, 69, 64, 0.9))', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
-                <div className="flex-1 text-center">
-                  <p className="text-2xl font-bold text-white">{wins1}</p>
-                  <p className="text-[10px] text-white/50 mt-0.5">{slot1.product_name.split(' ').slice(0, 2).join(' ')}</p>
+
+              const w1pct = Math.min((n1 / maxVal) * 50, 50)
+              const w2pct = Math.min((n2 / maxVal) * 50, 50)
+
+              return (
+                <div key={key} className="rounded-xl px-3 py-2 flex-1 flex flex-col justify-center min-h-0" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)' }}>
+                  {/* Labels above split */}
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-semibold tabular-nums" style={{ color: winner1 ? '#2E7D32' : '#ACACAC' }}>
+                      {v1 !== null ? `${Math.round(v1)}${unit}` : '--'}
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#1A1A1A' }}>{label}</span>
+                    <span className="text-[10px] font-semibold tabular-nums" style={{ color: winner2 ? '#2E7D32' : '#ACACAC' }}>
+                      {v2 !== null ? `${Math.round(v2)}${unit}` : '--'}
+                    </span>
+                  </div>
+                  {/* Mirrored split bar — left from center, right from center */}
+                  <div className="relative h-2 flex items-center">
+                    <div className="absolute left-0 right-1/2 h-full flex justify-end items-center pr-px">
+                      <div
+                        className="h-full rounded-l-full transition-all duration-700"
+                        style={{
+                          width: `${w1pct * 2}%`,
+                          background: winner1 ? '#558B2F' : winner2 ? '#E0E0E0' : '#ACACAC',
+                        }}
+                      />
+                    </div>
+                    <div className="absolute left-1/2 right-0 h-full flex justify-start items-center pl-px">
+                      <div
+                        className="h-full rounded-r-full transition-all duration-700"
+                        style={{
+                          width: `${w2pct * 2}%`,
+                          background: winner2 ? '#558B2F' : winner1 ? '#E0E0E0' : '#ACACAC',
+                        }}
+                      />
+                    </div>
+                    {/* Center divider */}
+                    <div className="absolute left-1/2 -translate-x-1/2 w-px h-3 bg-[rgba(0,0,0,0.1)]" />
+                  </div>
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                  <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">{t('compare.wins')}</p>
-                  <div className="w-8 h-0.5 rounded-full bg-[#B6F074]" />
-                </div>
-                <div className="flex-1 text-center">
-                  <p className="text-2xl font-bold text-white">{wins2}</p>
-                  <p className="text-[10px] text-white/50 mt-0.5">{slot2.product_name.split(' ').slice(0, 2).join(' ')}</p>
-                </div>
-              </div>
-            )
-          })()}
+              )
+            })}
+          </div>
         </div>
       )}
 
-      {/* AI Verdict */}
+      {/* Empty state when no products */}
+      {!bothLoaded && (
+        <div className="flex-1 flex items-center justify-center px-5 text-center">
+          <p className="text-sm" style={{ color: '#7A7A7A' }}>
+            {slot1 || slot2 ? t('compare.addOneMore') : t('compare.pickTwo')}
+          </p>
+        </div>
+      )}
+
+      {/* AI verdict — collapsible bottom sheet */}
       {bothLoaded && (
-        <div className="animate-slide-up stagger-6 rounded-2xl p-4" style={{ background: 'rgba(182, 240, 116, 0.04)', border: '1px solid rgba(182, 240, 116, 0.12)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #B6F074, #A8E866)' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+        <div className="flex-shrink-0 px-5 pb-5">
+          <button
+            onClick={() => setVerdictOpen(v => !v)}
+            className="w-full flex items-center gap-2 px-4 py-3 rounded-2xl transition-all"
+            style={{
+              background: verdictOpen ? '#FFFFFF' : 'rgba(182, 240, 116, 0.12)',
+              border: '1px solid rgba(182, 240, 116, 0.3)',
+            }}
+          >
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #B6F074, #A8E866)' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
             </div>
-            <h3 className="text-sm font-bold text-[#1A1A1A]">{t('compare.aiVerdict')}</h3>
-          </div>
-          {verdictLoading ? (
-            <div className="flex items-center gap-2.5 py-4 justify-center">
-              <div className="flex gap-1.5">
-                <span className="w-2.5 h-2.5 bg-[#B6F074] rounded-full animate-bounce" />
-                <span className="w-2.5 h-2.5 bg-[#B6F074] rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
-                <span className="w-2.5 h-2.5 bg-[#B6F074] rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
-              </div>
+            <span className="text-[12px] font-bold flex-1 text-left" style={{ color: '#1A1A1A' }}>
+              {verdictLoading ? 'Analyzing…' : t('compare.aiVerdict')}
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A7A7A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: verdictOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+              <path d="m18 15-6-6-6 6"/>
+            </svg>
+          </button>
+          {verdictOpen && verdict && (
+            <div className="mt-2 p-4 rounded-2xl" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)' }}>
+              <p className="text-[13px] leading-relaxed whitespace-pre-line" style={{ color: '#1A1A1A' }}>{verdict}</p>
             </div>
-          ) : verdict ? (
-            <p className="text-sm text-[#7A7A7A] leading-relaxed whitespace-pre-line">{verdict}</p>
-          ) : null}
+          )}
+          {verdictOpen && verdictLoading && (
+            <div className="mt-2 p-4 flex items-center justify-center gap-1.5" style={{ background: '#FFFFFF', borderRadius: '16px', border: '1px solid rgba(0,0,0,0.06)' }}>
+              <span className="w-2 h-2 bg-[#B6F074] rounded-full animate-bounce" />
+              <span className="w-2 h-2 bg-[#B6F074] rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+              <span className="w-2 h-2 bg-[#B6F074] rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
+            </div>
+          )}
         </div>
       )}
 
@@ -362,10 +327,6 @@ export default function ComparePage() {
             <button onClick={() => router.push(`/scan?mode=barcode&return=compare&slot=${showModal}`)} className="flex items-center gap-3 w-full py-3.5 px-4 rounded-2xl btn-espresso text-sm">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
               {t('compare.scanBarcode')}
-            </button>
-            <button onClick={() => router.push(`/browse?return=compare&slot=${showModal}`)} className="flex items-center gap-3 w-full py-3.5 px-4 rounded-2xl text-sm" style={{ background: '#F5F4F0', color: '#1A1A1A', border: '1px solid rgba(0,0,0,0.06)' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
-              {t('compare.pickFromCatalog') || 'Pick from catalog'}
             </button>
 
             {history.length > 0 && (
@@ -391,7 +352,6 @@ export default function ComparePage() {
           </div>
         </div>
       )}
-      <BottomNav active="compare" />
     </div>
   )
 }

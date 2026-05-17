@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#F5F4F0',
+  themeColor: '#FAF7F2',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -19,10 +19,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
-        {/* Google Fonts — Nunito (Circular Std free alternative) */}
+        {/* Cabinet Grotesk (Fontshare) — Swipe Drinks display font */}
+        <link rel="preconnect" href="https://api.fontshare.com" />
+        <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap" rel="stylesheet" />
+        {/* Nunito fallback for legacy bits */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
         {/* Inline script reads stored language and sets dir/lang BEFORE first paint, avoiding RTL flash */}
         <script
           dangerouslySetInnerHTML={{
@@ -30,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="antialiased bg-[#F5F4F0] text-[#1A1A1A] max-w-md mx-auto min-h-screen">
+      <body className="antialiased bg-[#FAF7F2] text-[#181410] max-w-md mx-auto min-h-screen">
         <LangSync />
         {children}
       </body>
