@@ -339,3 +339,123 @@ video::-internal-media-controls-overflow-button {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* ============================================================
+   Nutri v2 design system — Geist + IBM Plex Arabic + Swipe Drinks
+   palette. Scoped to .nutri-app so it can't bleed into existing
+   demo screens still using Nunito + cream.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Page surface — pure white */
+  --cream:    #ffffff;
+  --cream-2:  #f5f5f5;
+  --paper:    #ffffff;
+  --surface:  #ffffff;
+  --surface-2:#f7f7f7;
+
+  /* Ink — true black down to soft gray */
+  --ink:      #010101;
+  --ink-2:    #2a2a2a;
+  --ink-3:    #707070;
+  --ink-4:    #a8a8a8;
+  --line:     #ececec;
+
+  /* Swipe Drinks palette */
+  --lime:        #bdf272;
+  --lime-soft:   #e3f7c2;
+  --lime-deep:   #92cc4a;
+  --yellow:      #fedc86;
+  --yellow-soft: #fff0c8;
+  --yellow-deep: #e8b94c;
+
+  /* Supporting juice tints */
+  --orange:    #ff8a3d;
+  --orange-soft: #ffe1c8;
+  --mango:     #ffb547;
+  --mango-soft:  #ffe6b3;
+  --green:     #6cc24a;
+  --green-soft:  #cbe9bd;
+  --rose:      #ff7d97;
+  --rose-soft:   #ffd4dd;
+  --milk:      #f7f1e3;
+
+  /* Grade colors — anchored to lime/yellow */
+  --g-a: #bdf272;
+  --g-b: #d4f29a;
+  --g-c: #fedc86;
+  --g-d: #ffb05a;
+  --g-e: #ff6a4a;
+
+  /* Type families */
+  --ff-display: 'Geist', -apple-system, system-ui, sans-serif;
+  --ff-sans:    'Geist', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --ff-mono:    'Geist Mono', ui-monospace, monospace;
+  --ff-brand:   'Geist', -apple-system, system-ui, sans-serif;
+  --ff-ar:      'IBM Plex Sans Arabic', 'Geeza Pro', sans-serif;
+}
+
+.nutri-app {
+  font-family: var(--ff-sans);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.005em;
+  font-weight: 500;
+}
+.nutri-app[dir="rtl"] {
+  font-family: var(--ff-ar);
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.n-display {
+  font-family: var(--ff-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+}
+.n-display-light {
+  font-family: var(--ff-display);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+
+.n-mono {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-feature-settings: 'tnum';
+}
+.nutri-app[dir="rtl"] .n-mono {
+  font-family: var(--ff-ar);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.n-num {
+  font-family: var(--ff-display);
+  font-weight: 800;
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.n-grain { position: relative; }
+.n-grain::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+  mix-blend-mode: multiply;
+  opacity: 0.04;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+@keyframes nutri-pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }

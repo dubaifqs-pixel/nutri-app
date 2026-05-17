@@ -1,351 +1,197 @@
 'use client'
 
-import Link from 'next/link'
-import LangToggle from '@/components/LangToggle'
-import BottomNav from '@/components/BottomNav'
-import RecentPills from '@/components/RecentPills'
-import { useT } from '@/lib/i18n'
+import { useMemo, useState, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { useT, useLang } from '@/lib/i18n'
 import { DEMO_PRODUCTS } from '@/lib/demo-products'
-import { calculateGrade } from '@/lib/scoring'
-import { getProductImage } from '@/lib/product-images'
 import { addToHistory } from '@/lib/history'
-import { GRADE_COLORS, type Grade, type NutritionData } from '@/lib/types'
-import { useEffect, useState, useRef, useCallback } from 'react'
-
-// Product background colors matched to category
-const PRODUCT_BG: Record<string, string> = {
-  milk: '#EDE5D8', dairy: '#EDE5D8', laban: '#EDE5D8', cream: '#EDE5D8', yogurt: '#E8DDE8',
-  cheese: '#F0E8D8', butter: '#F5EDD8',
-  chocolate: '#D8CCC0', kitkat: '#D8CCC0', cocoa: '#D8CCC0', nutella: '#D8CCC0',
-  snickers: '#D8CCC0', oreo: '#C8C0B8', cookie: '#D8CCC0',
-  juice: '#F5D8A8', orange: '#F5D8A8', rani: '#F5D8A8', vimto: '#E0C0D0',
-  cola: '#DBC0B0', coca: '#DBC0B0', pepsi: '#C0C8D8', soda: '#DBC0B0',
-  water: '#D0E0E8', redbull: '#C8D0E0', energy: '#C8D0E0',
-  chips: '#EEE0A8', lays: '#EEE0A8', pringles: '#EEE0A8', doritos: '#E8C8A0',
-  cereal: '#C8D8B0', oats: '#D0D8B8', quaker: '#D0D8B8', kellogg: '#C8D8B0',
-  bread: '#E8D8C0', chicken: '#E0D0C0', meat: '#E0D0C0',
-  fruit: '#D0E8C8', apple: '#D0E8C8', banana: '#F0E8C0',
-  frozen: '#D0D8E0', icecream: '#E8D0D8',
-}
-
-// Banner colors — handpicked to match each product bg
-const BANNER_COLORS: Record<string, string> = {
-  '#EDE5D8': '#B8A88E', // beige → warm sand
-  '#DBC0B0': '#A8856E', // pinkish-brown → warm terracotta
-  '#D8CCC0': '#A89078', // brown → warm mocha
-  '#C8D8B0': '#6B7D55', // sage green → olive green (matching inspiration)
-  '#F5D8A8': '#C4A060', // gold → warm amber
-  '#E8E0D8': '#B0A090', // light beige → taupe
-  '#D0E8C8': '#5E8A4A', // light green → forest green
-  '#C8D0E0': '#7888A0', // light blue → slate blue
-  '#E0D0C0': '#A88868', // tan → warm brown
-  '#EEE0A8': '#B8A050', // yellow → golden brown
-  '#F0E8C0': '#C0A860', // cream → amber
-}
-
-function getProductBg(name: string): string {
-  const lower = name.toLowerCase()
-  for (const [key, color] of Object.entries(PRODUCT_BG)) {
-    if (lower.includes(key)) return color
-  }
-  return '#E8E0D8'
-}
-
-// Generate nutrition tags with colors
-type TagKey = 'highSugar' | 'lowSugar' | 'sugar' | 'highFat' | 'lowFat' | 'fat' | 'protein' | 'fiber' | 'highSodium' | 'lowCal'
-type NTag = { key: TagKey; color: string }
-function getNutritionTags(n: NutritionData): NTag[] {
-  const tags: NTag[] = []
-  if (n.sugars_g !== null) tags.push(n.sugars_g > 15
-    ? { key: 'highSugar', color: '#ef4444' }
-    : n.sugars_g <= 5 ? { key: 'lowSugar', color: '#10b981' }
-    : { key: 'sugar', color: '#f59e0b' })
-  if (n.saturated_fat_g !== null) tags.push(n.saturated_fat_g > 5
-    ? { key: 'highFat', color: '#ef4444' }
-    : n.saturated_fat_g <= 2 ? { key: 'lowFat', color: '#10b981' }
-    : { key: 'fat', color: '#f59e0b' })
-  if (n.protein_g !== null && n.protein_g > 5) tags.push({ key: 'protein', color: '#8b5cf6' })
-  if (n.fiber_g !== null && n.fiber_g > 3) tags.push({ key: 'fiber', color: '#06b6d4' })
-  if (n.sodium_mg !== null && n.sodium_mg > 500) tags.push({ key: 'highSodium', color: '#ef4444' })
-  if (n.energy_kcal !== null && n.energy_kcal <= 100) tags.push({ key: 'lowCal', color: '#10b981' })
-  return tags.slice(0, 3)
-}
-
-// Grade text colors
-const GRADE_TEXT: Record<Grade, string> = {
-  A: '#2E7D32', B: '#558B2F', C: '#F9A825', D: '#E65100', E: '#C62828',
-}
-
-// Fallback nutrition facts (under 6 words) — keyed by product so translation pulls
-// the localized string via t(`home.fact.<key>`). Keep keys here, copy in translations.
-const FACT_KEYS: Record<string, string> = {
-  'Al Ain Full Cream Milk': 'home.fact.alAinMilk',
-  'Coca-Cola Original': 'home.fact.coke',
-  'KitKat 4 Finger': 'home.fact.kitkat',
-  "Kellogg's Corn Flakes": 'home.fact.cornflakes',
-  'Rani Orange Juice': 'home.fact.rani',
-  "Lay's Classic Chips": 'home.fact.lays',
-}
-
-// Featured products
-const FEATURED = [
-  DEMO_PRODUCTS.dairy[0],
-  DEMO_PRODUCTS.beverages[0],
-  DEMO_PRODUCTS.snacks[1],
-  DEMO_PRODUCTS.cereals[0],
-  DEMO_PRODUCTS.beverages[3],
-  DEMO_PRODUCTS.snacks[0],
-].filter(Boolean).map(p => {
-  const g = calculateGrade(p.nutrition)
-  return {
-    ...p,
-    grade: g.grade as Grade,
-    score: g.score,
-    image: getProductImage(p.product_name, g.grade as Grade),
-    bg: getProductBg(p.product_name),
-    tags: getNutritionTags(p.nutrition),
-    factKey: FACT_KEYS[p.product_name],
-  }
-})
+import { calculateGrade } from '@/lib/scoring'
+import { toHero } from '@/lib/v2-product'
+import { HeroCard } from '@/components/v2/HeroCard'
+import { ThumbChip } from '@/components/v2/ThumbChip'
+import { BottomNavV2 } from '@/components/v2/BottomNav'
+import { NutriHeader } from '@/components/v2/NutriHeader'
 
 export default function Home() {
+  const router = useRouter()
   const t = useT()
-  const [facts, setFacts] = useState<Record<string, string>>({})
-  const [activeCard, setActiveCard] = useState(0)
+  const lang = useLang()
+
+  const featuredRaw = useMemo(() => [
+    DEMO_PRODUCTS.dairy[0],
+    DEMO_PRODUCTS.beverages[0],
+    DEMO_PRODUCTS.snacks[1],
+    DEMO_PRODUCTS.cereals[0],
+    DEMO_PRODUCTS.beverages[3],
+    DEMO_PRODUCTS.snacks[0],
+  ].filter(Boolean), [])
+
+  const featured = useMemo(
+    () => featuredRaw.map((p) => toHero(p, lang as 'en' | 'ar')),
+    [featuredRaw, lang],
+  )
+
+  const [activeIdx, setActiveIdx] = useState(0)
+  const total = featured.length
+
   const touchStart = useRef(0)
   const touchDelta = useRef(0)
   const [dragging, setDragging] = useState(false)
   const [dragX, setDragX] = useState(0)
 
   const swipe = useCallback((dir: 1 | -1) => {
-    setActiveCard(prev => Math.max(0, Math.min(FEATURED.length - 1, prev + dir)))
-  }, [])
+    setActiveIdx((prev) => Math.max(0, Math.min(total - 1, prev + dir)))
+  }, [total])
 
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStart.current = e.touches[0].clientX
-    setDragging(true)
-  }, [])
-
-  const onTouchMove = useCallback((e: React.TouchEvent) => {
-    touchDelta.current = e.touches[0].clientX - touchStart.current
-    setDragX(touchDelta.current)
-  }, [])
-
-  const onTouchEnd = useCallback(() => {
-    setDragging(false)
-    setDragX(0)
-    if (Math.abs(touchDelta.current) > 60) {
-      swipe(touchDelta.current < 0 ? 1 : -1)
-    }
+  const onTouchStart = (e: React.TouchEvent) => { touchStart.current = e.touches[0].clientX; setDragging(true) }
+  const onTouchMove = (e: React.TouchEvent) => { touchDelta.current = e.touches[0].clientX - touchStart.current; setDragX(touchDelta.current) }
+  const onTouchEnd = () => {
+    setDragging(false); setDragX(0)
+    if (Math.abs(touchDelta.current) > 60) swipe(touchDelta.current < 0 ? 1 : -1)
     touchDelta.current = 0
-  }, [swipe])
+  }
 
-  useEffect(() => {
-    // Preload images
-    FEATURED.forEach(p => { const img = new Image(); img.src = p.image })
-
-    // Load Gemini facts (cached in localStorage for 24h)
-    const CACHE_KEY = 'nutri_facts_v2'
-    const cached = localStorage.getItem(CACHE_KEY)
-    if (cached) {
-      try {
-        const { facts: f, ts } = JSON.parse(cached)
-        if (Date.now() - ts < 86400000) { setFacts(f); return }
-      } catch {}
+  const openProduct = useCallback((rawIdx: number) => {
+    const raw = featuredRaw[rawIdx]
+    if (!raw) return
+    const gradeResult = calculateGrade(raw.nutrition)
+    const productData = {
+      product_name: raw.product_name,
+      nutrition: raw.nutrition,
+      source: 'manual' as const,
     }
-    fetch('/api/facts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ products: FEATURED.map(p => p.product_name) }),
-    })
-      .then(r => r.json())
-      .then(d => {
-        if (d.facts) {
-          setFacts(d.facts)
-          localStorage.setItem(CACHE_KEY, JSON.stringify({ facts: d.facts, ts: Date.now() }))
-        }
-      })
-      .catch(() => {})
-  }, [])
+    sessionStorage.setItem('dfqs_product', JSON.stringify(productData))
+    sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
+    addToHistory(productData, gradeResult)
+    router.push('/result')
+  }, [featuredRaw, router])
+
+  const rotated = useMemo(
+    () => [...featured.slice(activeIdx), ...featured.slice(0, activeIdx)],
+    [featured, activeIdx],
+  )
+  const rotatedRawIdxs = useMemo(
+    () => [...Array(total).keys()].slice(activeIdx).concat([...Array(total).keys()].slice(0, activeIdx)),
+    [activeIdx, total],
+  )
+
+  const greeting = t('home.greeting')
+  const h1a = t('home.heroLine1')
+  const h1b = t('home.heroLine2')
+  const more = t('home.alsoScanned')
+  const swipeLabel = lang === 'ar' ? 'مسح ←' : 'SWIPE →'
 
   return (
-    <div className="min-h-screen flex flex-col pb-[64px]" style={{ background: '#F5F4F0' }}>
+    <div
+      className="nutri-app"
+      dir={lang === 'ar' ? 'rtl' : 'ltr'}
+      style={{
+        minHeight: '100dvh',
+        background: 'var(--cream)',
+        position: 'relative',
+        overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+      }}
+    >
+      <div style={{ paddingTop: 8 }}>
+        <NutriHeader />
+      </div>
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-7 pb-1 flex-shrink-0">
-        <div>
-          <p className="text-[11px] font-medium" style={{ color: '#ACACAC' }}>{t('home.welcome')}</p>
-          <p className="text-[15px] font-bold" style={{ color: '#1A1A1A' }}>nutri</p>
+      <div style={{ padding: '24px 24px 8px' }}>
+        <div className="n-mono" style={{ color: 'var(--ink-3)', marginBottom: 12 }}>
+          {greeting}
         </div>
-        <div className="flex items-center gap-2">
-          <LangToggle />
-          <Link href="/browse" aria-label="Browse" className="w-9 h-9 rounded-full flex items-center justify-center border" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          </Link>
+        <h1 style={{
+          margin: 0,
+          fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+          fontWeight: 800,
+          fontSize: lang === 'ar' ? 34 : 40,
+          lineHeight: 0.95,
+          letterSpacing: '-0.02em',
+          color: 'var(--ink)',
+        }}>
+          {h1a}<br />
+          <span style={{ color: 'var(--ink-3)', fontWeight: 500 }}>{h1b}</span>
+        </h1>
+      </div>
+
+      <div style={{
+        padding: '18px 24px 10px',
+        display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+          <span className="n-num" style={{ fontSize: 22, lineHeight: 1, color: 'var(--ink)' }}>
+            {String(activeIdx + 1).padStart(2, '0')}
+          </span>
+          <span style={{
+            fontFamily: 'var(--ff-display)',
+            fontWeight: 500,
+            fontSize: 15,
+            fontFeatureSettings: '"tnum"',
+            fontVariantNumeric: 'tabular-nums',
+            color: 'var(--ink-3)',
+          }}>/ {String(total).padStart(2, '0')}</span>
         </div>
+        <div className="n-mono" style={{ color: 'var(--ink-3)' }}>{swipeLabel}</div>
       </div>
 
-      {/* Hero text */}
-      <div className="px-5 pt-3 pb-1 flex-shrink-0">
-        <p className="text-[22px] leading-[1.15]" style={{ color: '#1A1A1A', fontWeight: 400 }}>
-          <span className="font-bold">{t('home.heroLine1')}</span><br/>
-          <span className="font-bold">{t('home.heroLine2')}</span>
-        </p>
-      </div>
-
-      {/* Stats */}
-      <div className="flex items-center gap-3 px-5 pt-2 pb-4 flex-shrink-0">
-        <span className="text-[28px] font-extrabold leading-none" style={{ color: '#1A1A1A' }}>{FEATURED.length}</span>
-        <span className="text-[8px] font-bold uppercase tracking-wider px-3 py-1 rounded-full" style={{ background: '#FFEC89', color: '#1A1A1A' }}>{t('home.featuredBadge')}</span>
-      </div>
-
-      {/* Swipeable Card Carousel */}
       <div
-        className="relative overflow-hidden"
-        style={{ padding: '0 20px' }}
+        style={{ overflow: 'hidden', position: 'relative', flexShrink: 0 }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
         <div style={{
-          display: 'flex',
+          display: 'flex', gap: 14,
+          padding: lang === 'ar' ? '6px 60px 12px 24px' : '6px 24px 12px 60px',
           transition: dragging ? 'none' : 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-          transform: `translateX(calc(-${activeCard * 100}% + ${dragX}px))`,
+          transform: `translateX(${lang === 'ar' ? '-' : ''}${dragX}px)`,
         }}>
-        {FEATURED.map((product, i) => (
-          <div key={i} style={{ minWidth: '100%', padding: '0 4px' }}>
-          <a
-            onClick={(e) => {
-              e.preventDefault()
-              const gradeResult = calculateGrade(product.nutrition)
-              const productData = {
-                product_name: product.product_name,
-                nutrition: product.nutrition,
-                source: 'manual' as const,
-              }
-              sessionStorage.setItem('dfqs_product', JSON.stringify(productData))
-              sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
-              addToHistory(productData, gradeResult)
-              window.location.href = '/result'
-            }}
-            className="block relative active:scale-[0.98] cursor-pointer"
-            style={{
-              borderRadius: '20px',
-              overflow: 'hidden',
-              background: '#FFFFFF',
-              boxShadow: '0 2px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)',
-              transition: 'transform 0.2s ease',
-            }}
-          >
-            {/* Grade badge — white corner */}
-            <div style={{
-              position: 'absolute', top: '0', right: '0', zIndex: 20,
-              background: '#FFFFFF',
-              borderBottomLeftRadius: '14px',
-              padding: '3px 6px 5px 8px',
+          {rotated.map((p, i) => (
+            <div key={p.id} style={{
+              flexShrink: 0,
+              transform: i === 0 ? 'none' : 'scale(0.94)',
+              opacity: i === 0 ? 1 : 0.7,
+              transition: 'transform 0.35s, opacity 0.35s',
+              transformOrigin: 'center bottom',
             }}>
-              <span style={{ fontSize: '18px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '8px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{t(`grade.${product.grade}` as const)}</span>
+              <HeroCard
+                product={p}
+                lang={lang as 'en' | 'ar'}
+                width={278}
+                height={440}
+                onClick={() => openProduct(rotatedRawIdxs[i])}
+              />
             </div>
-
-            {/* Image area */}
-            <div
-              style={{
-                margin: '6px',
-                borderRadius: '14px',
-                minHeight: '300px',
-                background: product.bg,
-                overflow: 'hidden',
-                position: 'relative',
-              }}
-            >
-              <div className="flex items-end justify-center" style={{ padding: '20px 16px 30px', minHeight: '300px' }}>
-                <img
-                  src={product.image}
-                  alt={product.product_name}
-                  className="max-h-[240px] object-contain"
-                  style={{ filter: 'drop-shadow(2px 6px 14px rgba(0,0,0,0.18))' }}
-                  loading="lazy"
-                />
-              </div>
-              {/* Fact banner — gradient fade */}
-              <div style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                background: `linear-gradient(to bottom, transparent 0%, ${BANNER_COLORS[product.bg] || '#8A7D65'}90 40%, ${BANNER_COLORS[product.bg] || '#8A7D65'} 100%)`,
-                padding: '12px 10px 5px',
-                textAlign: 'center',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}>
-                <span style={{ fontSize: '11px', fontWeight: 400, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || (product.factKey ? t(product.factKey as any) : t('home.scanned'))}</span>
-              </div>
-            </div>
-
-            {/* Info area */}
-            <div style={{ padding: '12px 16px 14px' }}>
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="text-[18px] leading-snug" style={{ color: '#1A1A1A', fontWeight: 700 }}>{product.product_name}</p>
-                <span className="shrink-0" style={{
-                  fontSize: '10px', fontWeight: 600, color: '#1A1A1A',
-                  border: '1px solid rgba(0,0,0,0.12)', borderRadius: '12px',
-                  padding: '4px 10px', whiteSpace: 'nowrap',
-                }}>{t('home.view')} ↗</span>
-              </div>
-
-              {/* Tags — colored tinted pills */}
-              <div className="flex gap-2 mt-3 overflow-hidden">
-                {product.tags.map((tag, j) => (
-                  <span
-                    key={j}
-                    className="whitespace-nowrap"
-                    style={{
-                      fontSize: '10px', fontWeight: 600,
-                      padding: '4px 10px',
-                      borderRadius: '10px',
-                      border: `1px solid ${tag.color}30`,
-                      background: `${tag.color}10`,
-                      color: tag.color,
-                    }}
-                  >
-                    {t(`tag.${tag.key}` as const)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </a>
-          </div>
-        ))}
+          ))}
         </div>
+      </div>
 
-        {/* Dot indicators */}
-        <div className="flex justify-center gap-1.5 mt-4">
-          {FEATURED.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveCard(i)}
-              style={{
-                width: i === activeCard ? '18px' : '6px',
-                height: '6px',
-                borderRadius: '3px',
-                background: i === activeCard ? '#1A1A1A' : 'rgba(0,0,0,0.15)',
-                transition: 'all 0.3s ease',
-                border: 'none',
-                padding: 0,
-              }}
+      <div style={{ flex: 1, overflow: 'hidden', paddingTop: 12 }}>
+        <div style={{
+          padding: '0 24px 8px',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+        }}>
+          <span className="n-mono" style={{ color: 'var(--ink-3)' }}>{more}</span>
+        </div>
+        <div className="hide-scrollbar" style={{
+          display: 'flex', gap: 12,
+          padding: '0 24px 110px',
+          overflowX: 'auto',
+        }}>
+          {rotated.slice(1).map((p, i) => (
+            <ThumbChip
+              key={p.id}
+              product={p}
+              lang={lang as 'en' | 'ar'}
+              size={64}
+              onClick={() => openProduct(rotatedRawIdxs[i + 1])}
             />
           ))}
         </div>
       </div>
 
-      <div className="mt-3">
-        <RecentPills />
-      </div>
-
-      <BottomNav active="home" />
+      <BottomNavV2 active="home" />
     </div>
   )
 }

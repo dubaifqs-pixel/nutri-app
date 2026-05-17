@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useT, useLang } from '@/lib/i18n'
 import { getHistory, type HistoryEntry } from '@/lib/history'
-import { GRADE_GRADIENTS, GRADE_GLOWS, type Grade, type NutritionData, type GradeResult, type NutrientKey } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
-import { useT } from '@/lib/i18n'
-import BottomNav from '@/components/BottomNav'
+import type { Grade, NutritionData, GradeResult, NutrientKey } from '@/lib/types'
+import { toHero } from '@/lib/v2-product'
+import { BottomNavV2 } from '@/components/v2/BottomNav'
+import { GRADE_TILE, BG_PALETTE, type HeroProduct } from '@/components/v2/types'
 
 interface CompareProduct {
   product_name: string
@@ -15,383 +17,537 @@ interface CompareProduct {
   score: number
   gradeResult: GradeResult
   image_url?: string
+  hero: HeroProduct
 }
 
-const GRADE_ORDER = ['A', 'B', 'C', 'D', 'E']
+function buildCompareProduct(name: string, nutrition: NutritionData, image_url: string | undefined, lang: 'en' | 'ar'): CompareProduct {
+  const gradeResult = calculateGrade(nutrition)
+  const hero = toHero({ product_name: name, nutrition, image_url }, lang)
+  return {
+    product_name: name,
+    nutrition,
+    grade: gradeResult.grade,
+    score: hero.score,
+    gradeResult,
+    image_url,
+    hero,
+  }
+}
 
-const NUTRIENTS: { key: NutrientKey; label: string; unit: string; lowerIsBetter: boolean; max: number }[] = [
-  { key: 'energy_kcal', label: 'Calories', unit: 'kcal', lowerIsBetter: true, max: 800 },
-  { key: 'sugars_g', label: 'Sugar', unit: 'g', lowerIsBetter: true, max: 50 },
-  { key: 'saturated_fat_g', label: 'Sat. Fat', unit: 'g', lowerIsBetter: true, max: 20 },
-  { key: 'sodium_mg', label: 'Sodium', unit: 'mg', lowerIsBetter: true, max: 1000 },
-  { key: 'protein_g', label: 'Protein', unit: 'g', lowerIsBetter: false, max: 30 },
-  { key: 'fiber_g', label: 'Fiber', unit: 'g', lowerIsBetter: false, max: 10 },
+const METRICS: { key: NutrientKey; en: string; ar: string; unit: string; lowerBetter: boolean; max: number }[] = [
+  { key: 'sugars_g', en: 'SUGAR', ar: 'السكر', unit: 'g', lowerBetter: true, max: 50 },
+  { key: 'protein_g', en: 'PROTEIN', ar: 'البروتين', unit: 'g', lowerBetter: false, max: 30 },
+  { key: 'energy_kcal', en: 'CAL', ar: 'سعرات', unit: '', lowerBetter: true, max: 500 },
+  { key: 'fiber_g', en: 'FIBER', ar: 'الألياف', unit: 'g', lowerBetter: false, max: 10 },
 ]
-
-function getWinner(s1: CompareProduct, s2: CompareProduct): 1 | 2 | 0 {
-  const i1 = GRADE_ORDER.indexOf(s1.grade)
-  const i2 = GRADE_ORDER.indexOf(s2.grade)
-  if (i1 < i2) return 1
-  if (i2 < i1) return 2
-  if (s1.score < s2.score) return 1
-  if (s2.score < s1.score) return 2
-  return 0
-}
 
 export default function ComparePage() {
   const router = useRouter()
   const t = useT()
+  const lang = useLang() as 'en' | 'ar'
   const [slot1, setSlot1] = useState<CompareProduct | null>(null)
   const [slot2, setSlot2] = useState<CompareProduct | null>(null)
   const [showModal, setShowModal] = useState<1 | 2 | null>(null)
   const [history, setHistory] = useState<HistoryEntry[]>([])
-  const [verdict, setVerdict] = useState('')
-  const [verdictLoading, setVerdictLoading] = useState(false)
 
   useEffect(() => { setHistory(getHistory()) }, [])
 
   useEffect(() => {
-    const load = (key: string, gradeKey: string) => {
-      const raw = sessionStorage.getItem(key)
-      const rawG = sessionStorage.getItem(gradeKey)
+    const load = (k: string, gk: string) => {
+      const raw = sessionStorage.getItem(k)
+      const rawG = sessionStorage.getItem(gk)
       if (!raw || !rawG) return null
-      const product = JSON.parse(raw)
-      const gradeResult = JSON.parse(rawG)
-      return { product_name: product.product_name, nutrition: product.nutrition, grade: gradeResult.grade, score: gradeResult.score, gradeResult, image_url: product.image_url } as CompareProduct
+      const p = JSON.parse(raw)
+      return buildCompareProduct(p.product_name, p.nutrition, p.image_url, lang)
     }
-    const s1 = load('dfqs_compare_1', 'dfqs_compare_1_grade')
-    const s2 = load('dfqs_compare_2', 'dfqs_compare_2_grade')
-    if (s1) setSlot1(s1)
-    if (s2) setSlot2(s2)
-  }, [])
+    setSlot1(load('dfqs_compare_1', 'dfqs_compare_1_grade'))
+    setSlot2(load('dfqs_compare_2', 'dfqs_compare_2_grade'))
+  }, [lang])
 
-  const fetchVerdict = useCallback(async (p1: CompareProduct, p2: CompareProduct) => {
-    setVerdictLoading(true)
-    setVerdict('')
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: `Compare "${p1.product_name}" (Grade ${p1.grade}) vs "${p2.product_name}" (Grade ${p2.grade}). Give a short bilingual verdict (2-3 sentences English, then Arabic). Focus on the key differences that matter most for health. Do NOT use JSON format, just write plain text.`,
-          product_context: { product_name: p1.product_name, grade: p1.grade, score: p1.score, nutrition: p1.nutrition },
-        }),
-      })
-      if (!res.ok) { setVerdict(''); return }
-      const data = await res.json()
-      const text = data.response || ''
-      // Strip JSON if AI returned it anyway
-      if (text.trim().startsWith('{')) {
-        try {
-          const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0] || '{}')
-          const sections = parsed.sections || []
-          const texts = sections.map((s: any) => s.title_en || s.text_en || '').filter(Boolean)
-          const arTexts = sections.map((s: any) => s.title_ar || s.text_ar || '').filter(Boolean)
-          setVerdict([...texts, '', ...arTexts].join('\n'))
-          return
-        } catch {}
-      }
-      setVerdict(text)
-    } catch {
-      setVerdict('')
-    } finally {
-      setVerdictLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (slot1 && slot2) fetchVerdict(slot1, slot2)
-  }, [slot1, slot2, fetchVerdict])
-
-  const selectFromHistory = (entry: HistoryEntry) => {
+  const selectFromHistory = useCallback((entry: HistoryEntry) => {
     if (!showModal) return
     const nutrition = entry.nutrition || { energy_kcal: null, sugars_g: null, saturated_fat_g: null, sodium_mg: null, protein_g: null, fiber_g: null, fruits_veg_percent: null }
-    const gradeResult = calculateGrade(nutrition)
-    const product: CompareProduct = { product_name: entry.product_name, nutrition, grade: gradeResult.grade, score: gradeResult.score, gradeResult, image_url: entry.image_url }
+    const cp = buildCompareProduct(entry.product_name, nutrition, entry.image_url, lang)
     const slotKey = showModal === 1 ? 'dfqs_compare_1' : 'dfqs_compare_2'
     const gradeKey = showModal === 1 ? 'dfqs_compare_1_grade' : 'dfqs_compare_2_grade'
     sessionStorage.setItem(slotKey, JSON.stringify({ product_name: entry.product_name, nutrition, image_url: entry.image_url, source: entry.source }))
-    sessionStorage.setItem(gradeKey, JSON.stringify(gradeResult))
-    if (showModal === 1) setSlot1(product); else setSlot2(product)
+    sessionStorage.setItem(gradeKey, JSON.stringify(cp.gradeResult))
+    if (showModal === 1) setSlot1(cp); else setSlot2(cp)
     setShowModal(null)
-  }
+  }, [showModal, lang])
 
   const clearSlot = (slot: 1 | 2) => {
     if (slot === 1) { setSlot1(null); sessionStorage.removeItem('dfqs_compare_1'); sessionStorage.removeItem('dfqs_compare_1_grade') }
     else { setSlot2(null); sessionStorage.removeItem('dfqs_compare_2'); sessionStorage.removeItem('dfqs_compare_2_grade') }
-    setVerdict('')
   }
 
-  const winner = slot1 && slot2 ? getWinner(slot1, slot2) : 0
-  const bothLoaded = !!(slot1 && slot2)
+  const winner = slot1 && slot2 ? (slot1.score >= slot2.score ? slot1 : slot2) : null
+  const labels = lang === 'ar' ? {
+    kicker: 'مقارنة',
+    pickHero: (b: string) => `${b} الأفضل`,
+    seeWhy: 'لماذا؟',
+    addProduct: 'إضافة منتج',
+    remove: 'إزالة',
+    history: 'من السجل',
+    cancel: 'إلغاء',
+    addOne: 'أضف منتجاً آخر لبدء المقارنة',
+  } : {
+    kicker: 'HEAD TO HEAD',
+    pickHero: (b: string) => `Pick ${b}`,
+    seeWhy: 'See why',
+    addProduct: 'Add product',
+    remove: 'Remove',
+    history: 'From History',
+    cancel: 'Cancel',
+    addOne: 'Add one more product to start comparing',
+  }
 
   return (
-    <div className="min-h-screen px-5 py-6 flex flex-col gap-5 mesh-bg pb-[80px]">
-      {/* Header */}
-      <div className="flex items-center gap-3 animate-fade-in">
-        <button onClick={() => router.push('/')} className="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl transition-colors" style={{ color: '#7A7A7A' }} aria-label="Back home">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    <div className="nutri-app" dir={lang === 'ar' ? 'rtl' : 'ltr'} style={{
+      minHeight: '100dvh',
+      background: 'var(--surface)',
+      position: 'relative',
+      display: 'flex', flexDirection: 'column',
+      paddingBottom: 110,
+    }}>
+      <div style={{
+        padding: '12px 18px 0',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <button onClick={() => router.push('/')} aria-label="back" style={iconBtn}>
+          <svg width="14" height="14" viewBox="0 0 24 24" style={{ transform: lang === 'ar' ? 'rotate(180deg)' : 'none' }}>
+            <path d="M14 6l-6 6 6 6" stroke="var(--ink)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+          </svg>
         </button>
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#B6F074' }} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: '#B6F074' }}>{t('compare.section')}</span>
-          </div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A1A1A' }}>{t('compare.title')}</h1>
-        </div>
+        <div className="n-mono" style={{ color: 'var(--ink-3)' }}>{labels.kicker}</div>
+        <div style={{ width: 36 }} />
       </div>
 
-      {!slot1 && !slot2 && (
-        <p className="text-[13px] text-[#7A7A7A] -mt-3 leading-snug animate-fade-in">
-          {t('compare.helper') || 'Tap a slot below to add a product. Scan a label, a barcode, or pick from the catalog — we’ll tell you which one is better.'}
-        </p>
+      {/* The duel */}
+      <div style={{
+        position: 'relative',
+        margin: '10px 18px 0',
+        height: 300,
+        borderRadius: 28,
+        overflow: 'hidden',
+        display: 'flex',
+      }}>
+        <CompareSide product={slot1} side="left" lang={lang} onOpen={() => setShowModal(1)} onRemove={() => clearSlot(1)} />
+        <CompareSide product={slot2} side="right" lang={lang} onOpen={() => setShowModal(2)} onRemove={() => clearSlot(2)} />
+        {slot1 && slot2 && (
+          <div style={{
+            position: 'absolute',
+            top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 5,
+            width: 56, height: 56, borderRadius: '50%',
+            background: 'var(--ink)', color: 'var(--lime)',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--ff-display)',
+            fontWeight: 800, fontSize: 20, letterSpacing: '-0.04em',
+            boxShadow: '0 16px 32px -10px rgba(0,0,0,0.45), 0 0 0 6px var(--surface)',
+          }}>VS</div>
+        )}
+      </div>
+
+      {/* Helper text when not full */}
+      {!(slot1 && slot2) && (
+        <div style={{
+          padding: '14px 18px 0',
+          fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-sans)',
+          fontSize: 13, color: 'var(--ink-3)', textAlign: 'center',
+        }}>
+          {labels.addOne}
+        </div>
       )}
 
-      {/* Product Cards -- Side by Side */}
-      <div className="grid grid-cols-2 gap-3 animate-slide-up stagger-1">
-        {([1, 2] as const).map((slotNum) => {
-          const product = slotNum === 1 ? slot1 : slot2
-          const isWinner = winner === slotNum
-          return (
-            <div
-              key={slotNum}
-              className="relative flex flex-col items-center gap-2 p-4 rounded-2xl transition-all"
+      {/* Per-metric delta bars */}
+      {slot1 && slot2 && (
+        <div style={{ padding: '14px 18px 0' }}>
+          <div style={{
+            background: 'var(--surface-2)',
+            borderRadius: 22,
+            padding: '14px 16px',
+            display: 'flex', flexDirection: 'column', gap: 12,
+          }}>
+            {METRICS.map((m) => (
+              <DeltaRow key={m.key} metric={m} a={slot1.nutrition} b={slot2.nutrition} lang={lang} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Verdict ribbon */}
+      {winner && slot1 && slot2 && (
+        <div style={{ padding: '12px 18px 0' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 12,
+            background: 'var(--ink)', color: '#fff',
+            borderRadius: 20,
+            padding: '12px 14px 12px 16px',
+            boxShadow: '0 18px 36px -16px rgba(0,0,0,0.45)',
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <span className="n-mono" style={{ color: 'var(--lime)' }}>
+                {lang === 'ar' ? 'الخيار' : 'THE PICK'}
+              </span>
+              <span style={{
+                fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+                fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em',
+                lineHeight: 1.1,
+              }}>{labels.pickHero(winner.hero.brand)}</span>
+            </div>
+            <button
+              onClick={() => {
+                sessionStorage.setItem('dfqs_product', JSON.stringify({
+                  product_name: winner.product_name, nutrition: winner.nutrition, source: 'manual', image_url: winner.image_url,
+                }))
+                sessionStorage.setItem('dfqs_grade', JSON.stringify(winner.gradeResult))
+                router.push('/result')
+              }}
               style={{
-                background: isWinner ? 'rgba(182, 240, 116, 0.06)' : 'rgba(253, 252, 250, 0.7)',
-                backdropFilter: 'blur(20px)',
-                border: isWinner ? '2px solid rgba(182, 240, 116, 0.3)' : '1px solid rgba(0,0,0,0.06)',
-                boxShadow: isWinner ? '0 8px 32px rgba(182, 240, 116, 0.12)' : '0 4px 24px rgba(0,0,0,0.03)',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '8px 14px',
+                borderRadius: 999,
+                background: 'var(--lime)', color: 'var(--ink)',
+                border: 'none', cursor: 'pointer',
+                fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+                fontWeight: 700, fontSize: 12,
               }}
             >
-              {/* Winner crown */}
-              {isWinner && bothLoaded && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 animate-scale-in">
-                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
-                    style={{ background: 'linear-gradient(135deg, #B6F074, #A8E866)', color: '#1A1A1A', boxShadow: '0 4px 12px rgba(182, 240, 116, 0.4)' }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-                    {t('compare.better')}
-                  </div>
-                </div>
-              )}
-
-              {product ? (
-                <>
-                  {/* Grade */}
-                  <div
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white ${bothLoaded ? 'animate-grade-reveal' : ''}`}
-                    style={{ background: GRADE_GRADIENTS[product.grade], boxShadow: GRADE_GLOWS[product.grade] }}
-                  >
-                    <span className="text-3xl font-bold" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>{product.grade}</span>
-                  </div>
-                  <p className="text-[11px] font-semibold text-[#1A1A1A] text-center line-clamp-2 mt-1">{product.product_name}</p>
-                  <button onClick={() => clearSlot(slotNum)} className="text-[10px] text-[#ACACAC] hover:text-red-400 min-h-[36px] px-2 flex items-center transition-colors">
-                    {t('compare.remove')}
-                  </button>
-                </>
-              ) : (
-                <button onClick={() => setShowModal(slotNum)} className="flex flex-col items-center justify-center gap-2 w-full py-8 text-[#7A7A7A] transition-colors hover:text-[#7A7A7A]">
-                  <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-[rgba(0,0,0,0.06)] flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                  </div>
-                  <span className="text-xs font-medium">{t('compare.addProduct')}</span>
-                </button>
-              )}
-            </div>
-          )
-        })}
-      </div>
-
-      {/* VS Badge */}
-      {bothLoaded && (
-        <div className="flex items-center -my-2 animate-scale-in">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[rgba(0,0,0,0.06)] to-transparent" />
-          <span className="mx-3 text-sm font-bold px-4 py-1.5 rounded-full animate-tangerine-pulse"
-            style={{ background: 'linear-gradient(135deg, #B6F074, #A8E866)', color: '#1A1A1A', boxShadow: '0 4px 16px rgba(182, 240, 116, 0.35)' }}>
-            VS
-          </span>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[rgba(0,0,0,0.06)] to-transparent" />
-        </div>
-      )}
-
-      {/* Head-to-Head Nutrient Bars */}
-      {bothLoaded && slot1 && slot2 && (
-        <div className="flex flex-col gap-2.5 animate-slide-up stagger-3">
-          <h3 className="text-xs font-semibold text-[#7A7A7A] uppercase tracking-wider px-1">{t('compare.headToHead')}</h3>
-          {NUTRIENTS.map(({ key, label, unit, lowerIsBetter, max }, i) => {
-            const v1 = slot1.nutrition[key]
-            const v2 = slot2.nutrition[key]
-            const n1 = v1 !== null ? v1 : 0
-            const n2 = v2 !== null ? v2 : 0
-            const maxVal = Math.max(n1, n2, 1)
-
-            let winner1 = false, winner2 = false
-            if (v1 !== null && v2 !== null) {
-              if (lowerIsBetter) { if (n1 < n2) winner1 = true; else if (n2 < n1) winner2 = true }
-              else { if (n1 > n2) winner1 = true; else if (n2 > n1) winner2 = true }
-            }
-
-            return (
-              <div key={key} className="glass-subtle rounded-xl p-3 animate-slide-up" style={{ animationDelay: `${0.3 + i * 0.08}s` }}>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
-                  <span className="text-[10px] text-[#ACACAC]">{lowerIsBetter ? t('compare.lowerIsBetter') : t('compare.higherIsBetter')}</span>
-                </div>
-
-                {/* Product 1 bar */}
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[10px] w-10 text-right text-[#7A7A7A] shrink-0">{v1 !== null ? `${Math.round(v1)}${unit}` : '--'}</span>
-                  <div className="flex-1 h-3 rounded-full overflow-hidden" style={{ background: 'rgba(45, 42, 38, 0.04)' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${Math.min((n1 / maxVal) * 100, 100)}%`,
-                        background: winner1
-                          ? 'linear-gradient(90deg, #3B8C3A, #2E7D32)'
-                          : winner2
-                            ? 'linear-gradient(90deg, #FF9800, #E65100)'
-                            : 'linear-gradient(90deg, #ACACAC, #7A7A7A)',
-                        boxShadow: winner1 ? '0 0 8px rgba(46, 125, 50, 0.3)' : 'none',
-                      }}
-                    />
-                  </div>
-                  {winner1 && (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                  )}
-                </div>
-
-                {/* Product 2 bar */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] w-10 text-right text-[#7A7A7A] shrink-0">{v2 !== null ? `${Math.round(v2)}${unit}` : '--'}</span>
-                  <div className="flex-1 h-3 rounded-full overflow-hidden" style={{ background: 'rgba(45, 42, 38, 0.04)' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${Math.min((n2 / maxVal) * 100, 100)}%`,
-                        background: winner2
-                          ? 'linear-gradient(90deg, #3B8C3A, #2E7D32)'
-                          : winner1
-                            ? 'linear-gradient(90deg, #FF9800, #E65100)'
-                            : 'linear-gradient(90deg, #ACACAC, #7A7A7A)',
-                        boxShadow: winner2 ? '0 0 8px rgba(46, 125, 50, 0.3)' : 'none',
-                      }}
-                    />
-                  </div>
-                  {winner2 && (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                  )}
-                </div>
-
-                {/* Labels */}
-                <div className="flex justify-between mt-1">
-                  <span className={`text-[9px] ${winner1 ? 'text-[#2E7D32] font-semibold' : 'text-[#7A7A7A]'}`}>{slot1.product_name.split(' ').slice(0, 2).join(' ')}</span>
-                  <span className={`text-[9px] ${winner2 ? 'text-[#2E7D32] font-semibold' : 'text-[#7A7A7A]'}`}>{slot2.product_name.split(' ').slice(0, 2).join(' ')}</span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Scorecard Summary */}
-      {bothLoaded && slot1 && slot2 && (
-        <div className="animate-slide-up stagger-5">
-          {(() => {
-            let wins1 = 0, wins2 = 0
-            NUTRIENTS.forEach(({ key, lowerIsBetter }) => {
-              const v1 = slot1.nutrition[key]
-              const v2 = slot2.nutrition[key]
-              if (v1 !== null && v2 !== null) {
-                if (lowerIsBetter) { if (v1 < v2) wins1++; else if (v2 < v1) wins2++ }
-                else { if (v1 > v2) wins1++; else if (v2 > v1) wins2++ }
-              }
-            })
-            return (
-              <div className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(45, 42, 38, 0.9), rgba(74, 69, 64, 0.9))', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
-                <div className="flex-1 text-center">
-                  <p className="text-2xl font-bold text-white">{wins1}</p>
-                  <p className="text-[10px] text-white/50 mt-0.5">{slot1.product_name.split(' ').slice(0, 2).join(' ')}</p>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">{t('compare.wins')}</p>
-                  <div className="w-8 h-0.5 rounded-full bg-[#B6F074]" />
-                </div>
-                <div className="flex-1 text-center">
-                  <p className="text-2xl font-bold text-white">{wins2}</p>
-                  <p className="text-[10px] text-white/50 mt-0.5">{slot2.product_name.split(' ').slice(0, 2).join(' ')}</p>
-                </div>
-              </div>
-            )
-          })()}
-        </div>
-      )}
-
-      {/* AI Verdict */}
-      {bothLoaded && (
-        <div className="animate-slide-up stagger-6 rounded-2xl p-4" style={{ background: 'rgba(182, 240, 116, 0.04)', border: '1px solid rgba(182, 240, 116, 0.12)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #B6F074, #A8E866)' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-            </div>
-            <h3 className="text-sm font-bold text-[#1A1A1A]">{t('compare.aiVerdict')}</h3>
+              {labels.seeWhy}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ transform: lang === 'ar' ? 'rotate(180deg)' : 'none' }}>
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="var(--ink)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
           </div>
-          {verdictLoading ? (
-            <div className="flex items-center gap-2.5 py-4 justify-center">
-              <div className="flex gap-1.5">
-                <span className="w-2.5 h-2.5 bg-[#B6F074] rounded-full animate-bounce" />
-                <span className="w-2.5 h-2.5 bg-[#B6F074] rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
-                <span className="w-2.5 h-2.5 bg-[#B6F074] rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
-              </div>
-            </div>
-          ) : verdict ? (
-            <p className="text-sm text-[#7A7A7A] leading-relaxed whitespace-pre-line">{verdict}</p>
-          ) : null}
         </div>
       )}
 
-      {/* Selection Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center" onClick={() => setShowModal(null)}>
-          <div className="w-full max-w-md bg-[#FFFFFF] rounded-t-3xl px-6 py-6 flex flex-col gap-3 animate-slide-up-full" onClick={(e) => e.stopPropagation()} style={{ boxShadow: '0 -8px 40px rgba(0,0,0,0.1)' }}>
-            <div className="w-10 h-1 bg-[rgba(0,0,0,0.06)] rounded-full mx-auto mb-2" />
-            <h2 className="text-base font-bold text-[#1A1A1A] mb-1">{t('compare.selectProduct')}</h2>
+      <BottomNavV2 active="compare" />
 
-            <button onClick={() => router.push(`/scan?mode=label&return=compare&slot=${showModal}`)} className="flex items-center gap-3 w-full py-3.5 px-4 rounded-2xl btn-tangerine text-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              {t('compare.scanLabel')}
+      {/* Selection modal */}
+      {showModal && (
+        <div onClick={() => setShowModal(null)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+          backdropFilter: 'blur(6px)', zIndex: 50,
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        }}>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            width: '100%', maxWidth: 448,
+            background: 'var(--paper)',
+            borderRadius: '24px 24px 0 0',
+            padding: '20px 24px 24px',
+            display: 'flex', flexDirection: 'column', gap: 10,
+          }}>
+            <div style={{
+              alignSelf: 'center', width: 40, height: 4,
+              background: 'rgba(0,0,0,0.06)', borderRadius: 999,
+              marginBottom: 8,
+            }} />
+            <h2 style={{
+              fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+              fontWeight: 700, fontSize: 18, margin: 0,
+              color: 'var(--ink)', marginBottom: 4,
+            }}>{lang === 'ar' ? 'اختر منتجاً' : 'Select Product'}</h2>
+
+            <button onClick={() => router.push(`/scan?mode=label&return=compare&slot=${showModal}`)} style={modalBtnLime}>
+              {lang === 'ar' ? 'مسح الملصق الغذائي' : 'Scan Nutrition Label'}
             </button>
-            <button onClick={() => router.push(`/scan?mode=barcode&return=compare&slot=${showModal}`)} className="flex items-center gap-3 w-full py-3.5 px-4 rounded-2xl btn-espresso text-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
-              {t('compare.scanBarcode')}
+            <button onClick={() => router.push(`/scan?mode=barcode&return=compare&slot=${showModal}`)} style={modalBtnDark}>
+              {lang === 'ar' ? 'مسح الباركود' : 'Scan Barcode'}
             </button>
-            <button onClick={() => router.push(`/browse?return=compare&slot=${showModal}`)} className="flex items-center gap-3 w-full py-3.5 px-4 rounded-2xl text-sm" style={{ background: '#F5F4F0', color: '#1A1A1A', border: '1px solid rgba(0,0,0,0.06)' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
-              {t('compare.pickFromCatalog') || 'Pick from catalog'}
+            <button onClick={() => router.push(`/browse?return=compare&slot=${showModal}`)} style={modalBtnNeutral}>
+              {lang === 'ar' ? 'اختر من الكتالوج' : 'Pick from catalog'}
             </button>
 
             {history.length > 0 && (
               <>
-                <div className="flex items-center gap-2 mt-2 mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A7A7A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <span className="text-xs font-semibold text-[#ACACAC] uppercase tracking-wider">{t('compare.fromHistory')}</span>
-                </div>
-                <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
+                <div className="n-mono" style={{ color: 'var(--ink-3)', marginTop: 8 }}>{labels.history}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto' }}>
                   {history.map((entry, i) => (
-                    <button key={`${entry.scanned_at}-${i}`} onClick={() => selectFromHistory(entry)}
-                      className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all hover:bg-[#F5F4F0] active:scale-[0.99]"
-                      style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
-                      <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold" style={{ background: GRADE_GRADIENTS[entry.grade as Grade] }}>{entry.grade}</span>
-                      <span className="text-sm text-[#1A1A1A] truncate flex-1">{entry.product_name}</span>
+                    <button
+                      key={`${entry.scanned_at}-${i}`}
+                      onClick={() => selectFromHistory(entry)}
+                      style={historyBtn}
+                    >
+                      <span style={{
+                        width: 28, height: 28, borderRadius: 8,
+                        background: GRADE_TILE[entry.grade as Grade].bg,
+                        color: '#fff',
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        fontFamily: 'var(--ff-display)', fontWeight: 800,
+                        fontSize: 14, letterSpacing: '-0.03em',
+                      }}>{entry.grade}</span>
+                      <span style={{
+                        fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-sans)',
+                        fontSize: 13, fontWeight: 600,
+                        color: 'var(--ink)', flex: 1, textAlign: lang === 'ar' ? 'right' : 'left',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }}>{entry.product_name}</span>
                     </button>
                   ))}
                 </div>
               </>
             )}
 
-            <button onClick={() => setShowModal(null)} className="mt-2 py-2 text-sm text-[#ACACAC] transition-colors hover:text-[#7A7A7A] min-h-[44px] w-full">{t('compare.cancel')}</button>
+            <button onClick={() => setShowModal(null)} style={{
+              padding: '10px 0', background: 'transparent', border: 'none',
+              color: 'var(--ink-3)', fontSize: 14, cursor: 'pointer',
+            }}>{labels.cancel}</button>
           </div>
         </div>
       )}
-      <BottomNav active="compare" />
     </div>
   )
+}
+
+// ────────────────────────────────────────────────────────────
+function CompareSide({
+  product,
+  side,
+  lang,
+  onOpen,
+  onRemove,
+}: {
+  product: CompareProduct | null
+  side: 'left' | 'right'
+  lang: 'en' | 'ar'
+  onOpen: () => void
+  onRemove: () => void
+}) {
+  const isLeft = side === 'left'
+
+  if (!product) {
+    return (
+      <button
+        onClick={onOpen}
+        style={{
+          flex: 1, position: 'relative',
+          background: 'rgba(255,255,255,0.96)',
+          overflow: 'hidden',
+          [isLeft ? 'borderRight' : 'borderLeft']: '0.5px solid rgba(0,0,0,0.08)',
+          border: 'none',
+          cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <div style={{
+          width: 64, height: 64, borderRadius: 16,
+          border: '2px dashed rgba(0,0,0,0.18)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'var(--ink-3)', fontSize: 32, fontWeight: 300,
+        }}>+</div>
+      </button>
+    )
+  }
+
+  const bg = BG_PALETTE[product.hero.bg]
+  const grade = GRADE_TILE[product.grade]
+
+  return (
+    <div style={{
+      flex: 1, position: 'relative',
+      background: 'rgba(255,255,255,0.96)',
+      overflow: 'hidden',
+      [isLeft ? 'borderRight' : 'borderLeft']: '0.5px solid rgba(0,0,0,0.08)',
+      boxShadow: `inset ${isLeft ? '6px' : '-6px'} 0 24px -16px ${bg.accent}aa, inset 0 1px 0 rgba(255,255,255,0.9)`,
+    }}>
+      <div aria-hidden style={{
+        position: 'absolute',
+        top: -40,
+        [isLeft ? 'left' : 'right']: -40,
+        width: 140, height: 140, borderRadius: '50%',
+        background: `radial-gradient(circle, ${bg.accent}55 0%, ${bg.accent}00 70%)`,
+        pointerEvents: 'none', zIndex: 1,
+      }}/>
+      <div style={{
+        position: 'absolute', top: 14,
+        [isLeft ? 'left' : 'right']: 14,
+        zIndex: 3,
+      }}>
+        <span className="n-mono" style={{ color: bg.ink, opacity: 0.7 }}>
+          {lang === 'ar' ? product.hero.brand : product.hero.brand.toUpperCase()}
+        </span>
+      </div>
+
+      <div style={{
+        position: 'absolute',
+        bottom: 76,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 88, height: 110,
+        zIndex: 2,
+        filter: `drop-shadow(0 18px 22px ${bg.accent}66) drop-shadow(0 6px 8px rgba(0,0,0,0.10))`,
+      }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={product.hero.image} alt={product.product_name}
+             style={{ width: '100%', height: '100%', objectFit: 'contain' }}/>
+      </div>
+
+      <div style={{
+        position: 'absolute',
+        bottom: 38, left: 12, right: 12,
+        zIndex: 3,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', gap: 6,
+      }}>
+        <div style={{
+          fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+          fontWeight: 700, fontSize: 13,
+          lineHeight: 1.05, letterSpacing: '-0.02em',
+          color: bg.ink, textAlign: 'center',
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}>{product.hero.product_name}</div>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 5,
+          padding: '4px 10px 4px 4px',
+          background: '#fff',
+          borderRadius: 999,
+          boxShadow: '0 4px 12px -4px rgba(0,0,0,0.18)',
+        }}>
+          <span style={{
+            width: 20, height: 20, borderRadius: '50%',
+            background: grade.bg,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--ff-display)', fontWeight: 800,
+            fontSize: 11, lineHeight: 1, letterSpacing: '-0.03em',
+            color: 'var(--ink)',
+          }}>{product.grade}</span>
+          <span style={{
+            fontFamily: 'var(--ff-display)', fontWeight: 700,
+            fontSize: 13, lineHeight: 1, letterSpacing: '-0.02em',
+            color: 'var(--ink)', fontFeatureSettings: '"tnum"',
+          }}>{product.score}</span>
+        </div>
+      </div>
+
+      <button onClick={onRemove} style={{
+        position: 'absolute', bottom: 12, left: 0, right: 0,
+        background: 'transparent', border: 'none',
+        fontSize: 10, color: 'var(--ink-3)', cursor: 'pointer',
+        zIndex: 3, fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-mono)',
+        textTransform: lang === 'ar' ? 'none' : 'uppercase',
+        letterSpacing: lang === 'ar' ? 0 : '0.08em',
+      }}>{lang === 'ar' ? 'إزالة' : 'Remove'}</button>
+    </div>
+  )
+}
+
+// ────────────────────────────────────────────────────────────
+function DeltaRow({
+  metric,
+  a, b,
+  lang,
+}: {
+  metric: typeof METRICS[number]
+  a: NutritionData
+  b: NutritionData
+  lang: 'en' | 'ar'
+}) {
+  const aVal = (a[metric.key] ?? 0) as number
+  const bVal = (b[metric.key] ?? 0) as number
+  let winner: 'a' | 'b' | 'tie' = 'tie'
+  if (aVal !== bVal) {
+    if (metric.lowerBetter) winner = aVal < bVal ? 'a' : 'b'
+    else winner = aVal > bVal ? 'a' : 'b'
+  }
+  const aPct = Math.min(100, (aVal / metric.max) * 100)
+  const bPct = Math.min(100, (bVal / metric.max) * 100)
+  const winColor = 'var(--lime)'
+  const loseColor = 'rgba(0,0,0,0.18)'
+  const aColor = winner === 'a' ? winColor : winner === 'b' ? loseColor : 'rgba(0,0,0,0.32)'
+  const bColor = winner === 'b' ? winColor : winner === 'a' ? loseColor : 'rgba(0,0,0,0.32)'
+  const fmt = (v: number) => `${v}${metric.unit}`
+
+  return (
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: '40px 1fr 40px',
+      alignItems: 'center', columnGap: 10,
+    }}>
+      <div style={{
+        textAlign: lang === 'ar' ? 'left' : 'right',
+        fontFamily: 'var(--ff-display)', fontWeight: winner === 'a' ? 800 : 600,
+        fontSize: 14, letterSpacing: '-0.02em',
+        color: winner === 'a' ? 'var(--ink)' : 'var(--ink-3)',
+        fontFeatureSettings: '"tnum"',
+      }}>{fmt(aVal)}</div>
+
+      <div style={{ position: 'relative', height: 22 }}>
+        <div style={{ position: 'absolute', top: 4, bottom: 4, left: '50%', width: 1, background: 'rgba(0,0,0,0.06)' }}/>
+        <div style={{
+          position: 'absolute', top: 8, height: 6, right: '50%',
+          width: `${aPct / 2}%`, background: aColor,
+          borderRadius: '999px 0 0 999px',
+          minWidth: aVal === 0 ? 0 : 4,
+        }}/>
+        <div style={{
+          position: 'absolute', top: 8, height: 6, left: '50%',
+          width: `${bPct / 2}%`, background: bColor,
+          borderRadius: '0 999px 999px 0',
+          minWidth: bVal === 0 ? 0 : 4,
+        }}/>
+        <div className="n-mono" style={{
+          position: 'absolute', top: -3, left: '50%', transform: 'translateX(-50%)',
+          background: 'var(--surface-2)',
+          padding: '0 6px',
+          color: 'var(--ink-3)',
+          whiteSpace: 'nowrap',
+        }}>{lang === 'ar' ? metric.ar : metric.en}</div>
+      </div>
+
+      <div style={{
+        textAlign: lang === 'ar' ? 'right' : 'left',
+        fontFamily: 'var(--ff-display)', fontWeight: winner === 'b' ? 800 : 600,
+        fontSize: 14, letterSpacing: '-0.02em',
+        color: winner === 'b' ? 'var(--ink)' : 'var(--ink-3)',
+        fontFeatureSettings: '"tnum"',
+      }}>{fmt(bVal)}</div>
+    </div>
+  )
+}
+
+// ────────────────────────────────────────────────────────────
+const iconBtn: React.CSSProperties = {
+  width: 36, height: 36, borderRadius: '50%',
+  background: 'rgba(0,0,0,0.05)', border: 'none', cursor: 'pointer',
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+}
+
+const modalBtnLime: React.CSSProperties = {
+  padding: '14px 16px',
+  background: 'var(--lime)', color: 'var(--ink)',
+  border: 'none', borderRadius: 18,
+  fontFamily: 'var(--ff-display)',
+  fontWeight: 700, fontSize: 14,
+  cursor: 'pointer',
+  textAlign: 'inherit',
+}
+const modalBtnDark: React.CSSProperties = {
+  padding: '14px 16px',
+  background: 'var(--ink)', color: 'var(--lime)',
+  border: 'none', borderRadius: 18,
+  fontFamily: 'var(--ff-display)',
+  fontWeight: 700, fontSize: 14,
+  cursor: 'pointer',
+  textAlign: 'inherit',
+}
+const modalBtnNeutral: React.CSSProperties = {
+  padding: '14px 16px',
+  background: 'var(--surface-2)', color: 'var(--ink)',
+  border: 'none', borderRadius: 18,
+  fontFamily: 'var(--ff-display)',
+  fontWeight: 700, fontSize: 14,
+  cursor: 'pointer',
+  textAlign: 'inherit',
+}
+const historyBtn: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: 12,
+  padding: '10px 12px',
+  border: '1px solid rgba(0,0,0,0.06)',
+  borderRadius: 14, background: 'var(--paper)',
+  cursor: 'pointer',
 }

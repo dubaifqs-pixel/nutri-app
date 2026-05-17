@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { GRADE_COLORS, GRADE_GRADIENTS, type Grade, type NutritionData, type ProductData, type GradeResult } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
-import BottomNav from '@/components/BottomNav'
+import { BottomNavV2 as BottomNav } from '@/components/v2/BottomNav'
 import { useT, useLang } from '@/lib/i18n'
 
 interface Alternative {

@@ -7,7 +7,7 @@ import { calculateGrade } from '@/lib/scoring'
 import { addToHistory } from '@/lib/history'
 import { DEMO_PRODUCTS, type DemoProduct } from '@/lib/demo-products'
 import { getProductImage } from '@/lib/product-images'
-import BottomNav from '@/components/BottomNav'
+import { BottomNavV2 as BottomNav } from '@/components/v2/BottomNav'
 import { useT } from '@/lib/i18n'
 
 const CATEGORY_IDS = ['dairy', 'beverages', 'snacks', 'cereals', 'bread', 'meat', 'fruits', 'frozen'] as const

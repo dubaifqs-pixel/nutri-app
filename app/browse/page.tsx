@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getDemoProductCount } from '@/lib/demo-products'
 import { getCategoryImage } from '@/lib/product-images'
 import { useT } from '@/lib/i18n'
-import BottomNav from '@/components/BottomNav'
+import { BottomNavV2 as BottomNav } from '@/components/v2/BottomNav'
 
 const CATEGORY_IDS = ['dairy', 'beverages', 'snacks', 'cereals', 'bread', 'meat', 'fruits', 'frozen'] as const
 type CategoryId = typeof CATEGORY_IDS[number]
