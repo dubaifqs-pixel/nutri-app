@@ -280,6 +280,16 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
         className="w-full h-full object-cover pointer-events-none"
       />
 
+      {/* Top hint — guides users to capture brand + nutrition together for best identification */}
+      {videoReady && isAutoScanning && scanStatus !== 'detected' && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 max-w-[88%]">
+          <div className="bg-black/70 backdrop-blur-sm px-4 py-2.5 rounded-2xl flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B6F074" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+            <p className="text-white text-[12px] leading-tight font-medium">Show the <span className="font-bold">front</span> for product name, or both sides in one shot</p>
+          </div>
+        </div>
+      )}
+
       {/* Scan frame with animated corners */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div
