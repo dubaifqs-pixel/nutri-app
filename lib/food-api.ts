@@ -466,7 +466,7 @@ function mergeNutrition(primary: NutritionData, secondary: NutritionData): Nutri
 // Sniff the product name for beverage signals so Nutri-Score uses the
 // beverage scale and not the solid-food one. OFF has category tags but they
 // are inconsistent across UAE products; the name itself is a reliable signal.
-const BEVERAGE_PATTERN = /\b(juice|drink|soda|cola|beverage|smoothie|nectar|kombucha|laban|cordial|squash|ice tea|iced tea|water|sparkling water|mineral water|energy drink|sports drink|عصير|مشروب|ماء)\b/i
+const BEVERAGE_PATTERN = /\b(juice|drink|soda|cola|coke|pepsi|sprite|fanta|mirinda|7up|mountain dew|red bull|monster|rani|vimto|tang|capri sun|lemonade|beverage|smoothie|nectar|kombucha|laban|buttermilk|cordial|squash|ice tea|iced tea|tea|water|sparkling water|mineral water|energy drink|sports drink|عصير|مشروب|ماء|كولا|بيبسي)\b/i
 const WATER_PATTERN = /\b(water|sparkling water|mineral water|ماء)\b/i
 
 function tagBeverage(result: FoodSearchResult): FoodSearchResult {

@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     // Beverage detection — same rules as scan-label: ml serving or drink-y name.
     const productNameRaw = (parsed.product_name || '').toLowerCase()
-    const beverageNameSignal = /\b(juice|drink|soda|cola|water|milk drink|beverage|smoothie|tea|coffee latte|iced tea|nectar|kombucha|laban|عصير|مشروب|ماء)\b/.test(productNameRaw)
+    const beverageNameSignal = /\b(juice|drink|soda|cola|coke|pepsi|sprite|fanta|mirinda|7up|red bull|monster|rani|vimto|tang|lemonade|water|milk drink|beverage|smoothie|tea|coffee latte|iced tea|nectar|kombucha|laban|buttermilk|cordial|squash|عصير|مشروب|ماء|كولا|بيبسي)\b/.test(productNameRaw)
     const isBeverage = parsed.serving_size_ml !== null || beverageNameSignal
     const energyForWaterCheck = computed.energy_kcal ?? n(p100.energy_kcal)
     const isWater = /\b(water|sparkling water|mineral water|ماء)\b/.test(productNameRaw)
