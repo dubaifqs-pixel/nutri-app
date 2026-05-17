@@ -10,6 +10,8 @@ interface Props {
   startManual?: boolean
 }
 
+type Stage = 'name' | 'nutrition'
+
 export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, startManual = false }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -19,6 +21,10 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
   const [showManual, setShowManual] = useState(startManual)
   const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'detected'>('idle')
   const [scanAttempts, setScanAttempts] = useState(0)
+  const [stage, setStage] = useState<Stage>('name')
+  const [stageFlash, setStageFlash] = useState(false) // brief tick when stage 1 completes
+  const capturedNameRef = useRef<string | null>(null)
+  const capturedServingRef = useRef<{ g: number | null; ml: number | null }>({ g: null, ml: null })
   const scanningRef = useRef(false)
   const busyRef = useRef(false)
 
@@ -105,7 +111,11 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
     return () => { stopped = true }
   }, [mode, videoReady, showManual, onBarcode, stopCamera])
 
-  // Auto-detect loop (label mode — Gemini OCR)
+  // Auto-detect loop (label mode — two-stage Gemini OCR).
+  // Stage 1: find product name from the front of the package.
+  // Stage 2: read the nutrition table from the back.
+  // The captured name is preserved across the stage transition; once both are in hand,
+  // the combined result fires onAutoDetect.
   useEffect(() => {
     if (mode !== 'label' || !videoReady || showManual || !onAutoDetect) return
 
@@ -117,6 +127,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
       if (!videoRef.current || videoRef.current.videoWidth === 0) return
 
       busyRef.current = true
+      const currentStage = stage // snapshot per-tick
 
       try {
         const video = videoRef.current
@@ -132,21 +143,43 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
         const res = await fetch('/api/auto-detect', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: frame }),
+          body: JSON.stringify({ image: frame, stage: currentStage }),
         })
         const data = await res.json()
 
         if (!scanningRef.current) return
 
-        if (data.detected) {
-          setScanStatus('detected')
-          scanningRef.current = false
-          setTimeout(() => {
-            stopCamera()
-            onAutoDetect(data)
-          }, 600)
+        if (currentStage === 'name') {
+          // Stage 1: looking for product name only.
+          if (data.detected && data.product_name) {
+            capturedNameRef.current = data.product_name
+            if (data.serving_size_g) capturedServingRef.current.g = data.serving_size_g
+            if (data.serving_size_ml) capturedServingRef.current.ml = data.serving_size_ml
+            setStageFlash(true)
+            setTimeout(() => setStageFlash(false), 900)
+            setStage('nutrition')
+            setScanAttempts(0)
+          } else {
+            setScanAttempts(prev => prev + 1)
+          }
         } else {
-          setScanAttempts(prev => prev + 1)
+          // Stage 2: looking for nutrition values.
+          if (data.detected && data.nutrition) {
+            setScanStatus('detected')
+            scanningRef.current = false
+            const combined = {
+              ...data,
+              product_name: capturedNameRef.current || data.product_name || 'Scanned Product',
+              serving_size_g: data.serving_size_g ?? capturedServingRef.current.g,
+              serving_size_ml: data.serving_size_ml ?? capturedServingRef.current.ml,
+            }
+            setTimeout(() => {
+              stopCamera()
+              onAutoDetect(combined)
+            }, 600)
+          } else {
+            setScanAttempts(prev => prev + 1)
+          }
         }
       } catch {
         // Silent fail, keep scanning
@@ -163,7 +196,7 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
       clearTimeout(startTimeout)
       clearInterval(interval)
     }
-  }, [mode, videoReady, showManual, onAutoDetect, stopCamera])
+  }, [mode, videoReady, showManual, onAutoDetect, stopCamera, stage])
 
   const capturePhoto = () => {
     if (!videoRef.current || !videoReady) return
@@ -247,18 +280,21 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
     guideText = 'Starting camera...'
   } else if (isAutoScanning) {
     if (scanStatus === 'detected') {
-      guideText = 'Label detected!'
-    } else if (scanAttempts === 0) {
-      guideText = 'Scanning for nutrition label...'
-    } else if (scanAttempts <= 3) {
-      guideText = 'Hold steady, reading label...'
-    } else if (scanAttempts <= 6) {
-      guideText = 'Move closer to the label'
+      guideText = 'All set!'
+    } else if (stage === 'name') {
+      if (scanAttempts === 0) guideText = 'Step 1 — show the front of the package'
+      else if (scanAttempts <= 4) guideText = 'Hold steady, reading product name…'
+      else if (scanAttempts <= 8) guideText = 'Move closer or improve lighting'
+      else guideText = 'Tap capture if the name isn’t visible'
     } else {
-      guideText = 'Try better lighting or tap to capture'
+      // stage === 'nutrition'
+      if (scanAttempts === 0) guideText = 'Step 2 — now show the nutrition label'
+      else if (scanAttempts <= 4) guideText = 'Hold steady, reading nutrition…'
+      else if (scanAttempts <= 8) guideText = 'Move closer to the nutrition table'
+      else guideText = 'Try better lighting or tap to capture'
     }
   } else {
-    guideText = mode === 'barcode' ? 'Point camera at barcode' : 'Point camera at nutrition label'
+    guideText = mode === 'barcode' ? 'Point camera at barcode' : 'Point camera at the package'
   }
 
   const frameW = mode === 'barcode' ? 280 : 300
@@ -280,12 +316,39 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
         className="w-full h-full object-cover pointer-events-none"
       />
 
-      {/* Top hint — guides users to capture brand + nutrition together for best identification */}
+      {/* Top step indicator — two-stage flow: name → nutrition */}
       {videoReady && isAutoScanning && scanStatus !== 'detected' && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 max-w-[88%]">
-          <div className="bg-black/70 backdrop-blur-sm px-4 py-2.5 rounded-2xl flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B6F074" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
-            <p className="text-white text-[12px] leading-tight font-medium">Show the <span className="font-bold">front</span> for product name, or both sides in one shot</p>
+          <div className="bg-black/70 backdrop-blur-sm px-4 py-2.5 rounded-2xl flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-colors"
+                style={{ background: stage === 'name' ? '#B6F074' : 'rgba(182,240,116,0.25)', color: stage === 'name' ? '#1A1A1A' : '#B6F074' }}
+              >
+                {stage === 'nutrition' ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                ) : '1'}
+              </span>
+              <span
+                className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-colors"
+                style={{ background: stage === 'nutrition' ? '#B6F074' : 'rgba(182,240,116,0.15)', color: stage === 'nutrition' ? '#1A1A1A' : 'rgba(255,255,255,0.6)' }}
+              >
+                2
+              </span>
+            </div>
+            <p className="text-white text-[12px] leading-tight font-medium">
+              {stage === 'name' ? <>Step 1 — <span className="font-bold">front</span> of the package</> : <>Step 2 — <span className="font-bold">nutrition</span> label</>}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Stage-1 → Stage-2 flash toast */}
+      {stageFlash && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 animate-fade-in">
+          <div className="px-4 py-2.5 rounded-2xl flex items-center gap-2" style={{ background: '#B6F074', color: '#1A1A1A', boxShadow: '0 8px 24px rgba(140,180,40,0.45)' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <p className="text-[12px] font-bold leading-none">{capturedNameRef.current ? `Got it: ${capturedNameRef.current.length > 24 ? capturedNameRef.current.slice(0, 24) + '…' : capturedNameRef.current}` : 'Product name captured'}</p>
           </div>
         </div>
       )}
