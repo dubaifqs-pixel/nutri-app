@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import LangToggle from '@/components/LangToggle'
 import BottomNav from '@/components/BottomNav'
+import RecentPills from '@/components/RecentPills'
 import { useT } from '@/lib/i18n'
 import { DEMO_PRODUCTS } from '@/lib/demo-products'
 import { calculateGrade } from '@/lib/scoring'
@@ -50,21 +51,22 @@ function getProductBg(name: string): string {
 }
 
 // Generate nutrition tags with colors
-type NTag = { label: string; color: string }
+type TagKey = 'highSugar' | 'lowSugar' | 'sugar' | 'highFat' | 'lowFat' | 'fat' | 'protein' | 'fiber' | 'highSodium' | 'lowCal'
+type NTag = { key: TagKey; color: string }
 function getNutritionTags(n: NutritionData): NTag[] {
   const tags: NTag[] = []
   if (n.sugars_g !== null) tags.push(n.sugars_g > 15
-    ? { label: 'High sugar', color: '#ef4444' }
-    : n.sugars_g <= 5 ? { label: 'Low sugar', color: '#10b981' }
-    : { label: 'Sugar', color: '#f59e0b' })
+    ? { key: 'highSugar', color: '#ef4444' }
+    : n.sugars_g <= 5 ? { key: 'lowSugar', color: '#10b981' }
+    : { key: 'sugar', color: '#f59e0b' })
   if (n.saturated_fat_g !== null) tags.push(n.saturated_fat_g > 5
-    ? { label: 'High fat', color: '#ef4444' }
-    : n.saturated_fat_g <= 2 ? { label: 'Low fat', color: '#10b981' }
-    : { label: 'Fat', color: '#f59e0b' })
-  if (n.protein_g !== null && n.protein_g > 5) tags.push({ label: 'Protein', color: '#8b5cf6' })
-  if (n.fiber_g !== null && n.fiber_g > 3) tags.push({ label: 'Fiber', color: '#06b6d4' })
-  if (n.sodium_mg !== null && n.sodium_mg > 500) tags.push({ label: 'High sodium', color: '#ef4444' })
-  if (n.energy_kcal !== null && n.energy_kcal <= 100) tags.push({ label: 'Low cal', color: '#10b981' })
+    ? { key: 'highFat', color: '#ef4444' }
+    : n.saturated_fat_g <= 2 ? { key: 'lowFat', color: '#10b981' }
+    : { key: 'fat', color: '#f59e0b' })
+  if (n.protein_g !== null && n.protein_g > 5) tags.push({ key: 'protein', color: '#8b5cf6' })
+  if (n.fiber_g !== null && n.fiber_g > 3) tags.push({ key: 'fiber', color: '#06b6d4' })
+  if (n.sodium_mg !== null && n.sodium_mg > 500) tags.push({ key: 'highSodium', color: '#ef4444' })
+  if (n.energy_kcal !== null && n.energy_kcal <= 100) tags.push({ key: 'lowCal', color: '#10b981' })
   return tags.slice(0, 3)
 }
 
@@ -72,18 +74,16 @@ function getNutritionTags(n: NutritionData): NTag[] {
 const GRADE_TEXT: Record<Grade, string> = {
   A: '#2E7D32', B: '#558B2F', C: '#F9A825', D: '#E65100', E: '#C62828',
 }
-const GRADE_LABEL: Record<Grade, string> = {
-  A: 'Great', B: 'Good', C: 'Okay', D: 'Poor', E: 'Bad',
-}
 
-// Fallback nutrition facts (under 6 words)
-const FALLBACK_FACTS: Record<string, string> = {
-  'Al Ain Full Cream Milk': 'Rich in calcium & protein',
-  'Coca-Cola Original': '39g sugar per 330ml can',
-  'KitKat 4 Finger': '218 calories per bar',
-  "Kellogg's Corn Flakes": 'Fortified with iron & vitamins',
-  'Rani Orange Juice': 'Contains real fruit pieces',
-  "Lay's Classic Chips": 'High in sodium & fat',
+// Fallback nutrition facts (under 6 words) — keyed by product so translation pulls
+// the localized string via t(`home.fact.<key>`). Keep keys here, copy in translations.
+const FACT_KEYS: Record<string, string> = {
+  'Al Ain Full Cream Milk': 'home.fact.alAinMilk',
+  'Coca-Cola Original': 'home.fact.coke',
+  'KitKat 4 Finger': 'home.fact.kitkat',
+  "Kellogg's Corn Flakes": 'home.fact.cornflakes',
+  'Rani Orange Juice': 'home.fact.rani',
+  "Lay's Classic Chips": 'home.fact.lays',
 }
 
 // Featured products
@@ -103,13 +103,13 @@ const FEATURED = [
     image: getProductImage(p.product_name, g.grade as Grade),
     bg: getProductBg(p.product_name),
     tags: getNutritionTags(p.nutrition),
-    fact: FALLBACK_FACTS[p.product_name] || 'Scanned & verified by nutri',
+    factKey: FACT_KEYS[p.product_name],
   }
 })
 
 export default function Home() {
   const t = useT()
-  const [facts, setFacts] = useState<Record<string, string>>(FALLBACK_FACTS)
+  const [facts, setFacts] = useState<Record<string, string>>({})
   const [activeCard, setActiveCard] = useState(0)
   const touchStart = useRef(0)
   const touchDelta = useRef(0)
@@ -173,7 +173,7 @@ export default function Home() {
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-7 pb-1 flex-shrink-0">
         <div>
-          <p className="text-[11px] font-medium" style={{ color: '#ACACAC' }}>Welcome back</p>
+          <p className="text-[11px] font-medium" style={{ color: '#ACACAC' }}>{t('home.welcome')}</p>
           <p className="text-[15px] font-bold" style={{ color: '#1A1A1A' }}>nutri</p>
         </div>
         <div className="flex items-center gap-2">
@@ -187,15 +187,15 @@ export default function Home() {
       {/* Hero text */}
       <div className="px-5 pt-3 pb-1 flex-shrink-0">
         <p className="text-[22px] leading-[1.15]" style={{ color: '#1A1A1A', fontWeight: 400 }}>
-          Scan your <span className="font-bold">food.</span><br/>
-          <span className="font-bold">Eat smarter.</span>
+          <span className="font-bold">{t('home.heroLine1')}</span><br/>
+          <span className="font-bold">{t('home.heroLine2')}</span>
         </p>
       </div>
 
       {/* Stats */}
       <div className="flex items-center gap-3 px-5 pt-2 pb-4 flex-shrink-0">
         <span className="text-[28px] font-extrabold leading-none" style={{ color: '#1A1A1A' }}>{FEATURED.length}</span>
-        <span className="text-[8px] font-bold uppercase tracking-wider px-3 py-1 rounded-full" style={{ background: '#FFEC89', color: '#1A1A1A' }}>Featured</span>
+        <span className="text-[8px] font-bold uppercase tracking-wider px-3 py-1 rounded-full" style={{ background: '#FFEC89', color: '#1A1A1A' }}>{t('home.featuredBadge')}</span>
       </div>
 
       {/* Swipeable Card Carousel */}
@@ -242,7 +242,7 @@ export default function Home() {
               padding: '3px 6px 5px 8px',
             }}>
               <span style={{ fontSize: '18px', fontWeight: 700, color: GRADE_TEXT[product.grade], lineHeight: 1 }}>{product.grade}</span>
-              <span style={{ fontSize: '8px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{GRADE_LABEL[product.grade]}</span>
+              <span style={{ fontSize: '8px', fontWeight: 500, color: '#1A1A1A', opacity: 0.4 }}>{t(`grade.${product.grade}` as const)}</span>
             </div>
 
             {/* Image area */}
@@ -278,7 +278,7 @@ export default function Home() {
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}>
-                <span style={{ fontSize: '11px', fontWeight: 400, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || product.fact}</span>
+                <span style={{ fontSize: '11px', fontWeight: 400, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.3px', fontStyle: 'italic' }}>{facts[product.product_name] || (product.factKey ? t(product.factKey as any) : t('home.scanned'))}</span>
               </div>
             </div>
 
@@ -290,7 +290,7 @@ export default function Home() {
                   fontSize: '10px', fontWeight: 600, color: '#1A1A1A',
                   border: '1px solid rgba(0,0,0,0.12)', borderRadius: '12px',
                   padding: '4px 10px', whiteSpace: 'nowrap',
-                }}>View ↗</span>
+                }}>{t('home.view')} ↗</span>
               </div>
 
               {/* Tags — colored tinted pills */}
@@ -308,7 +308,7 @@ export default function Home() {
                       color: tag.color,
                     }}
                   >
-                    {tag.label}
+                    {t(`tag.${tag.key}` as const)}
                   </span>
                 ))}
               </div>
@@ -336,6 +336,10 @@ export default function Home() {
             />
           ))}
         </div>
+      </div>
+
+      <div className="mt-3">
+        <RecentPills />
       </div>
 
       <BottomNav active="home" />

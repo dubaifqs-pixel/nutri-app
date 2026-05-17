@@ -5,10 +5,12 @@ import { useRef, useState, Suspense } from 'react'
 import Scanner from '@/components/Scanner'
 import { addToHistory } from '@/lib/history'
 import type { GradeResult } from '@/lib/types'
+import { useT } from '@/lib/i18n'
 
 function ScanContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const t = useT()
   const mode = (searchParams.get('mode') as 'barcode' | 'label') || 'label'
   const startManual = searchParams.get('manual') === '1'
   const returnTo = searchParams.get('return')
@@ -29,7 +31,7 @@ function ScanContent() {
   const prefilledBarcode = searchParams.get('barcode')
 
   const lookupBarcode = async (barcode: string) => {
-    setStatus(`Looking up product: ${barcode}...`)
+    setStatus(`${t('scan.lookingUp')}: ${barcode}...`)
     const res = await fetch('/api/barcode', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ barcode }),
@@ -37,7 +39,7 @@ function ScanContent() {
     if (!res.ok) {
       // Surface the structured reason so handleBarcode can route the user properly.
       const err = await res.json().catch(() => ({}))
-      const e: Error & { reason?: string; barcode?: string } = new Error(err.error || 'Product not found in database')
+      const e: Error & { reason?: string; barcode?: string } = new Error(err.error || t('scan.notFound'))
       e.reason = err.reason
       e.barcode = err.barcode || barcode
       throw e
@@ -46,7 +48,7 @@ function ScanContent() {
   }
 
   const getGrade = async (nutrition: any) => {
-    setStatus('Calculating grade...')
+    setStatus(t('scan.calculating'))
     const gradeRes = await fetch('/api/grade', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nutrition }),
@@ -92,7 +94,7 @@ function ScanContent() {
         setLoading(false)
         return
       }
-      setStatus(e.message || 'Something went wrong')
+      setStatus(e.message || t('scan.somethingWrong'))
       setTimeout(() => setLoading(false), 3000)
     }
   }
@@ -136,7 +138,7 @@ function ScanContent() {
     setLoading(true)
 
     if (mode === 'barcode') {
-      setStatus('Reading barcode with AI...')
+      setStatus(t('scan.readingBarcode'))
       try {
         const barcodeRes = await fetch('/api/scan-barcode', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -144,7 +146,7 @@ function ScanContent() {
         })
         if (!barcodeRes.ok) {
           const err = await barcodeRes.json().catch(() => ({}))
-          setStatus(err.error || 'Could not read barcode -- try entering it manually')
+          setStatus(err.error || t('scan.couldNotReadBarcode'))
           setTimeout(() => setLoading(false), 3000)
           return
         }
@@ -153,16 +155,16 @@ function ScanContent() {
         const gradeResult = await getGrade(product.nutrition)
         goToResult(product, gradeResult)
       } catch (err) {
-        setStatus(err instanceof Error ? err.message : 'Something went wrong -- try entering manually')
+        setStatus(err instanceof Error ? err.message : t('scan.somethingWrongManual'))
         setTimeout(() => setLoading(false), 3000)
       }
     } else {
-      setStatus('Reading nutrition label...')
+      setStatus(t('scan.readingLabel'))
       try {
         // Progress messages while waiting
-        const progressTimer = setTimeout(() => setStatus('Extracting nutrition values...'), 2000)
-        const progressTimer2 = setTimeout(() => setStatus('Identifying product...'), 4000)
-        const progressTimer3 = setTimeout(() => setStatus('Almost done...'), 6000)
+        const progressTimer = setTimeout(() => setStatus(t('scan.extracting')), 2000)
+        const progressTimer2 = setTimeout(() => setStatus(t('scan.identifying')), 4000)
+        const progressTimer3 = setTimeout(() => setStatus(t('scan.almostDone')), 6000)
 
         const res = await fetch('/api/scan-label', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -175,11 +177,11 @@ function ScanContent() {
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
-          setStatus(err.error || 'Could not read label -- try with better lighting')
+          setStatus(err.error || t('scan.couldNotReadLabel'))
           setTimeout(() => setLoading(false), 3000)
           return
         }
-        setStatus('Calculating grade...')
+        setStatus(t('scan.calculating'))
         const raw = await res.json()
         const product = {
           // Prefer the prefilled name (from barcode → verify-with-label path) over what the
@@ -197,7 +199,7 @@ function ScanContent() {
         const gradeResult = await getGrade(product.nutrition)
         goToResult(product, gradeResult)
       } catch (err) {
-        setStatus(err instanceof Error ? err.message : 'Something went wrong -- please try again')
+        setStatus(err instanceof Error ? err.message : t('scan.somethingWrongTryAgain'))
         setTimeout(() => setLoading(false), 3000)
       }
     }
@@ -295,7 +297,7 @@ function ScanContent() {
         onCapture={handleCapture}
         onAutoDetect={mode === 'label' ? async (data: any) => {
           setLoading(true)
-          setStatus('Label detected! Calculating grade...')
+          setStatus(t('scan.labelDetected'))
           try {
             const product = {
               // Prefilled name (from barcode verify-with-label) wins over OCR-read name.
@@ -312,7 +314,7 @@ function ScanContent() {
             const gradeResult = await getGrade(product.nutrition)
             goToResult(product, gradeResult)
           } catch (err) {
-            setStatus(err instanceof Error ? err.message : 'Something went wrong')
+            setStatus(err instanceof Error ? err.message : t('scan.somethingWrong'))
             setTimeout(() => setLoading(false), 3000)
           }
         } : undefined}

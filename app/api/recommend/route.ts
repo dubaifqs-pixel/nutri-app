@@ -5,8 +5,10 @@ import { searchAlternatives } from '@/lib/food-api'
 import { DEMO_PRODUCTS } from '@/lib/demo-products'
 
 export async function POST(request: NextRequest) {
+  let isAr = false
   try {
-    const { current_grade, product_name, nutrition } = await request.json()
+    const { current_grade, product_name, nutrition, lang } = await request.json()
+    isAr = lang === 'ar'
 
     const gradeOrder = ['A', 'B', 'C', 'D', 'E']
     const currentIndex = gradeOrder.indexOf(current_grade)
@@ -15,7 +17,9 @@ export async function POST(request: NextRequest) {
     if (currentIndex === 0) {
       return NextResponse.json({
         alternatives: [],
-        summary: 'This product already has the highest grade (A) -- excellent! No need to look for alternatives.',
+        summary: isAr
+          ? 'هذا المنتج حصل بالفعل على أعلى تقدير (A) — ممتاز! لا حاجة للبحث عن بدائل.'
+          : 'This product already has the highest grade (A) -- excellent! No need to look for alternatives.',
         category: null,
       })
     }
@@ -119,16 +123,17 @@ export async function POST(request: NextRequest) {
       ? `\nNutrition per 100g: Energy ${nutrition.energy_kcal}kcal, Sugar ${nutrition.sugars_g}g, Sat Fat ${nutrition.saturated_fat_g}g, Sodium ${nutrition.sodium_mg}mg, Protein ${nutrition.protein_g}g, Fiber ${nutrition.fiber_g}g`
       : ''
 
+    const langInstruction = isAr ? 'Arabic (modern standard Arabic, MSA)' : 'English'
     let summary = ''
     if (allAlternatives.length > 0) {
       const altNames = allAlternatives.slice(0, 5).map((a) => `${a.product_name} (${a.grade})`).join(', ')
       const result = await geminiFlash.generateContent(
-        `The user scanned "${product_name}" which got grade ${current_grade}.${nutritionContext}\n\nHealthier alternatives found: ${altNames}\n\nWrite a brief summary in English (2-3 sentences) explaining why these alternatives are better and what the user should look for when choosing a healthier option.`
+        `The user scanned "${product_name}" which got grade ${current_grade}.${nutritionContext}\n\nHealthier alternatives found: ${altNames}\n\nWrite a brief summary in ${langInstruction} (2-3 sentences) explaining why these alternatives are better and what the user should look for when choosing a healthier option.`
       )
       summary = result.response.text()
     } else {
       const result = await geminiFlash.generateContent(
-        `The user scanned "${product_name}" which got grade ${current_grade}.${nutritionContext}\n\nNo alternatives were found in the database. Write brief advice in English (3-4 sentences) including:\n1. Why this product got this grade\n2. What types of alternatives to look for (in general)\n3. A practical consumer tip`
+        `The user scanned "${product_name}" which got grade ${current_grade}.${nutritionContext}\n\nNo alternatives were found in the database. Write brief advice in ${langInstruction} (3-4 sentences) including:\n1. Why this product got this grade\n2. What types of alternatives to look for (in general)\n3. A practical consumer tip`
       )
       summary = result.response.text()
     }
@@ -138,7 +143,9 @@ export async function POST(request: NextRequest) {
     console.error('Recommend error:', error)
     return NextResponse.json({
       alternatives: [],
-      summary: 'Could not search for alternatives right now. Please try again later.',
+      summary: isAr
+        ? 'تعذّر البحث عن بدائل الآن. حاول مرة أخرى لاحقاً.'
+        : 'Could not search for alternatives right now. Please try again later.',
       category: null,
     })
   }

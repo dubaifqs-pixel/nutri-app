@@ -32,10 +32,10 @@ function ChatContent() {
         const rec = JSON.parse(recData)
         const altText = rec.alternatives?.length > 0
           ? rec.alternatives.map((a: any) => `- ${a.product_name} (${a.grade})`).join('\n')
-          : 'No alternatives found in database'
+          : t('chat.noAlts')
         setMessages([
-          { role: 'user', content: 'Give me better alternatives' },
-          { role: 'assistant', content: `${rec.summary || 'Here are some alternatives:'}\n\n${altText}` },
+          { role: 'user', content: t('chat.suggest3') },
+          { role: 'assistant', content: `${rec.summary || t('chat.altsHere')}\n\n${altText}` },
         ])
       }
     }
@@ -63,7 +63,7 @@ function ChatContent() {
       })
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
-        setMessages((prev) => [...prev, { role: 'assistant', content: errData.error || 'Something went wrong. Please try again.', isError: true }])
+        setMessages((prev) => [...prev, { role: 'assistant', content: errData.error || t('chat.errorGeneric'), isError: true }])
         return
       }
       const data = await res.json()
@@ -73,7 +73,7 @@ function ChatContent() {
         setMessages((prev) => [...prev, { role: 'assistant', content: data.response }])
       }
     } catch (err) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: `Error: ${err instanceof Error ? err.message : 'Please try again'}`, isError: true }])
+      setMessages((prev) => [...prev, { role: 'assistant', content: `${t('chat.errorPrefix')}: ${err instanceof Error ? err.message : t('chat.tryAgain')}`, isError: true }])
     } finally { setLoading(false) }
   }
 

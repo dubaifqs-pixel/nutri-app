@@ -8,17 +8,10 @@ import { addToHistory } from '@/lib/history'
 import { DEMO_PRODUCTS, type DemoProduct } from '@/lib/demo-products'
 import { getProductImage } from '@/lib/product-images'
 import BottomNav from '@/components/BottomNav'
+import { useT } from '@/lib/i18n'
 
-const CATEGORY_NAMES: Record<string, string> = {
-  dairy: 'Dairy',
-  beverages: 'Beverages',
-  snacks: 'Snacks',
-  cereals: 'Cereals',
-  bread: 'Bread & Bakery',
-  meat: 'Meat & Poultry',
-  fruits: 'Fruits & Vegetables',
-  frozen: 'Frozen Foods',
-}
+const CATEGORY_IDS = ['dairy', 'beverages', 'snacks', 'cereals', 'bread', 'meat', 'fruits', 'frozen'] as const
+type CategoryId = typeof CATEGORY_IDS[number]
 
 interface BrowseProduct {
   product_name: string
@@ -42,11 +35,11 @@ function ProductSkeleton() {
   )
 }
 
-function DemoBadge() {
+function DemoBadge({ label }: { label: string }) {
   return (
     <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-[#1A1A1A] px-1.5 py-0.5 rounded-full leading-none" style={{ background: 'rgba(26, 26, 26, 0.06)' }}>
       <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-      Curated
+      {label}
     </span>
   )
 }
@@ -55,8 +48,10 @@ function CategoryContent() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
+  const t = useT()
   const category = params.category as string
-  const categoryName = CATEGORY_NAMES[category] || category
+  const isKnownCategory = (CATEGORY_IDS as readonly string[]).includes(category)
+  const categoryName = isKnownCategory ? t(`browse.cat.${category as CategoryId}.title` as const) : category
   const returnTo = searchParams.get('return')
   const compareSlot = searchParams.get('slot')
 
@@ -80,7 +75,7 @@ function CategoryContent() {
     try {
       const res = await fetch(`/api/browse?category=${category}&page=${pageNum}`)
       if (!res.ok) {
-        setError('Failed to load products')
+        setError(t('browse.failedToLoad'))
         return
       }
       const data = await res.json()
@@ -92,7 +87,7 @@ function CategoryContent() {
       setTotal(data.total)
       setPage(data.page)
     } catch {
-      setError('Failed to load products')
+      setError(t('browse.failedToLoad'))
     } finally {
       setLoading(false)
       setLoadingMore(false)
@@ -100,10 +95,10 @@ function CategoryContent() {
   }
 
   useEffect(() => {
-    if (category && CATEGORY_NAMES[category]) {
+    if (isKnownCategory) {
       fetchProducts(1)
     } else {
-      setError('Invalid category')
+      setError(t('browse.noProducts'))
       setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -167,7 +162,7 @@ function CategoryContent() {
         <div className="flex flex-col gap-2 animate-slide-up stagger-1">
           <div className="flex items-center gap-2 px-1">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-            <span className="text-xs font-semibold text-[#ACACAC] uppercase tracking-[0.08em]">Curated UAE Products</span>
+            <span className="text-xs font-semibold text-[#ACACAC] uppercase tracking-[0.08em]">{t('browse.curatedSection')}</span>
           </div>
           {demoGraded.map((dp, i) => (
             <button
@@ -185,7 +180,7 @@ function CategoryContent() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <p className="text-sm font-medium text-[#1A1A1A] truncate">{dp.product_name}</p>
-                  <DemoBadge />
+                  <DemoBadge label={t('browse.curatedBadge')} />
                 </div>
                 <p className="text-[11px] text-[#7A7A7A] mt-0.5 truncate">{dp.brand}</p>
               </div>
@@ -204,7 +199,7 @@ function CategoryContent() {
       {demoGraded.length > 0 && !loading && products.length > 0 && (
         <div className="flex items-center gap-3 px-1">
           <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[rgba(0,0,0,0.06)] to-transparent" />
-          <span className="text-[10px] font-medium text-[#ACACAC] uppercase tracking-[0.12em]">Database Results</span>
+          <span className="text-[10px] font-medium text-[#ACACAC] uppercase tracking-[0.12em]">{t('browse.databaseResults')}</span>
           <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[rgba(0,0,0,0.06)] to-transparent" />
         </div>
       )}
@@ -230,7 +225,7 @@ function CategoryContent() {
       {!loading && !error && products.length === 0 && demoGraded.length === 0 && (
         <div className="text-center py-12">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7A7A7A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto opacity-30 mb-3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <p className="text-sm text-[#7A7A7A]">No products found in this category</p>
+          <p className="text-sm text-[#7A7A7A]">{t('browse.noProducts')}</p>
         </div>
       )}
 
@@ -279,10 +274,10 @@ function CategoryContent() {
               {loadingMore ? (
                 <>
                   <div className="w-4 h-4 border-2 border-[#7A7A7A] border-t-transparent rounded-full animate-spin" />
-                  Loading...
+                  {t('browse.loading')}
                 </>
               ) : (
-                'Load more'
+                t('browse.loadMore')
               )}
             </button>
           )}

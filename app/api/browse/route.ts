@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { calculateGrade } from '@/lib/scoring'
 import { searchProducts } from '@/lib/food-api'
 import { DEMO_PRODUCTS } from '@/lib/demo-products'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const CATEGORY_SEARCH_TERMS: Record<string, string> = {
   dairy: 'dairy milk yogurt cheese',
@@ -25,28 +26,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
     }
 
-    // Load demo products immediately (always available)
+    // The frontend already renders curated demo products separately, so the
+    // API only returns external database results. Pre-build a name set so we
+    // can filter out anything that overlaps with curated.
     const demoProducts = DEMO_PRODUCTS[category] || []
-    const gradedDemo = demoProducts.map((dp) => {
-      const gradeResult = calculateGrade(dp.nutrition)
-      return {
-        product_name: dp.product_name,
-        image_url: dp.image_url,
-        grade: gradeResult.grade,
-        score: gradeResult.score,
-        nutrition: dp.nutrition,
-        barcode: null as string | null,
-        source: 'manual' as const,
-        data_source: 'Demo',
-      }
-    })
+    const demoNames = new Set(demoProducts.map((d) => d.product_name.toLowerCase()))
 
     // Fetch Gemini + USDA results in parallel (AI-first)
     const { products, total } = await searchProducts(searchTerm, page)
 
-    const gradedApi = products.map((p) => {
+    const seenNames = new Set<string>(demoNames)
+    const allProducts: any[] = []
+    for (const p of products) {
+      const key = p.product_name.toLowerCase()
+      if (seenNames.has(key)) continue
+      seenNames.add(key)
       const gradeResult = calculateGrade(p.nutrition)
-      return {
+      allProducts.push({
         product_name: p.product_name,
         image_url: p.image_url,
         grade: gradeResult.grade,
@@ -55,73 +51,18 @@ export async function GET(request: NextRequest) {
         barcode: p.barcode,
         source: p.source,
         data_source: p.data_source,
-      }
-    })
-
-    // Merge: demo first (instant), then Gemini/USDA, deduplicate by name
-    const seenNames = new Set<string>()
-    const allProducts: typeof gradedApi = []
-
-    // Demo products first (always work, instant)
-    for (const p of gradedDemo) {
-      const key = p.product_name.toLowerCase()
-      if (!seenNames.has(key)) {
-        seenNames.add(key)
-        allProducts.push(p)
-      }
-    }
-
-    // API results (Gemini + USDA)
-    for (const p of gradedApi) {
-      const key = p.product_name.toLowerCase()
-      if (!seenNames.has(key)) {
-        seenNames.add(key)
-        allProducts.push(p)
-      }
-    }
-
-    if (allProducts.length === 0) {
-      return NextResponse.json({
-        products: [],
-        total: 0,
-        page,
-        message: 'No products found. Please try again later.',
       })
     }
 
     return NextResponse.json({
       products: allProducts,
-      total: total + demoProducts.length,
+      total,
       page,
     })
   } catch (error) {
     console.error('Browse error:', error)
-
-    // Even on error, return demo products so browse always works
-    const { searchParams } = request.nextUrl
-    const category = searchParams.get('category') || ''
-    const demoProducts = DEMO_PRODUCTS[category] || []
-    const gradedDemo = demoProducts.map((dp) => {
-      const gradeResult = calculateGrade(dp.nutrition)
-      return {
-        product_name: dp.product_name,
-        image_url: dp.image_url,
-        grade: gradeResult.grade,
-        score: gradeResult.score,
-        nutrition: dp.nutrition,
-        barcode: null as string | null,
-        source: 'manual' as const,
-        data_source: 'Demo',
-      }
-    })
-
-    return NextResponse.json({
-      products: gradedDemo,
-      total: gradedDemo.length,
-      page: 1,
-      message: gradedDemo.length > 0
-        ? undefined
-        : 'Could not load products. Please try again later.',
-    })
+    // Curated demo products are rendered by the frontend independently, so
+    // returning an empty list on external-API failure is the correct fallback.
+    return NextResponse.json({ products: [], total: 0, page: 1 })
   }
 }

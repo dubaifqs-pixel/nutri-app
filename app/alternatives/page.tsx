@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { GRADE_COLORS, GRADE_GRADIENTS, type Grade, type NutritionData, type ProductData, type GradeResult } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
 import BottomNav from '@/components/BottomNav'
+import { useT, useLang } from '@/lib/i18n'
 
 interface Alternative {
   product_name: string
@@ -25,13 +26,13 @@ interface RecommendResponse {
 
 type FilterKey = 'all' | 'low_sugar' | 'low_fat' | 'high_protein' | 'low_sodium' | 'high_fiber'
 
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'low_sugar', label: 'Low Sugar' },
-  { key: 'low_fat', label: 'Low Fat' },
-  { key: 'high_protein', label: 'High Protein' },
-  { key: 'low_sodium', label: 'Low Sodium' },
-  { key: 'high_fiber', label: 'High Fiber' },
+const FILTERS: { key: FilterKey; tKey: string }[] = [
+  { key: 'all', tKey: 'alt.filter.all' },
+  { key: 'low_sugar', tKey: 'alt.filter.lowSugar' },
+  { key: 'low_fat', tKey: 'alt.filter.lowFat' },
+  { key: 'high_protein', tKey: 'alt.filter.highProtein' },
+  { key: 'low_sodium', tKey: 'alt.filter.lowSodium' },
+  { key: 'high_fiber', tKey: 'alt.filter.highFiber' },
 ]
 
 function passesFilter(nutrition: NutritionData, filter: FilterKey): boolean {
@@ -65,6 +66,8 @@ function formatVal(val: number | null): string {
 
 export default function AlternativesPage() {
   const router = useRouter()
+  const t = useT()
+  const lang = useLang()
   const [product, setProduct] = useState<ProductData | null>(null)
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null)
   const [data, setData] = useState<RecommendResponse | null>(null)
@@ -91,6 +94,7 @@ export default function AlternativesPage() {
         current_grade: g.grade,
         product_name: p.product_name,
         nutrition: p.nutrition,
+        lang,
       }),
     })
       .then((res) => {
@@ -105,7 +109,7 @@ export default function AlternativesPage() {
         setError('Could not find alternatives. Please try again.')
         setLoading(false)
       })
-  }, [router])
+  }, [router, lang])
 
   const filteredAlternatives = data?.alternatives.filter((a) => passesFilter(a.nutrition, activeFilter)) ?? []
 
@@ -147,12 +151,12 @@ export default function AlternativesPage() {
         <button onClick={() => router.push('/result')} className="text-[#7A7A7A] transition-colors hover:text-[#1A1A1A] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#1A1A1A]/5">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <h1 className="text-lg font-bold text-[#1A1A1A]">Healthier Alternatives</h1>
+        <h1 className="text-lg font-bold text-[#1A1A1A]">{t('alt.title')}</h1>
       </div>
 
       {/* Original Product Card */}
       <div className="glass-card p-4 animate-slide-up stagger-1" style={{ borderRadius: '20px' }}>
-        <p className="text-[10px] text-[#ACACAC] uppercase tracking-[0.1em] mb-2.5 font-semibold">Your Product</p>
+        <p className="text-[10px] text-[#ACACAC] uppercase tracking-[0.1em] mb-2.5 font-semibold">{t('alt.yourProduct')}</p>
         <div className="flex items-center gap-3">
           <div
             className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl font-bold"
@@ -191,16 +195,32 @@ export default function AlternativesPage() {
                 : { background: 'rgba(253, 252, 250, 0.6)', color: '#7A7A7A', border: '1px solid rgba(0,0,0,0.06)', backdropFilter: 'blur(10px)' }
             }
           >
-            {f.label}
+            {t(f.tKey as any)}
           </button>
         ))}
       </div>
 
-      {/* Loading State */}
+      {/* Loading State — skeleton cards while AI scans the catalog */}
       {loading && (
-        <div className="flex flex-col items-center gap-4 py-12">
-          <div className="w-10 h-10 border-2 border-[#1A1A1A] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-[#7A7A7A]">Finding healthier alternatives...</p>
+        <div className="flex flex-col gap-2">
+          <p className="text-[11px] text-[#ACACAC] flex items-center gap-1.5 px-1 mb-1">
+            <span className="w-3 h-3 border-2 border-[#ACACAC] border-t-transparent rounded-full animate-spin" />
+            {t('alt.finding')}
+          </p>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white"
+              style={{ border: '1px solid rgba(0,0,0,0.06)' }}
+            >
+              <div className="w-10 h-10 rounded-xl shimmer-loading shrink-0" />
+              <div className="flex-1 flex flex-col gap-2">
+                <div className="h-3.5 rounded-lg w-2/3 shimmer-loading" />
+                <div className="h-3 rounded-lg w-1/3 shimmer-loading" />
+              </div>
+              <div className="w-10 h-10 rounded-xl shimmer-loading shrink-0" />
+            </div>
+          ))}
         </div>
       )}
 
@@ -209,7 +229,7 @@ export default function AlternativesPage() {
         <div className="text-center py-12">
           <p className="text-sm text-[#7A7A7A]">{error}</p>
           <button onClick={() => router.push('/result')} className="mt-4 text-sm text-[#1A1A1A] font-semibold">
-            Go back
+            {t('alt.goBack')}
           </button>
         </div>
       )}
@@ -225,6 +245,7 @@ export default function AlternativesPage() {
                   alt={alt}
                   originalNutrition={product.nutrition}
                   onCompare={() => handleCompare(alt)}
+                  compareLabel={t('alt.compare')}
                   delay={i}
                 />
               ))}
@@ -259,7 +280,7 @@ export default function AlternativesPage() {
             <div className="glass-card p-4 mt-1" style={{ borderRadius: '20px', borderColor: 'rgba(26, 26, 26, 0.1)' }}>
               <div className="flex items-center gap-2 mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-                <h3 className="text-sm font-semibold text-[#1A1A1A]">AI Summary</h3>
+                <h3 className="text-sm font-semibold text-[#1A1A1A]">{t('alt.aiSummary')}</h3>
               </div>
               <p className="text-sm text-[#7A7A7A] leading-relaxed">{data.summary}</p>
             </div>
@@ -273,7 +294,7 @@ export default function AlternativesPage() {
         className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 mt-2"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        Back to result
+        {t('alt.backToResult')}
       </button>
       <BottomNav />
     </div>
@@ -285,11 +306,13 @@ function AlternativeCard({
   originalNutrition,
   onCompare,
   delay,
+  compareLabel,
 }: {
   alt: Alternative
   originalNutrition: NutritionData
   onCompare: () => void
   delay: number
+  compareLabel: string
 }) {
   const comparisons = buildComparisons(alt.nutrition, originalNutrition)
 
@@ -365,7 +388,7 @@ function AlternativeCard({
         style={{ background: 'rgba(26, 26, 26, 0.06)', borderColor: 'rgba(26, 26, 26, 0.15)' }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
-        Compare
+        {compareLabel}
       </button>
     </div>
   )
