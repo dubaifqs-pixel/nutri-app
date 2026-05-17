@@ -66,7 +66,46 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
     return stopCamera
   }, [stopCamera, showManual])
 
-  // Auto-detect loop
+  // Barcode auto-detect — uses the browser's native BarcodeDetector when available.
+  // Polls every 250ms; on hit, fires onBarcode and stops.
+  useEffect(() => {
+    if (mode !== 'barcode' || !videoReady || showManual) return
+    // BarcodeDetector ships in Chrome and iOS Safari 17+.
+    const BD: any = (window as any).BarcodeDetector
+    if (!BD) return
+
+    let stopped = false
+    const detector = new BD({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code'] })
+
+    const loop = async () => {
+      if (stopped) return
+      const video = videoRef.current
+      if (!video || video.videoWidth === 0) {
+        setTimeout(loop, 250)
+        return
+      }
+      try {
+        const codes = await detector.detect(video)
+        if (codes && codes.length > 0 && !stopped) {
+          const raw: string = String(codes[0].rawValue || '').trim()
+          if (raw && raw.length >= 6) {
+            stopped = true
+            setScanStatus('detected')
+            stopCamera()
+            onBarcode(raw)
+            return
+          }
+        }
+      } catch {
+        // Some browsers throw on detect() — fall through and retry.
+      }
+      setTimeout(loop, 250)
+    }
+    loop()
+    return () => { stopped = true }
+  }, [mode, videoReady, showManual, onBarcode, stopCamera])
+
+  // Auto-detect loop (label mode — Gemini OCR)
   useEffect(() => {
     if (mode !== 'label' || !videoReady || showManual || !onAutoDetect) return
 
