@@ -290,7 +290,7 @@ async function searchUSDA(query: string, pageSize = 20): Promise<{ products: Foo
   try {
     const url = `${USDA_BASE}/foods/search?query=${encodeURIComponent(query)}&pageSize=${pageSize}&api_key=${USDA_API_KEY}`
     const res = await fetchWithTimeout(url, {
-      headers: { 'User-Agent': 'DFQS-PoC/1.0 (https://dfqs.vercel.app)' },
+      headers: { 'User-Agent': 'Nutri-PoC/1.0 (https://nutri-app-mocha.vercel.app)' },
     })
     if (!res.ok) return { products: [], total: 0 }
     const data = await res.json()
@@ -342,7 +342,7 @@ async function searchOFF(query: string, page = 1, pageSize = 20): Promise<{ prod
   try {
     const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page=${page}&page_size=${pageSize}&sort_by=nutriscore_score`
     const res = await fetchWithTimeout(url, {
-      headers: { 'User-Agent': 'DFQS-PoC/1.0 (https://dfqs.vercel.app)' },
+      headers: { 'User-Agent': 'Nutri-PoC/1.0 (https://nutri-app-mocha.vercel.app)' },
     })
     if (!res.ok) return { products: [], total: 0 }
     const text = await res.text()
@@ -364,7 +364,7 @@ async function lookupOFFBarcode(barcode: string): Promise<FoodSearchResult | nul
   try {
     const url = `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`
     const res = await fetchWithTimeout(url, {
-      headers: { 'User-Agent': 'DFQS-PoC/1.0 (https://dfqs.vercel.app)' },
+      headers: { 'User-Agent': 'Nutri-PoC/1.0 (https://nutri-app-mocha.vercel.app)' },
     })
     if (!res.ok) return null
     const data = await res.json()

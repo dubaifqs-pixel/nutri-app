@@ -54,7 +54,7 @@ Critical rules:
 
 export const BARCODE_VISION_PROMPT = `Read the barcode number from this image. Return ONLY the barcode digits as a plain string, nothing else. If you see multiple barcodes, return the main product barcode (EAN-13 or UPC-A). If you cannot read any barcode, return "NONE".`
 
-export const CHAT_SYSTEM_PROMPT = `You are a nutrition advisor for DFQS (Dubai Food Quality Standards). You have the scanned product's nutrition data and DFQS grade.
+export const CHAT_SYSTEM_PROMPT = `You are a nutrition advisor for Nutri (Eat smarter). You have the scanned product's nutrition data and Nutri-Score grade.
 
 RESPONSE FORMAT: You MUST respond with a valid JSON object (no markdown, no code fences).
 

@@ -4,7 +4,7 @@ import { Grade, GRADE_COLORS, GRADE_GRADIENTS, GRADE_LABELS_EN } from '@/lib/typ
 
 const ALL_GRADES: Grade[] = ['A', 'B', 'C', 'D', 'E']
 
-export default function GradeBadge({ grade, score }: { grade: Grade; score: number }) {
+export default function GradeBadge({ grade, score: _score }: { grade: Grade; score: number }) {
   return (
     <div className="flex flex-col items-center gap-5">
       {/* Main Grade Badge */}
@@ -41,11 +41,6 @@ export default function GradeBadge({ grade, score }: { grade: Grade; score: numb
             </div>
           )
         })}
-      </div>
-
-      {/* Score Pill */}
-      <div className="flex flex-col items-center gap-1 px-5 py-2.5 rounded-2xl bg-white" style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
-        <p className="text-sm font-semibold" style={{ color: '#1A1A1A' }}>Score: {score}</p>
       </div>
     </div>
   )
