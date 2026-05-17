@@ -198,19 +198,74 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
     }
   }, [mode, videoReady, showManual, onAutoDetect, stopCamera, stage])
 
-  const capturePhoto = () => {
-    if (!videoRef.current || !videoReady) return
+  // Capture the current frame as a JPEG base64.
+  const grabFrame = (maxWidth = 1280): string | null => {
+    if (!videoRef.current || !videoReady) return null
     const video = videoRef.current
-    if (video.videoWidth === 0) return
-    scanningRef.current = false
-    const maxWidth = 1280
+    if (video.videoWidth === 0) return null
     const scale = video.videoWidth > maxWidth ? maxWidth / video.videoWidth : 1
     const canvas = document.createElement('canvas')
     canvas.width = Math.round(video.videoWidth * scale)
     canvas.height = Math.round(video.videoHeight * scale)
     const ctx = canvas.getContext('2d')!
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-    const base64 = canvas.toDataURL('image/jpeg', 0.85)
+    return canvas.toDataURL('image/jpeg', 0.85)
+  }
+
+  // Capture button — honors the two-stage flow in label mode, single-shot otherwise.
+  const capturePhoto = async () => {
+    const base64 = grabFrame()
+    if (!base64) return
+
+    // Label mode with two-stage auto-detect: run the same stage-aware pipeline as the loop.
+    if (mode === 'label' && onAutoDetect) {
+      scanningRef.current = false
+      busyRef.current = true
+      try {
+        const res = await fetch('/api/auto-detect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64, stage }),
+        })
+        const data = await res.json()
+
+        if (stage === 'name' && data.detected && data.product_name) {
+          capturedNameRef.current = data.product_name
+          if (data.serving_size_g) capturedServingRef.current.g = data.serving_size_g
+          if (data.serving_size_ml) capturedServingRef.current.ml = data.serving_size_ml
+          setStageFlash(true)
+          setTimeout(() => setStageFlash(false), 900)
+          setStage('nutrition')
+          setScanAttempts(0)
+          // Restart the auto-detect loop in the new stage.
+          scanningRef.current = true
+        } else if (stage === 'nutrition' && data.detected && data.nutrition) {
+          setScanStatus('detected')
+          const combined = {
+            ...data,
+            product_name: capturedNameRef.current || data.product_name || 'Scanned Product',
+            serving_size_g: data.serving_size_g ?? capturedServingRef.current.g,
+            serving_size_ml: data.serving_size_ml ?? capturedServingRef.current.ml,
+          }
+          setTimeout(() => {
+            stopCamera()
+            onAutoDetect(combined)
+          }, 600)
+        } else {
+          // Nothing detected — keep scanning, bump attempts so the hint text adapts.
+          setScanAttempts(prev => prev + 1)
+          scanningRef.current = true
+        }
+      } catch {
+        scanningRef.current = true
+      } finally {
+        busyRef.current = false
+      }
+      return
+    }
+
+    // Barcode mode or full single-shot label scan — original behavior.
+    scanningRef.current = false
     stopCamera()
     onCapture(base64)
   }
