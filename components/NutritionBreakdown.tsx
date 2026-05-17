@@ -10,6 +10,15 @@ interface Props {
 
 const MAX_NEGATIVE_POINTS = 10
 
+// Format a per-100g/per-100ml nutrient value for display.
+// Energy + sodium round to integer; grams round to 1 decimal (trailing zero stripped).
+function fmtValue(value: number, unit: string): string {
+  const u = unit.trim().toLowerCase()
+  if (u === 'kcal' || u === 'mg') return String(Math.round(value))
+  // grams: 1 decimal, drop ".0"
+  return String(Number(value.toFixed(1)))
+}
+
 const NUTRIENT_COLORS = {
   energy: '#ACACAC',
   sugars: '#C62828',
@@ -46,7 +55,7 @@ function NutrientRow({ label, value, unit, points, isPositive, delay, color, pts
           <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
           <span className="text-sm font-medium text-[#1A1A1A]">{label}</span>
         </div>
-        <span className={`text-sm font-bold ${textColor}`} dir="ltr">{value}{unit}</span>
+        <span className={`text-sm font-bold ${textColor}`} dir="ltr">{fmtValue(value, unit)}{unit}</span>
       </div>
       <div className="relative h-2 rounded-full overflow-hidden bg-[#F5F4F0]">
         <div
