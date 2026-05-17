@@ -6,6 +6,7 @@ import { getHistory, type HistoryEntry } from '@/lib/history'
 import { GRADE_GRADIENTS, GRADE_GLOWS, type Grade, type NutritionData, type GradeResult } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
 import { useT } from '@/lib/i18n'
+import BottomNav from '@/components/BottomNav'
 
 interface CompareProduct {
   product_name: string
@@ -125,7 +126,7 @@ export default function ComparePage() {
   const bothLoaded = !!(slot1 && slot2)
 
   return (
-    <div className="min-h-screen px-5 py-6 flex flex-col gap-5 mesh-bg">
+    <div className="min-h-screen px-5 py-6 flex flex-col gap-5 mesh-bg pb-[80px]">
       {/* Header */}
       <div className="flex items-center gap-3 animate-fade-in">
         <button onClick={() => router.push('/')} className="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl transition-colors" style={{ color: '#7A7A7A' }} aria-label="Back home">
@@ -139,6 +140,12 @@ export default function ComparePage() {
           <h1 className="text-xl font-bold" style={{ color: '#1A1A1A' }}>{t('compare.title')}</h1>
         </div>
       </div>
+
+      {!slot1 && !slot2 && (
+        <p className="text-[13px] text-[#7A7A7A] -mt-3 leading-snug animate-fade-in">
+          {t('compare.helper') || 'Tap a slot below to add a product. Scan a label, a barcode, or pick from the catalog — we’ll tell you which one is better.'}
+        </p>
+      )}
 
       {/* Product Cards -- Side by Side */}
       <div className="grid grid-cols-2 gap-3 animate-slide-up stagger-1">
@@ -177,7 +184,6 @@ export default function ComparePage() {
                     <span className="text-3xl font-bold" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>{product.grade}</span>
                   </div>
                   <p className="text-[11px] font-semibold text-[#1A1A1A] text-center line-clamp-2 mt-1">{product.product_name}</p>
-                  <p className="text-[10px] text-[#7A7A7A]">{t('home.score')}: {product.score}</p>
                   <button onClick={() => clearSlot(slotNum)} className="text-[10px] text-[#ACACAC] hover:text-red-400 min-h-[36px] px-2 flex items-center transition-colors">
                     {t('compare.remove')}
                   </button>
@@ -357,6 +363,10 @@ export default function ComparePage() {
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
               {t('compare.scanBarcode')}
             </button>
+            <button onClick={() => router.push(`/browse?return=compare&slot=${showModal}`)} className="flex items-center gap-3 w-full py-3.5 px-4 rounded-2xl text-sm" style={{ background: '#F5F4F0', color: '#1A1A1A', border: '1px solid rgba(0,0,0,0.06)' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+              {t('compare.pickFromCatalog') || 'Pick from catalog'}
+            </button>
 
             {history.length > 0 && (
               <>
@@ -381,6 +391,7 @@ export default function ComparePage() {
           </div>
         </div>
       )}
+      <BottomNav active="compare" />
     </div>
   )
 }

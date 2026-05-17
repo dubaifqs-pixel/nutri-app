@@ -63,18 +63,40 @@ function ChatContent() {
       })
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
-        setMessages((prev) => [...prev, { role: 'assistant', content: errData.error || 'Something went wrong. Please try again.' }])
+        setMessages((prev) => [...prev, { role: 'assistant', content: errData.error || 'Something went wrong. Please try again.', isError: true }])
         return
       }
       const data = await res.json()
       if (data.error) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.error }])
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.error, isError: true }])
       } else {
         setMessages((prev) => [...prev, { role: 'assistant', content: data.response }])
       }
     } catch (err) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: `Error: ${err instanceof Error ? err.message : 'Please try again'}` }])
+      setMessages((prev) => [...prev, { role: 'assistant', content: `Error: ${err instanceof Error ? err.message : 'Please try again'}`, isError: true }])
     } finally { setLoading(false) }
+  }
+
+  const retryLastMessage = () => {
+    if (loading) return
+    // Find the last user message
+    const lastUser = [...messages].reverse().find((m) => m.role === 'user')
+    if (!lastUser) return
+    // Strip the last assistant error message + the user message that produced it,
+    // then re-send so it appears as a fresh send.
+    setMessages((prev) => {
+      const trimmed = [...prev]
+      // remove trailing assistant errors
+      while (trimmed.length && trimmed[trimmed.length - 1].role === 'assistant' && trimmed[trimmed.length - 1].isError) {
+        trimmed.pop()
+      }
+      // remove the last user message (we'll re-add it via sendMessage)
+      if (trimmed.length && trimmed[trimmed.length - 1].role === 'user') {
+        trimmed.pop()
+      }
+      return trimmed
+    })
+    sendMessage(lastUser.content)
   }
 
   return (
@@ -114,7 +136,24 @@ function ChatContent() {
             </div>
           </div>
         )}
-        {messages.map((msg, i) => (<ChatMessageComponent key={i} message={msg} />))}
+        {messages.map((msg, i) => {
+          const isLast = i === messages.length - 1
+          return (
+            <div key={i} className="flex flex-col gap-1.5">
+              <ChatMessageComponent message={msg} />
+              {msg.role === 'assistant' && msg.isError && isLast && !loading && (
+                <button
+                  onClick={retryLastMessage}
+                  className="self-start text-xs px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5"
+                  style={{ background: '#FFFFFF', color: '#1A1A1A', border: '1px solid rgba(0,0,0,0.1)' }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                  {t('chat.retry') || 'Retry'}
+                </button>
+              )}
+            </div>
+          )
+        })}
         {loading && (
           <div className="flex justify-start">
             <div className="bg-white px-5 py-3 rounded-2xl rounded-bl-md text-sm" style={{ color: '#7A7A7A', border: '1px solid rgba(0,0,0,0.06)' }}>

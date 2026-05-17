@@ -47,6 +47,7 @@ export interface ProductData {
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
+  isError?: boolean
 }
 
 export const GRADE_COLORS: Record<Grade, string> = {

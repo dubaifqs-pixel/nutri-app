@@ -14,6 +14,11 @@ export const ar: Record<TranslationKey, string> = {
   'home.recent': 'الأخيرة',
   'home.seeAll': '← عرض الكل',
   'home.score': 'النتيجة',
+  'home.greeting': 'صباح الخير · خالد',
+  'home.h1a': 'امسح طعامك.',
+  'home.h1b': 'كل بذكاء.',
+  'home.swipe': '← مسح',
+  'home.alsoScanned': 'منتجات أخرى',
 
   // Nav
   'nav.home': 'الرئيسية',
@@ -31,6 +36,9 @@ export const ar: Record<TranslationKey, string> = {
   'result.copied': 'تم النسخ!',
   'result.analyzedByAI': 'محلَّل بالذكاء الاصطناعي',
   'result.verifyData': 'تحقق من البيانات',
+  'result.addToCompare': 'أضف إلى المقارنة',
+  'result.addedToCompare': 'تمت الإضافة إلى المقارنة',
+  'result.compareFull': 'المقارنة ممتلئة — أفرغ خانة أولاً',
 
   // Browse
   'browse.section': 'تصفح',
@@ -53,6 +61,13 @@ export const ar: Record<TranslationKey, string> = {
   'browse.cat.fruits.desc': 'منتجات طازجة',
   'browse.cat.frozen': 'الأطعمة المجمدة',
   'browse.cat.frozen.desc': 'وجبات مجمدة، بوظة',
+  'browse.search': 'ابحث عن منتج أو علامة',
+  'browse.recentScans': 'الفحوصات الأخيرة',
+  'browse.trending': 'الرائج الآن',
+  'browse.filter.all': 'الكل',
+  'browse.filter.healthy': 'صحي',
+  'browse.filter.avoid': 'تجنب',
+  'browse.filter.kids': 'مناسب للأطفال',
 
   // Compare
   'compare.section': 'مقارنة',
@@ -70,6 +85,10 @@ export const ar: Record<TranslationKey, string> = {
   'compare.scanBarcode': 'مسح الباركود',
   'compare.fromHistory': 'من السجل',
   'compare.cancel': 'إلغاء',
+  'compare.helper': 'اضغط على خانة أدناه لإضافة منتج. امسح الملصق أو الباركود أو اختر من الكتالوج — وسنخبرك أيهما أفضل.',
+  'compare.pickFromCatalog': 'اختر من الكتالوج',
+  'compare.addOneMore': 'أضف منتجًا آخر للمقارنة',
+  'compare.pickTwo': 'اختر منتجين لمقارنتهما وجهًا لوجه',
 
   // Chat
   'chat.back': 'رجوع',
@@ -83,6 +102,7 @@ export const ar: Record<TranslationKey, string> = {
   'chat.suggest.general1': 'ما الكمية اليومية الموصى بها من السكر؟',
   'chat.suggest.general2': 'ماذا تعني درجة Nutri-Score؟',
   'chat.suggest.general3': 'نصائح للتسوق الصحي في الإمارات',
+  'chat.retry': 'إعادة المحاولة',
   'chat.details': 'تفاصيل',
   'chat.recommendedAmount': 'الكمية الموصى بها',
   'chat.advice': 'نصيحة',

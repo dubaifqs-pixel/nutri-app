@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { GRADE_COLORS, GRADE_GRADIENTS, type Grade } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
 import { addToHistory } from '@/lib/history'
 import { DEMO_PRODUCTS, type DemoProduct } from '@/lib/demo-products'
+import { getProductImage } from '@/lib/product-images'
+import BottomNav from '@/components/BottomNav'
 
 const CATEGORY_NAMES: Record<string, string> = {
   dairy: 'Dairy',
@@ -49,11 +51,14 @@ function DemoBadge() {
   )
 }
 
-export default function CategoryPage() {
+function CategoryContent() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const category = params.category as string
   const categoryName = CATEGORY_NAMES[category] || category
+  const returnTo = searchParams.get('return')
+  const compareSlot = searchParams.get('slot')
 
   const [products, setProducts] = useState<BrowseProduct[]>([])
   const [loading, setLoading] = useState(true)
@@ -108,6 +113,19 @@ export default function CategoryPage() {
     fetchProducts(page + 1, true)
   }
 
+  const sendToCompareOrResult = (productData: any, gradeResult: any) => {
+    addToHistory(productData, gradeResult)
+    if (returnTo === 'compare' && (compareSlot === '1' || compareSlot === '2')) {
+      sessionStorage.setItem(`dfqs_compare_${compareSlot}`, JSON.stringify(productData))
+      sessionStorage.setItem(`dfqs_compare_${compareSlot}_grade`, JSON.stringify(gradeResult))
+      router.push('/compare')
+      return
+    }
+    sessionStorage.setItem('dfqs_product', JSON.stringify(productData))
+    sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
+    router.push('/result')
+  }
+
   const handleProductClick = (product: BrowseProduct) => {
     const productData = {
       product_name: product.product_name,
@@ -117,10 +135,7 @@ export default function CategoryPage() {
       source: 'barcode' as const,
     }
     const gradeResult = calculateGrade(product.nutrition)
-    addToHistory(productData, gradeResult)
-    sessionStorage.setItem('dfqs_product', JSON.stringify(productData))
-    sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
-    router.push('/result')
+    sendToCompareOrResult(productData, gradeResult)
   }
 
   const handleDemoProductClick = (dp: DemoProduct) => {
@@ -132,16 +147,13 @@ export default function CategoryPage() {
       source: 'barcode' as const,
     }
     const gradeResult = calculateGrade(dp.nutrition)
-    addToHistory(productData, gradeResult)
-    sessionStorage.setItem('dfqs_product', JSON.stringify(productData))
-    sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
-    router.push('/result')
+    sendToCompareOrResult(productData, gradeResult)
   }
 
   const hasMore = products.length < total
 
   return (
-    <div className="min-h-screen px-6 py-8 flex flex-col gap-6 mesh-bg">
+    <div className="min-h-screen px-6 py-8 flex flex-col gap-6 mesh-bg pb-[80px]">
       {/* Header */}
       <div className="flex items-center gap-3 animate-fade-in">
         <button onClick={() => router.push('/browse')} className="text-[#7A7A7A] transition-colors hover:text-[#1A1A1A] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#1A1A1A]/5">
@@ -164,15 +176,18 @@ export default function CategoryPage() {
               className="flex items-center gap-3 px-4 py-3.5 bg-white text-left animate-slide-up transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
               style={{ animationDelay: `${(i + 1) * 50}ms`, borderRadius: '16px', border: '1px solid rgba(0,0,0,0.06)' }}
             >
-              <div className="w-12 h-12 rounded-xl bg-[#F5F4F0] shrink-0 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A7A7A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-30"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-              </div>
+              <img
+                src={getProductImage(dp.product_name, dp.grade)}
+                alt=""
+                loading="lazy"
+                className="w-12 h-12 rounded-xl object-cover bg-[#F5F4F0] shrink-0"
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <p className="text-sm font-medium text-[#1A1A1A] truncate">{dp.product_name}</p>
                   <DemoBadge />
                 </div>
-                <p className="text-[11px] text-[#7A7A7A] mt-0.5">{dp.brand} -- Score: {dp.score}</p>
+                <p className="text-[11px] text-[#7A7A7A] mt-0.5 truncate">{dp.brand}</p>
               </div>
               <span
                 className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold"
@@ -203,8 +218,8 @@ export default function CategoryPage() {
         </div>
       )}
 
-      {/* Error State */}
-      {error && !loading && (
+      {/* Error State — only show when there are no curated products either */}
+      {error && !loading && demoGraded.length === 0 && (
         <div className="text-center py-12">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7A7A7A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto opacity-30 mb-3"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
           <p className="text-sm text-[#7A7A7A]">{error}</p>
@@ -244,7 +259,6 @@ export default function CategoryPage() {
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-[#1A1A1A] truncate">{product.product_name}</p>
-                <p className="text-[11px] text-[#7A7A7A] mt-0.5">Score: {product.score}</p>
               </div>
               <span
                 className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold"
@@ -274,6 +288,15 @@ export default function CategoryPage() {
           )}
         </div>
       )}
+      <BottomNav active="browse" />
     </div>
+  )
+}
+
+export default function CategoryPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F4F0' }}><div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#1A1A1A', borderTopColor: 'transparent' }} /></div>}>
+      <CategoryContent />
+    </Suspense>
   )
 }

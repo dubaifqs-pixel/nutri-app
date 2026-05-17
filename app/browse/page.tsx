@@ -1,16 +1,22 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { getDemoProductCount } from '@/lib/demo-products'
 import { getCategoryImage } from '@/lib/product-images'
 import { useT } from '@/lib/i18n'
+import BottomNav from '@/components/BottomNav'
 
 const CATEGORY_IDS = ['dairy', 'beverages', 'snacks', 'cereals', 'bread', 'meat', 'fruits', 'frozen'] as const
 type CategoryId = typeof CATEGORY_IDS[number]
 
-export default function BrowsePage() {
+function BrowseContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const t = useT()
+  const returnTo = searchParams.get('return')
+  const slot = searchParams.get('slot')
+  const passthrough = returnTo === 'compare' && slot ? `?return=compare&slot=${slot}` : ''
 
   return (
     <div className="min-h-screen px-5 py-8 flex flex-col gap-5 pb-24" style={{ background: '#F5F4F0' }}>
@@ -36,7 +42,7 @@ export default function BrowsePage() {
           return (
             <button
               key={catId}
-              onClick={() => router.push(`/browse/${catId}`)}
+              onClick={() => router.push(`/browse/${catId}${passthrough}`)}
               className="group relative flex flex-col items-start p-4 animate-slide-up overflow-hidden transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]"
               style={{
                 animationDelay: `${i * 50}ms`,
@@ -86,6 +92,15 @@ export default function BrowsePage() {
           )
         })}
       </div>
+      <BottomNav active="browse" />
     </div>
+  )
+}
+
+export default function BrowsePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F4F0' }}><div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#1A1A1A', borderTopColor: 'transparent' }} /></div>}>
+      <BrowseContent />
+    </Suspense>
   )
 }

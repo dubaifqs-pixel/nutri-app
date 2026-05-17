@@ -8,6 +8,7 @@ import type { ProductData, GradeResult } from '@/lib/types'
 import { GRADE_LABELS_EN } from '@/lib/types'
 import { getProductImage } from '@/lib/product-images'
 import { useT } from '@/lib/i18n'
+import BottomNav from '@/components/BottomNav'
 
 export default function ResultPage() {
   const router = useRouter()
@@ -15,6 +16,7 @@ export default function ResultPage() {
   const [product, setProduct] = useState<ProductData | null>(null)
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null)
   const [shareState, setShareState] = useState<'idle' | 'copied'>('idle')
+  const [compareState, setCompareState] = useState<'idle' | 'added' | 'full'>('idle')
 
   useEffect(() => {
     const productData = sessionStorage.getItem('dfqs_product')
@@ -30,6 +32,25 @@ export default function ResultPage() {
         <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#1A1A1A', borderTopColor: 'transparent' }} />
       </div>
     )
+  }
+
+  const handleAddToCompare = () => {
+    if (!product || !gradeResult) return
+    const slot1 = sessionStorage.getItem('dfqs_compare_1')
+    const slot2 = sessionStorage.getItem('dfqs_compare_2')
+    const payload = { product_name: product.product_name, nutrition: product.nutrition, image_url: product.image_url, source: product.source }
+    let targetSlot: 1 | 2 | null = null
+    if (!slot1) targetSlot = 1
+    else if (!slot2) targetSlot = 2
+    if (!targetSlot) {
+      setCompareState('full')
+      setTimeout(() => setCompareState('idle'), 2000)
+      return
+    }
+    sessionStorage.setItem(`dfqs_compare_${targetSlot}`, JSON.stringify(payload))
+    sessionStorage.setItem(`dfqs_compare_${targetSlot}_grade`, JSON.stringify(gradeResult))
+    setCompareState('added')
+    setTimeout(() => router.push('/compare'), 600)
   }
 
   const handleShare = async () => {
@@ -54,7 +75,7 @@ export default function ResultPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-8 flex flex-col gap-6" style={{ background: '#F5F4F0' }}>
+    <div className="min-h-screen px-6 py-8 flex flex-col gap-6 pb-[80px]" style={{ background: '#F5F4F0' }}>
       {/* Header with eyebrow tag */}
       <div className="flex items-center gap-3 animate-fade-in">
         <button onClick={() => router.push('/')} className="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl transition-colors" style={{ color: '#7A7A7A' }} aria-label="Back home">
@@ -148,6 +169,28 @@ export default function ResultPage() {
         </button>
       </div>
 
+      <button
+        onClick={handleAddToCompare}
+        className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-5"
+      >
+        {compareState === 'added' ? (
+          <>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            {t('result.addedToCompare') || 'Added to compare'}
+          </>
+        ) : compareState === 'full' ? (
+          <>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            {t('result.compareFull') || 'Compare is full — clear a slot first'}
+          </>
+        ) : (
+          <>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
+            {t('result.addToCompare') || 'Add to compare'}
+          </>
+        )}
+      </button>
+
       <button onClick={() => router.push('/')} className="w-full py-3.5 rounded-2xl btn-outline text-sm flex items-center justify-center gap-2 animate-slide-up stagger-5">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
         {t('result.scanAnother')}
@@ -166,6 +209,7 @@ export default function ResultPage() {
           </>
         )}
       </button>
+      <BottomNav />
     </div>
   )
 }

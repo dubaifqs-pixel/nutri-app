@@ -12,6 +12,11 @@ export const en = {
   'home.recent': 'Recent',
   'home.seeAll': 'See all →',
   'home.score': 'Score',
+  'home.greeting': 'GOOD MORNING · KHALID',
+  'home.h1a': 'Scan your food.',
+  'home.h1b': 'Eat smarter.',
+  'home.swipe': 'SWIPE →',
+  'home.alsoScanned': 'ALSO SCANNED',
 
   // Nav
   'nav.home': 'Home',
@@ -29,6 +34,9 @@ export const en = {
   'result.copied': 'Copied!',
   'result.analyzedByAI': 'Analyzed by AI',
   'result.verifyData': 'Verify data',
+  'result.addToCompare': 'Add to compare',
+  'result.addedToCompare': 'Added to compare',
+  'result.compareFull': 'Compare is full — clear a slot first',
 
   // Browse
   'browse.section': 'Browse',
@@ -51,6 +59,13 @@ export const en = {
   'browse.cat.fruits.desc': 'Fresh produce',
   'browse.cat.frozen': 'Frozen Foods',
   'browse.cat.frozen.desc': 'Frozen meals, ice cream',
+  'browse.search': 'Search products & brands',
+  'browse.recentScans': 'Recent scans',
+  'browse.trending': 'Trending now',
+  'browse.filter.all': 'All',
+  'browse.filter.healthy': 'Healthy',
+  'browse.filter.avoid': 'Avoid',
+  'browse.filter.kids': 'Kid-friendly',
 
   // Compare
   'compare.section': 'Compare',
@@ -68,6 +83,10 @@ export const en = {
   'compare.scanBarcode': 'Scan Barcode',
   'compare.fromHistory': 'From History',
   'compare.cancel': 'Cancel',
+  'compare.helper': 'Tap a slot below to add a product. Scan a label, a barcode, or pick from the catalog — we’ll tell you which one is better.',
+  'compare.pickFromCatalog': 'Pick from catalog',
+  'compare.addOneMore': 'Add one more product to compare',
+  'compare.pickTwo': 'Pick two products to see them head-to-head',
 
   // Chat
   'chat.back': 'Back',
@@ -81,6 +100,7 @@ export const en = {
   'chat.suggest.general1': 'How much sugar should I eat per day?',
   'chat.suggest.general2': 'What does the Nutri-Score grade mean?',
   'chat.suggest.general3': 'Tips for healthier shopping in UAE',
+  'chat.retry': 'Retry',
   'chat.details': 'Details',
   'chat.recommendedAmount': 'Recommended Amount',
   'chat.advice': 'Advice',
