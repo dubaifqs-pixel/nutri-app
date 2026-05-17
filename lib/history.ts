@@ -28,7 +28,9 @@ export function addToHistory(product: ProductData, gradeResult: GradeResult): vo
     barcode: product.barcode,
   }
 
-  const existing = getHistory()
+  // Dedupe by product name: if the same product is viewed again, drop the
+  // older entry so Recent shows it once (in its most-recent position).
+  const existing = getHistory().filter((e) => e.product_name !== entry.product_name)
   const updated = [entry, ...existing].slice(0, MAX_ENTRIES)
 
   try {
