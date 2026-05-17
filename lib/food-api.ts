@@ -438,10 +438,50 @@ export async function searchProducts(
  * 2. If not found -> Ask Gemini AI
  * 3. If Gemini doesn't know -> return null
  */
+// Count how many of the 6 graded nutrition fields are populated.
+function countFilledNutrition(n: NutritionData): number {
+  return (
+    (n.energy_kcal !== null ? 1 : 0) +
+    (n.sugars_g !== null ? 1 : 0) +
+    (n.saturated_fat_g !== null ? 1 : 0) +
+    (n.sodium_mg !== null ? 1 : 0) +
+    (n.protein_g !== null ? 1 : 0) +
+    (n.fiber_g !== null ? 1 : 0)
+  )
+}
+
+// Merge two nutrition records — primary wins for non-null fields, secondary fills nulls.
+function mergeNutrition(primary: NutritionData, secondary: NutritionData): NutritionData {
+  return {
+    energy_kcal: primary.energy_kcal ?? secondary.energy_kcal,
+    sugars_g: primary.sugars_g ?? secondary.sugars_g,
+    saturated_fat_g: primary.saturated_fat_g ?? secondary.saturated_fat_g,
+    sodium_mg: primary.sodium_mg ?? secondary.sodium_mg,
+    protein_g: primary.protein_g ?? secondary.protein_g,
+    fiber_g: primary.fiber_g ?? secondary.fiber_g,
+    fruits_veg_percent: primary.fruits_veg_percent ?? secondary.fruits_veg_percent,
+  }
+}
+
 export async function lookupBarcode(barcode: string): Promise<FoodSearchResult | null> {
   // Try Open Food Facts barcode API first (fast, specific)
   const offResult = await lookupOFFBarcode(barcode)
-  if (offResult) return offResult
+  if (offResult) {
+    // Partial-data fallback: if OFF returned fewer than 5 of 6 graded nutrients,
+    // ask Gemini for the same product by name and fill the gaps. The OFF values
+    // still win for any field both sources have.
+    const filled = countFilledNutrition(offResult.nutrition)
+    if (filled < 5 && offResult.product_name && offResult.product_name !== 'Unknown Product') {
+      try {
+        const aiSupplement = await askGeminiForProduct(offResult.product_name)
+        if (aiSupplement?.nutrition) {
+          offResult.nutrition = mergeNutrition(offResult.nutrition, aiSupplement.nutrition)
+          offResult.data_source = 'Open Food Facts + AI'
+        }
+      } catch { /* keep OFF-only data */ }
+    }
+    return offResult
+  }
 
   // Fallback: Ask Gemini for barcode knowledge
   const geminiResult = await askGeminiForBarcode(barcode)

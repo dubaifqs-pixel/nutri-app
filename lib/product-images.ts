@@ -2,6 +2,7 @@
 // When a product is scanned, we match its name to a category and show the image
 
 const CATEGORY_KEYWORDS: { category: string; keywords: string[] }[] = [
+  { category: 'cookies', keywords: ['protein bar', 'energy bar', 'granola bar', 'barebells', 'quest bar', 'oatbar', 'oat bar', 'rxbar', 'kind bar', 'larabar', 'cliff bar', 'clif bar'] },
   { category: 'chocolate', keywords: ['chocolate', 'cocoa', 'kitkat', 'kit kat', 'snickers', 'twix', 'mars', 'bounty', 'nutella', 'ferrero', 'cadbury', 'galaxy', 'toblerone', 'oreo', 'm&m', 'maltesers', 'kinder'] },
   { category: 'softdrink', keywords: ['cola', 'coca-cola', 'coca cola', 'pepsi', 'sprite', 'fanta', 'mirinda', '7up', 'mountain dew', 'soda', 'soft drink', 'carbonated', 'fizzy'] },
   { category: 'juice', keywords: ['juice', 'rani', 'tropicana', 'minute maid', 'vimto', 'tang', 'capri sun', 'capri-sun', 'nectar', 'squash', 'lemonade'] },
@@ -39,12 +40,13 @@ export function getProductImage(productName: string, grade?: string): string {
     }
   }
 
-  // Fallback: use grade-based image
-  if (grade && GRADE_FALLBACK[grade]) {
-    return GRADE_FALLBACK[grade]
-  }
-
-  return '/products/cat-fruit.png'
+  // Neutral fallback — a generic packaged-product image rather than misleading
+  // the user with a milk bottle / chocolate bar for an unmatched product.
+  // The grade-based fallback was removing accuracy more than it was adding (a
+  // grade-B protein bar got the milk image), so we use a category-neutral hero.
+  // The `grade` argument is kept for callers but is no longer consulted here.
+  void grade
+  return '/products/snacks.png'
 }
 
 // Get category image for browse pages — uses dedicated hero category images

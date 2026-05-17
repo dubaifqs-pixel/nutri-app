@@ -1,9 +1,10 @@
 'use client'
 
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useState, Suspense } from 'react'
+import { useRef, useState, Suspense } from 'react'
 import Scanner from '@/components/Scanner'
 import { addToHistory } from '@/lib/history'
+import type { Grade, GradeResult } from '@/lib/types'
 
 function ScanContent() {
   const searchParams = useSearchParams()
@@ -14,6 +15,13 @@ function ScanContent() {
   const slot = searchParams.get('slot')
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState('')
+  // Verify-before-navigate state for barcode mode.
+  const [detectedBarcode, setDetectedBarcode] = useState<string | null>(null)
+  const [pendingMatch, setPendingMatch] = useState<any | null>(null)
+  const [pendingGrade, setPendingGrade] = useState<GradeResult | null>(null)
+  const [unknownBarcode, setUnknownBarcode] = useState<string | null>(null)
+  const autoContinueRef = useRef<number | null>(null)
+  const cancelledRef = useRef(false)
 
   const lookupBarcode = async (barcode: string) => {
     setStatus(`Looking up product: ${barcode}...`)
@@ -22,7 +30,12 @@ function ScanContent() {
       body: JSON.stringify({ barcode }),
     })
     if (!res.ok) {
-      throw new Error('Product not found in database')
+      // Surface the structured reason so handleBarcode can route the user properly.
+      const err = await res.json().catch(() => ({}))
+      const e: Error & { reason?: string; barcode?: string } = new Error(err.error || 'Product not found in database')
+      e.reason = err.reason
+      e.barcode = err.barcode || barcode
+      throw e
     }
     return await res.json()
   }
@@ -51,14 +64,42 @@ function ScanContent() {
 
   const handleBarcode = async (barcode: string) => {
     setLoading(true)
+    setDetectedBarcode(barcode)
     try {
       const product = await lookupBarcode(barcode)
+      // Verify-before-navigate: show the user what was found for a beat so they can spot wrong matches.
+      setPendingMatch(product)
       const gradeResult = await getGrade(product.nutrition)
-      goToResult(product, gradeResult)
+      setPendingGrade(gradeResult)
+      // Auto-continue after 1.6s — tap "Wrong?" to stop and rescan.
+      autoContinueRef.current = window.setTimeout(() => {
+        if (!cancelledRef.current) {
+          goToResult(product, gradeResult)
+        }
+      }, 1600)
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'Something went wrong')
+      const e = err as Error & { reason?: string; barcode?: string }
+      if (e.reason === 'unknown_barcode') {
+        setUnknownBarcode(e.barcode || barcode)
+        setLoading(false)
+        return
+      }
+      setStatus(e.message || 'Something went wrong')
       setTimeout(() => setLoading(false), 3000)
     }
+  }
+
+  const cancelMatch = () => {
+    cancelledRef.current = true
+    if (autoContinueRef.current) {
+      clearTimeout(autoContinueRef.current)
+      autoContinueRef.current = null
+    }
+    setPendingMatch(null)
+    setPendingGrade(null)
+    setDetectedBarcode(null)
+    cancelledRef.current = false
+    setLoading(false)
   }
 
   const handleCapture = async (imageBase64: string) => {
@@ -125,6 +166,58 @@ function ScanContent() {
         setTimeout(() => setLoading(false), 3000)
       }
     }
+  }
+
+  // Unknown barcode — offer label scan instead.
+  if (unknownBarcode) {
+    return (
+      <div className="min-h-screen bg-[#1A1A1A] flex flex-col items-center justify-center gap-6 px-8 text-center">
+        <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,193,7,0.15)' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFC107" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        </div>
+        <div>
+          <p className="text-white text-lg font-bold">Barcode not in our database</p>
+          <p className="text-white/50 text-xs mt-1.5" dir="ltr">{unknownBarcode}</p>
+          <p className="text-white/40 text-sm mt-3 max-w-xs">We couldn’t find this product. Scan the nutrition label on the back instead — we’ll read the values directly.</p>
+        </div>
+        <div className="flex flex-col gap-2.5 w-full max-w-xs">
+          <button onClick={() => { setUnknownBarcode(null); router.push('/scan?mode=label') }} className="w-full py-3.5 rounded-2xl btn-accent text-sm flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Scan nutrition label
+          </button>
+          <button onClick={() => { setUnknownBarcode(null); setLoading(false) }} className="w-full py-3 rounded-2xl text-white/60 text-sm hover:text-white transition-colors min-h-[44px]">
+            Try a different barcode
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Verify-before-navigate — barcode found, briefly show match before opening result.
+  if (pendingMatch && pendingGrade) {
+    const grade = pendingGrade.grade as Grade
+    const gradeColors: Record<Grade, string> = { A: '#2E7D32', B: '#558B2F', C: '#F9A825', D: '#E65100', E: '#C62828' }
+    return (
+      <div className="min-h-screen bg-[#1A1A1A] flex flex-col items-center justify-center gap-6 px-8 text-center animate-fade-in">
+        <div className="w-20 h-20 rounded-3xl flex flex-col items-center justify-center text-white font-extrabold" style={{ background: gradeColors[grade], boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
+          <span className="text-3xl leading-none">{grade}</span>
+        </div>
+        <div className="max-w-xs">
+          <p className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Found</p>
+          <p className="text-white text-lg font-bold leading-tight">{pendingMatch.product_name}</p>
+          {detectedBarcode && <p className="text-white/40 text-[10px] mt-1.5" dir="ltr">{detectedBarcode}</p>}
+        </div>
+        <div className="flex gap-2.5 w-full max-w-xs">
+          <button onClick={cancelMatch} className="flex-1 py-3 rounded-2xl text-white/60 text-sm hover:text-white transition-colors min-h-[44px]" style={{ border: '1px solid rgba(255,255,255,0.12)' }}>
+            Wrong product
+          </button>
+          <button onClick={() => { if (autoContinueRef.current) clearTimeout(autoContinueRef.current); goToResult(pendingMatch, pendingGrade) }} className="flex-1 py-3 rounded-2xl btn-accent text-sm">
+            Continue →
+          </button>
+        </div>
+        <p className="text-white/30 text-[11px]">Continuing automatically…</p>
+      </div>
+    )
   }
 
   if (loading) {

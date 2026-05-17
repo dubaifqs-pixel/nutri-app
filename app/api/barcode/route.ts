@@ -10,7 +10,12 @@ export async function POST(request: NextRequest) {
 
     const result = await lookupBarcode(barcode)
     if (!result) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+      // Tell the client this is a known-unknown so the UI can offer a label-scan fallback.
+      return NextResponse.json({
+        error: 'Product not in our databases',
+        reason: 'unknown_barcode',
+        barcode,
+      }, { status: 404 })
     }
 
     return NextResponse.json({

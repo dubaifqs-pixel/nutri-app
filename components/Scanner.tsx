@@ -294,28 +294,53 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
   }
 
   if (showManual) {
+    // Strip non-digits and clamp to 14 chars (UPC-A=12, EAN-13=13, EAN-14=14 max).
+    const sanitize = (raw: string) => raw.replace(/\D/g, '').slice(0, 14)
+    const digits = sanitize(manualBarcode)
+    const valid = digits.length >= 8 && digits.length <= 14
     return (
       <div className="flex flex-col items-center justify-center gap-5 p-8" style={{ height: '100vh' }}>
-        <div className="text-white text-center mb-4">
+        <div className="text-white text-center mb-2">
           <p className="text-lg font-semibold">Enter Barcode Number</p>
-          <p className="text-sm text-white/50 mt-1.5">Type the number below the barcode</p>
+          <p className="text-sm text-white/50 mt-1.5">Type the digits under the barcode</p>
         </div>
-        <input
-          type="tel"
-          value={manualBarcode}
-          onChange={(e) => setManualBarcode(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
-          placeholder="e.g. 6281100120018"
-          className="w-full max-w-xs bg-white/10 text-white text-center text-xl px-5 py-4 rounded-2xl outline-none placeholder:text-white/25 tracking-widest focus:ring-2 focus:ring-[#B6F074]/40 transition-all"
-          dir="ltr"
-          autoFocus
-        />
+        <div className="w-full max-w-xs flex flex-col gap-2">
+          <input
+            type="tel"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            value={digits}
+            onChange={(e) => setManualBarcode(sanitize(e.target.value))}
+            onKeyDown={(e) => e.key === 'Enter' && valid && onBarcode(digits)}
+            placeholder="0 0 0 0 0 0 0 0 0 0 0 0 0"
+            className="w-full bg-white/10 text-white text-center text-2xl px-5 py-4 rounded-2xl outline-none placeholder:text-white/15 focus:ring-2 focus:ring-[#B6F074]/40 transition-all tabular-nums"
+            style={{ letterSpacing: '0.18em' }}
+            dir="ltr"
+            autoFocus
+          />
+          <div className="flex items-center justify-between px-2">
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const text = await navigator.clipboard?.readText()
+                  if (text) setManualBarcode(sanitize(text))
+                } catch { /* clipboard blocked */ }
+              }}
+              className="text-[11px] text-white/40 hover:text-white/80 transition-colors"
+            >
+              Paste
+            </button>
+            <span className="text-[11px] tabular-nums text-white/40">{digits.length} / 13</span>
+          </div>
+        </div>
         <button
-          onClick={handleManualSubmit}
-          disabled={manualBarcode.trim().length < 8}
+          onClick={() => valid && onBarcode(digits)}
+          disabled={!valid}
           className="w-full max-w-xs py-3.5 rounded-2xl btn-accent disabled:opacity-40 transition-all text-sm"
         >
-          Search
+          Look up
         </button>
         <button
           onClick={() => { setShowManual(false); setManualBarcode('') }}
