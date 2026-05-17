@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { GRADE_COLORS, GRADE_GRADIENTS, type Grade, type NutritionData, type ProductData, type GradeResult } from '@/lib/types'
 import { calculateGrade } from '@/lib/scoring'
+import BottomNav from '@/components/BottomNav'
 
 interface Alternative {
   product_name: string
@@ -140,7 +141,7 @@ export default function AlternativesPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-8 flex flex-col gap-5 mesh-bg">
+    <div className="min-h-screen px-6 py-8 flex flex-col gap-5 mesh-bg pb-[80px]">
       {/* Header */}
       <div className="flex items-center gap-3 animate-fade-in">
         <button onClick={() => router.push('/result')} className="text-[#7A7A7A] transition-colors hover:text-[#1A1A1A] min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl hover:bg-[#1A1A1A]/5">
@@ -161,7 +162,6 @@ export default function AlternativesPage() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-[#1A1A1A] truncate">{product.product_name}</p>
-            <p className="text-xs text-[#7A7A7A] mt-0.5">Score: {gradeResult.score}</p>
           </div>
         </div>
         {/* Key bad nutrients */}
@@ -275,6 +275,7 @@ export default function AlternativesPage() {
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         Back to result
       </button>
+      <BottomNav />
     </div>
   )
 }
@@ -307,7 +308,6 @@ function AlternativeCard({
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-[#1A1A1A] truncate">{alt.product_name}</p>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-[#7A7A7A]">Score: {alt.score}</span>
             <span
               className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
               style={{
