@@ -8,6 +8,7 @@ import { useT } from '@/lib/i18n'
 import { DEMO_PRODUCTS } from '@/lib/demo-products'
 import { calculateGrade } from '@/lib/scoring'
 import { getProductImage } from '@/lib/product-images'
+import { addToHistory } from '@/lib/history'
 import { GRADE_COLORS, type Grade, type NutritionData } from '@/lib/types'
 import { useEffect, useState, useRef, useCallback } from 'react'
 
@@ -217,12 +218,14 @@ export default function Home() {
             onClick={(e) => {
               e.preventDefault()
               const gradeResult = calculateGrade(product.nutrition)
-              sessionStorage.setItem('dfqs_product', JSON.stringify({
+              const productData = {
                 product_name: product.product_name,
                 nutrition: product.nutrition,
-                source: 'manual',
-              }))
+                source: 'manual' as const,
+              }
+              sessionStorage.setItem('dfqs_product', JSON.stringify(productData))
               sessionStorage.setItem('dfqs_grade', JSON.stringify(gradeResult))
+              addToHistory(productData, gradeResult)
               window.location.href = '/result'
             }}
             className="block relative active:scale-[0.98] cursor-pointer"
