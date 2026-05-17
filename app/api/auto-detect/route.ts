@@ -111,6 +111,14 @@ export async function POST(request: NextRequest) {
       fiber_g: to100g(n(ps.fiber_g), serving),
     }
 
+    // Beverage detection — same rules as scan-label: ml serving or drink-y name.
+    const productNameRaw = (parsed.product_name || '').toLowerCase()
+    const beverageNameSignal = /\b(juice|drink|soda|cola|water|milk drink|beverage|smoothie|tea|coffee latte|iced tea|nectar|kombucha|laban|عصير|مشروب|ماء)\b/.test(productNameRaw)
+    const isBeverage = parsed.serving_size_ml !== null || beverageNameSignal
+    const energyForWaterCheck = computed.energy_kcal ?? n(p100.energy_kcal)
+    const isWater = /\b(water|sparkling water|mineral water|ماء)\b/.test(productNameRaw)
+      && (energyForWaterCheck === null || energyForWaterCheck === 0)
+
     const nutrition = {
       energy_kcal: reconcile(n(p100.energy_kcal), computed.energy_kcal),
       sugars_g: reconcile(n(p100.sugars_g), computed.sugars_g),
@@ -119,6 +127,8 @@ export async function POST(request: NextRequest) {
       protein_g: reconcile(n(p100.protein_g), computed.protein_g),
       fiber_g: reconcile(n(p100.fiber_g), computed.fiber_g),
       fruits_veg_percent: n(parsed.fruits_veg_percent),
+      ...(isBeverage ? { is_beverage: true as const } : {}),
+      ...(isWater ? { is_water: true as const } : {}),
     }
 
     const filled = [nutrition.energy_kcal, nutrition.sugars_g, nutrition.saturated_fat_g, nutrition.sodium_mg, nutrition.protein_g, nutrition.fiber_g].filter(v => v !== null).length

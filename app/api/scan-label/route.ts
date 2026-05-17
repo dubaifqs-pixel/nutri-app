@@ -125,6 +125,17 @@ export async function POST(request: NextRequest) {
       fiber_g: to100g(ps.fiber_g, serving),
     }
 
+    // Beverage detection: when the label gives a serving in ml (volume) rather
+    // than g (mass), or the product name is clearly a drink, the Nutri-Score
+    // beverage scale should kick in. Front-of-pack scans don't include enough
+    // signal otherwise.
+    const productNameRaw = (parsed.product_name || '').toLowerCase()
+    const beverageNameSignal = /\b(juice|drink|soda|cola|water|milk drink|beverage|smoothie|tea|coffee latte|iced tea|nectar|kombucha|laban|عصير|مشروب|ماء)\b/.test(productNameRaw)
+    const isBeverage = parsed.serving_size_ml !== null || beverageNameSignal
+    const energyForWaterCheck = computed.energy_kcal ?? p100.energy_kcal ?? null
+    const isWater = /\b(water|sparkling water|mineral water|ماء)\b/.test(productNameRaw)
+      && (energyForWaterCheck === null || energyForWaterCheck === 0)
+
     const nutrition = {
       energy_kcal: reconcile(p100.energy_kcal, computed.energy_kcal),
       sugars_g: reconcile(p100.sugars_g, computed.sugars_g),
@@ -133,6 +144,8 @@ export async function POST(request: NextRequest) {
       protein_g: reconcile(p100.protein_g, computed.protein_g),
       fiber_g: reconcile(p100.fiber_g, computed.fiber_g),
       fruits_veg_percent: n(parsed.fruits_veg_percent),
+      ...(isBeverage ? { is_beverage: true as const } : {}),
+      ...(isWater ? { is_water: true as const } : {}),
     }
 
     // Product name — only use text actually read off the package.

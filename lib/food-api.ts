@@ -463,6 +463,25 @@ function mergeNutrition(primary: NutritionData, secondary: NutritionData): Nutri
   }
 }
 
+// Sniff the product name for beverage signals so Nutri-Score uses the
+// beverage scale and not the solid-food one. OFF has category tags but they
+// are inconsistent across UAE products; the name itself is a reliable signal.
+const BEVERAGE_PATTERN = /\b(juice|drink|soda|cola|beverage|smoothie|nectar|kombucha|laban|cordial|squash|ice tea|iced tea|water|sparkling water|mineral water|energy drink|sports drink|عصير|مشروب|ماء)\b/i
+const WATER_PATTERN = /\b(water|sparkling water|mineral water|ماء)\b/i
+
+function tagBeverage(result: FoodSearchResult): FoodSearchResult {
+  const name = (result.product_name || '').toLowerCase()
+  if (!BEVERAGE_PATTERN.test(name)) return result
+  const isWater = WATER_PATTERN.test(name) &&
+    (result.nutrition.energy_kcal === null || result.nutrition.energy_kcal === 0)
+  result.nutrition = {
+    ...result.nutrition,
+    is_beverage: true,
+    ...(isWater ? { is_water: true } : {}),
+  }
+  return result
+}
+
 export async function lookupBarcode(barcode: string): Promise<FoodSearchResult | null> {
   // Try Open Food Facts barcode API first (fast, specific)
   const offResult = await lookupOFFBarcode(barcode)
@@ -480,12 +499,12 @@ export async function lookupBarcode(barcode: string): Promise<FoodSearchResult |
         }
       } catch { /* keep OFF-only data */ }
     }
-    return offResult
+    return tagBeverage(offResult)
   }
 
   // Fallback: Ask Gemini for barcode knowledge
   const geminiResult = await askGeminiForBarcode(barcode)
-  if (geminiResult) return geminiResult
+  if (geminiResult) return tagBeverage(geminiResult)
 
   return null
 }
