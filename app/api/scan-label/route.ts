@@ -19,18 +19,12 @@ export async function POST(request: NextRequest) {
     }
     const nutrition = JSON.parse(jsonMatch[0])
 
-    // If product name is missing, ask AI to identify it from the nutrition profile
-    let productName = nutrition.product_name
+    // If the model could not read a brand/product name from text actually visible in the image,
+    // fall back to a neutral label. Do NOT ask the model to "guess" from nutrition values —
+    // that produced wildly wrong names (e.g. "M&S Chicken Breast Fillets" for a Barebells bar).
+    let productName: string | null = nutrition.product_name
     if (!productName || productName === 'null' || productName === 'Unknown Product') {
-      try {
-        const identifyResult = await geminiFlash.generateContent(
-          `Based on this nutrition label photo and these values per 100g: Energy ${nutrition.energy_kcal}kcal, Sugar ${nutrition.sugars_g}g, Sat Fat ${nutrition.saturated_fat_g}g, Sodium ${nutrition.sodium_mg}mg, Protein ${nutrition.protein_g}g — what product is this most likely? Look at ANY visible text, brand logos, colors, or packaging clues in the image. Reply with ONLY the product name (e.g. "KitKat 4 Finger" or "Lay's Classic Chips"), nothing else.`
-        )
-        const name = identifyResult.response.text().trim().replace(/['"]/g, '')
-        if (name && name.length < 60 && name !== 'Unknown') {
-          productName = name
-        }
-      } catch {}
+      productName = null
     }
 
     return NextResponse.json({

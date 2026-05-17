@@ -8,22 +8,29 @@ export const geminiFlash = genAI.getGenerativeModel({
 
 export const VISION_PROMPT = `You are a precise nutrition label reader. Carefully examine every detail of this food product photo.
 
-Step 1: Identify the product name and brand. Look for ANY text on the packaging — brand name, product name, flavor, size. Read text in any language (English, Arabic, etc.). The name is CRITICAL — never return null for product_name if there is any text visible on the package.
+Step 1: Identify the product name and brand from text VISIBLE in the image.
+  - Look for the brand wordmark, product name, and flavor/variant.
+  - Read text in any language (English, Arabic, etc.).
+  - DO NOT GUESS, INFER, OR INVENT a product name based on the nutrition values alone.
+  - If only the nutrition table is visible (no brand or product text), set product_name to null.
+  - If only a partial brand or barcode is visible without a product name, set product_name to null.
+  - NEVER fabricate plausible-sounding product names — return null instead.
+
 Step 2: Find the nutrition facts table/panel.
 Step 3: Read EACH value precisely — do not estimate or guess.
 
 Return ONLY valid JSON (no markdown, no code fences):
-{"product_name":"exact name from package","energy_kcal":number or null,"sugars_g":number or null,"saturated_fat_g":number or null,"sodium_mg":number or null,"protein_g":number or null,"fiber_g":number or null,"fruits_veg_percent":number or null}
+{"product_name": "exact name from package" or null, "energy_kcal": number or null, "sugars_g": number or null, "saturated_fat_g": number or null, "sodium_mg": number or null, "protein_g": number or null, "fiber_g": number or null, "fruits_veg_percent": number or null}
 
 Critical rules:
-- All values MUST be per 100g or per 100ml
-- If label shows "per serving", you MUST convert to per 100g using the serving size
-- Sodium from salt: sodium_mg = salt_g × 400
-- Energy from kJ: energy_kcal = energy_kJ / 4.184
-- Read the EXACT numbers, do not round or estimate
-- Product name: read what's printed on the package, in the original language
-- If you can read values in both English and Arabic, prefer the numerical values
-- Use null ONLY if a value is truly not visible`
+- All values MUST be per 100g or per 100ml.
+- If label shows "per serving", convert to per 100g using the serving size.
+- Sodium from salt: sodium_mg = salt_g × 400.
+- Energy from kJ: energy_kcal = energy_kJ / 4.184.
+- Read the EXACT numbers, do not round or estimate.
+- Product name: ONLY use text actually printed and visible on the package.
+- If you can read values in both English and Arabic, prefer the numerical values.
+- Use null when a value is not visible — never invent a value.`
 
 export const BARCODE_VISION_PROMPT = `Read the barcode number from this image. Return ONLY the barcode digits as a plain string, nothing else. If you see multiple barcodes, return the main product barcode (EAN-13 or UPC-A). If you cannot read any barcode, return "NONE".`
 
