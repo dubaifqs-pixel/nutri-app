@@ -55,21 +55,28 @@ export default function ResultPage() {
 
   const handleShare = async () => {
     const label = GRADE_LABELS_EN[gradeResult!.grade]
-    const text = `I scanned ${product!.product_name} on nutri and it got a grade ${gradeResult!.grade} (${label})! Try it: https://nutri.vercel.app`
+    const url = typeof window !== 'undefined' ? window.location.origin : 'https://nutri-app-mocha.vercel.app'
+    const text = `I scanned ${product!.product_name} on nutri and it got a grade ${gradeResult!.grade} (${label})! Try it: ${url}`
 
-    if (typeof navigator !== 'undefined' && navigator.share) {
+    // Prefer native share UI when present. If it fails (cancel, no gesture,
+    // permission denied), fall through to clipboard so the user always gets
+    // something useful instead of a no-op.
+    let shared = false
+    if (typeof navigator !== 'undefined' && (navigator as Navigator & { share?: (data: ShareData) => Promise<void> }).share) {
       try {
-        await navigator.share({ text })
+        await (navigator as Navigator & { share: (data: ShareData) => Promise<void> }).share({ text })
+        shared = true
       } catch {
-        // user cancelled share
+        // user cancelled or share unavailable — fall through to clipboard
       }
-    } else {
+    }
+    if (!shared) {
       try {
         await navigator.clipboard.writeText(text)
         setShareState('copied')
         setTimeout(() => setShareState('idle'), 2000)
       } catch {
-        // clipboard API unavailable
+        // clipboard unavailable — last resort, do nothing visible
       }
     }
   }
