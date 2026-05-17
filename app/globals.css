@@ -77,6 +77,17 @@ button:focus-visible {
   object-fit: cover !important;
 }
 
+/* Suppress iOS Safari's start-playback / picture-in-picture overlay on the live camera video */
+video::-webkit-media-controls,
+video::-webkit-media-controls-panel,
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls-start-playback-button,
+video::-internal-media-controls-overflow-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+}
+
 /* ============================================ */
 /* ANIMATIONS                                   */
 /* ============================================ */

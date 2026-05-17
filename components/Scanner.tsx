@@ -230,7 +230,16 @@ export default function Scanner({ onBarcode, onCapture, onAutoDetect, mode, star
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center" style={{ height: '100vh' }}>
-      <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        disablePictureInPicture
+        controlsList="nodownload nofullscreen noremoteplayback"
+        {...{ 'webkit-playsinline': 'true', 'x-webkit-airplay': 'deny' }}
+        className="w-full h-full object-cover pointer-events-none"
+      />
 
       {/* Scan frame with animated corners */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
