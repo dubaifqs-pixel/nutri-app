@@ -285,11 +285,117 @@ function ScanContent() {
     )
   }
 
+  const lang = (typeof document !== 'undefined' && document.documentElement.lang === 'ar') ? 'ar' : 'en'
+  const labels = lang === 'ar' ? {
+    live: 'مباشر',
+    kicker: 'مسح',
+    h1Barcode: 'وجِّه الباركود نحو الإطار',
+    h1Label: 'وجِّه الملصق الغذائي نحو الإطار',
+    modeBarcode: 'باركود',
+    modeLabel: 'ملصق',
+  } : {
+    live: 'LIVE',
+    kicker: 'SCAN',
+    h1Barcode: 'Center the barcode in the frame',
+    h1Label: 'Center the nutrition label in the frame',
+    modeBarcode: 'BARCODE',
+    modeLabel: 'LABEL',
+  }
+  const h1 = mode === 'barcode' ? labels.h1Barcode : labels.h1Label
+
   return (
-    <div className="min-h-screen bg-black relative">
-      <button onClick={() => router.push('/')} className="absolute top-4 right-4 z-50 glass-dark text-white rounded-full w-11 h-11 flex items-center justify-center transition-all hover:bg-white/20">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-      </button>
+    <div className="nutri-app" dir={lang === 'ar' ? 'rtl' : 'ltr'} style={{
+      minHeight: '100dvh', position: 'relative',
+      background: '#0a0a0a', color: '#fff',
+      overflow: 'hidden',
+    }}>
+      {/* Top chrome — close + LIVE pill + flash */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0,
+        zIndex: 20,
+        padding: '12px 18px 0',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <button onClick={() => router.push('/')} aria-label="close" style={scanGlassBtn}>
+          <svg width="13" height="13" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6l-12 12" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"/></svg>
+        </button>
+        <div style={{
+          padding: '6px 12px 6px 10px',
+          background: 'rgba(255,255,255,0.10)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderRadius: 999,
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+        }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: 999,
+            background: 'var(--lime)',
+            boxShadow: '0 0 0 3px rgba(189,242,114,0.30)',
+            animation: 'nutri-pulse 1.6s ease-in-out infinite',
+          }}/>
+          <span style={{
+            fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-mono)',
+            fontSize: lang === 'ar' ? 11 : 10, fontWeight: 600,
+            letterSpacing: lang === 'ar' ? 0 : '0.14em',
+            color: '#fff',
+          }}>{labels.live}</span>
+        </div>
+        <button aria-label="flash" style={scanGlassBtn}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" stroke="#fff" strokeWidth="1.8" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* Kicker + headline above the camera reticle */}
+      <div style={{
+        position: 'absolute', top: 68, left: 0, right: 0,
+        zIndex: 15, padding: '0 24px',
+        textAlign: 'center', pointerEvents: 'none',
+      }}>
+        <div className="n-mono" style={{ color: 'rgba(255,255,255,0.55)', marginBottom: 8 }}>
+          {labels.kicker}
+        </div>
+        <h1 style={{
+          margin: 0,
+          fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+          fontWeight: 700,
+          fontSize: lang === 'ar' ? 22 : 24,
+          lineHeight: 1.05, letterSpacing: '-0.02em',
+          color: '#fff',
+          textWrap: 'balance',
+        }}>{h1}</h1>
+      </div>
+
+      {/* Mode tabs — bottom */}
+      <div style={{
+        position: 'absolute', bottom: 18, left: 0, right: 0,
+        zIndex: 15,
+        display: 'flex', justifyContent: 'center', gap: 6,
+        pointerEvents: 'none',
+      }}>
+        <div style={{
+          padding: '7px 14px',
+          borderRadius: 999,
+          background: mode === 'barcode' ? '#fff' : 'transparent',
+          color: mode === 'barcode' ? '#0a0a0a' : 'rgba(255,255,255,0.55)',
+          fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-mono)',
+          fontSize: lang === 'ar' ? 12 : 10,
+          fontWeight: 600,
+          letterSpacing: lang === 'ar' ? 0 : '0.14em',
+        }}>{labels.modeBarcode}</div>
+        <div style={{
+          padding: '7px 14px',
+          borderRadius: 999,
+          background: mode === 'label' ? '#fff' : 'transparent',
+          color: mode === 'label' ? '#0a0a0a' : 'rgba(255,255,255,0.55)',
+          fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-mono)',
+          fontSize: lang === 'ar' ? 12 : 10,
+          fontWeight: 600,
+          letterSpacing: lang === 'ar' ? 0 : '0.14em',
+        }}>{labels.modeLabel}</div>
+      </div>
+
       <Scanner
         mode={mode}
         skipNameStage={!!prefilledName}
@@ -322,6 +428,16 @@ function ScanContent() {
       />
     </div>
   )
+}
+
+const scanGlassBtn: React.CSSProperties = {
+  width: 38, height: 38, borderRadius: '50%',
+  background: 'rgba(255,255,255,0.10)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  border: '0.5px solid rgba(255,255,255,0.18)',
+  cursor: 'pointer',
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
 }
 
 export default function ScanPage() {
