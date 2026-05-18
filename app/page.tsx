@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useRef, useCallback } from 'react'
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useT, useLang } from '@/lib/i18n'
 import { DEMO_PRODUCTS } from '@/lib/demo-products'
@@ -12,10 +12,13 @@ import { ThumbChip } from '@/components/v2/ThumbChip'
 import { BottomNavV2 } from '@/components/v2/BottomNav'
 import { NutriHeader } from '@/components/v2/NutriHeader'
 
+const CARD_W = 296
+const CARD_GAP = 14
+
 export default function Home() {
   const router = useRouter()
   const t = useT()
-  const lang = useLang()
+  const lang = useLang() as 'en' | 'ar'
 
   const featuredRaw = useMemo(() => [
     DEMO_PRODUCTS.dairy[0],
@@ -27,32 +30,43 @@ export default function Home() {
   ].filter(Boolean), [])
 
   const featured = useMemo(
-    () => featuredRaw.map((p) => toHero(p, lang as 'en' | 'ar')),
+    () => featuredRaw.map((p) => toHero(p, lang)),
     [featuredRaw, lang],
   )
 
   const [activeIdx, setActiveIdx] = useState(0)
   const total = featured.length
 
-  const touchStart = useRef(0)
-  const touchDelta = useRef(0)
-  const [dragging, setDragging] = useState(false)
-  const [dragX, setDragX] = useState(0)
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
-  const swipe = useCallback((dir: 1 | -1) => {
-    setActiveIdx((prev) => Math.max(0, Math.min(total - 1, prev + dir)))
+  // Track which card is centered via IntersectionObserver so the counter
+  // updates as the user scrolls.
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // pick the entry with the highest intersection ratio
+        let best: { idx: number; ratio: number } | null = null
+        for (const e of entries) {
+          const idxAttr = (e.target as HTMLElement).dataset.idx
+          if (!idxAttr) continue
+          const idx = parseInt(idxAttr, 10)
+          if (!best || e.intersectionRatio > best.ratio) {
+            best = { idx, ratio: e.intersectionRatio }
+          }
+        }
+        if (best && best.ratio > 0.5) setActiveIdx(best.idx)
+      },
+      { root: scroller, threshold: [0.5, 0.75, 1] },
+    )
+    cardRefs.current.forEach((el) => { if (el) observer.observe(el) })
+    return () => observer.disconnect()
   }, [total])
 
-  const onTouchStart = (e: React.TouchEvent) => { touchStart.current = e.touches[0].clientX; setDragging(true) }
-  const onTouchMove = (e: React.TouchEvent) => { touchDelta.current = e.touches[0].clientX - touchStart.current; setDragX(touchDelta.current) }
-  const onTouchEnd = () => {
-    setDragging(false); setDragX(0)
-    if (Math.abs(touchDelta.current) > 60) swipe(touchDelta.current < 0 ? 1 : -1)
-    touchDelta.current = 0
-  }
-
-  const openProduct = useCallback((rawIdx: number) => {
-    const raw = featuredRaw[rawIdx]
+  const openProduct = useCallback((idx: number) => {
+    const raw = featuredRaw[idx]
     if (!raw) return
     const gradeResult = calculateGrade(raw.nutrition)
     const productData = {
@@ -66,14 +80,28 @@ export default function Home() {
     router.push('/result')
   }, [featuredRaw, router])
 
-  const rotated = useMemo(
-    () => [...featured.slice(activeIdx), ...featured.slice(0, activeIdx)],
-    [featured, activeIdx],
-  )
-  const rotatedRawIdxs = useMemo(
-    () => [...Array(total).keys()].slice(activeIdx).concat([...Array(total).keys()].slice(0, activeIdx)),
-    [activeIdx, total],
-  )
+  // Mouse-drag scrolling — desktop users without touch.
+  const dragRef = useRef<{ startX: number; startScroll: number; dragging: boolean }>({ startX: 0, startScroll: 0, dragging: false })
+  const onMouseDown = (e: React.MouseEvent) => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    dragRef.current = { startX: e.clientX, startScroll: scroller.scrollLeft, dragging: true }
+    scroller.style.scrollSnapType = 'none'
+    scroller.style.cursor = 'grabbing'
+  }
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!dragRef.current.dragging) return
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    scroller.scrollLeft = dragRef.current.startScroll - (e.clientX - dragRef.current.startX)
+  }
+  const endDrag = () => {
+    const scroller = scrollerRef.current
+    if (!scroller || !dragRef.current.dragging) return
+    dragRef.current.dragging = false
+    scroller.style.scrollSnapType = 'x mandatory'
+    scroller.style.cursor = 'grab'
+  }
 
   const greeting = t('home.greeting')
   const h1a = t('home.heroLine1')
@@ -98,9 +126,7 @@ export default function Home() {
       </div>
 
       <div style={{ padding: '24px 24px 8px' }}>
-        <div className="n-mono" style={{ color: 'var(--ink-3)', marginBottom: 12 }}>
-          {greeting}
-        </div>
+        <div className="n-mono" style={{ color: 'var(--ink-3)', marginBottom: 12 }}>{greeting}</div>
         <h1 style={{
           margin: 0,
           fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
@@ -125,49 +151,57 @@ export default function Home() {
           </span>
           <span style={{
             fontFamily: 'var(--ff-display)',
-            fontWeight: 500,
-            fontSize: 15,
-            fontFeatureSettings: '"tnum"',
-            fontVariantNumeric: 'tabular-nums',
+            fontWeight: 500, fontSize: 15,
+            fontFeatureSettings: '"tnum"', fontVariantNumeric: 'tabular-nums',
             color: 'var(--ink-3)',
           }}>/ {String(total).padStart(2, '0')}</span>
         </div>
         <div className="n-mono" style={{ color: 'var(--ink-3)' }}>{swipeLabel}</div>
       </div>
 
+      {/* Native horizontal scroll-snap carousel — works for touch, mouse drag,
+          trackpad, keyboard arrow keys. */}
       <div
-        style={{ overflow: 'hidden', position: 'relative', flexShrink: 0 }}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
-        <div style={{
-          display: 'flex', gap: 14,
+        ref={scrollerRef}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={endDrag}
+        onMouseLeave={endDrag}
+        className="hide-scrollbar"
+        style={{
+          display: 'flex',
+          gap: CARD_GAP,
           padding: lang === 'ar' ? '6px 60px 12px 24px' : '6px 24px 12px 60px',
-          transition: dragging ? 'none' : 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-          transform: `translateX(${lang === 'ar' ? '-' : ''}${dragX}px)`,
-        }}>
-          {rotated.map((p, i) => (
-            <div key={p.id} style={{
+          overflowX: 'auto',
+          scrollSnapType: 'x mandatory',
+          WebkitOverflowScrolling: 'touch',
+          cursor: 'grab',
+          flexShrink: 0,
+          userSelect: 'none',
+        }}
+      >
+        {featured.map((p, i) => (
+          <div
+            key={p.id}
+            ref={(el) => { cardRefs.current[i] = el }}
+            data-idx={i}
+            style={{
+              scrollSnapAlign: lang === 'ar' ? 'end' : 'start',
               flexShrink: 0,
-              transform: i === 0 ? 'none' : 'scale(0.94)',
-              opacity: i === 0 ? 1 : 0.7,
-              transition: 'transform 0.35s, opacity 0.35s',
-              transformOrigin: 'center bottom',
-            }}>
-              <HeroCard
-                product={p}
-                lang={lang as 'en' | 'ar'}
-                width={278}
-                height={440}
-                onClick={() => openProduct(rotatedRawIdxs[i])}
-              />
-            </div>
-          ))}
-        </div>
+            }}
+          >
+            <HeroCard
+              product={p}
+              lang={lang}
+              width={CARD_W}
+              height={460}
+              onClick={() => openProduct(i)}
+            />
+          </div>
+        ))}
       </div>
 
-      <div style={{ flex: 1, overflow: 'hidden', paddingTop: 12 }}>
+      <div style={{ paddingTop: 16 }}>
         <div style={{
           padding: '0 24px 8px',
           display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
@@ -179,15 +213,18 @@ export default function Home() {
           padding: '0 24px 110px',
           overflowX: 'auto',
         }}>
-          {rotated.slice(1).map((p, i) => (
-            <ThumbChip
-              key={p.id}
-              product={p}
-              lang={lang as 'en' | 'ar'}
-              size={64}
-              onClick={() => openProduct(rotatedRawIdxs[i + 1])}
-            />
-          ))}
+          {featured.filter((_, i) => i !== activeIdx).map((p) => {
+            const realIdx = featured.findIndex((x) => x.id === p.id)
+            return (
+              <ThumbChip
+                key={p.id}
+                product={p}
+                lang={lang}
+                size={64}
+                onClick={() => openProduct(realIdx)}
+              />
+            )
+          })}
         </div>
       </div>
 
