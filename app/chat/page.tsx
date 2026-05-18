@@ -1,15 +1,37 @@
 'use client'
 
-import { useEffect, useState, useRef, Suspense } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import ChatMessageComponent from '@/components/ChatMessage'
+import { useT, useLang } from '@/lib/i18n'
 import type { ChatMessage, ProductData, GradeResult } from '@/lib/types'
-import { useT } from '@/lib/i18n'
+import { NutriChevron } from '@/components/v2/NutriLogo'
+
+// Plaintext-ify the API's structured JSON so the conversational bubbles stay
+// readable. The /api/chat endpoint can return JSON sections with title_en
+// + text_en (and Arabic variants); we collapse them into a few lines per turn.
+function flattenResponse(raw: string, lang: 'en' | 'ar'): string {
+  const trimmed = raw.trim()
+  if (!trimmed.startsWith('{')) return raw
+  try {
+    const match = trimmed.match(/\{[\s\S]*\}/)?.[0] || '{}'
+    const parsed = JSON.parse(match)
+    const sections = parsed.sections || []
+    const out: string[] = []
+    for (const s of sections) {
+      const title = lang === 'ar' ? s.title_ar : s.title_en
+      const body = lang === 'ar' ? s.text_ar : s.text_en
+      if (title) out.push(title.toString())
+      if (body) out.push(body.toString())
+    }
+    return out.length > 0 ? out.join('\n\n') : raw
+  } catch { return raw }
+}
 
 function ChatContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const t = useT()
+  const lang = useLang() as 'en' | 'ar'
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -18,43 +40,39 @@ function ChatContent() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const productData = sessionStorage.getItem('dfqs_product')
-    const gradeData = sessionStorage.getItem('dfqs_grade')
-    // If product context is missing, run in general AI mode (no bounce)
-    if (!productData || !gradeData) return
-    const p = JSON.parse(productData)
-    const g = JSON.parse(gradeData)
-    setProduct(p)
-    setGradeResult(g)
+    const p = sessionStorage.getItem('dfqs_product')
+    const g = sessionStorage.getItem('dfqs_grade')
+    if (!p || !g) return
+    setProduct(JSON.parse(p))
+    setGradeResult(JSON.parse(g))
     if (searchParams.get('tab') === 'recommend') {
-      const recData = sessionStorage.getItem('dfqs_recommendations')
-      if (recData) {
-        const rec = JSON.parse(recData)
-        const altText = rec.alternatives?.length > 0
-          ? rec.alternatives.map((a: any) => `- ${a.product_name} (${a.grade})`).join('\n')
-          : t('chat.noAlts')
+      const rec = sessionStorage.getItem('dfqs_recommendations')
+      if (rec) {
+        const r = JSON.parse(rec)
+        const altText = r.alternatives?.length > 0
+          ? r.alternatives.map((a: { product_name: string; grade: string }) => `· ${a.product_name} (${a.grade})`).join('\n')
+          : (lang === 'ar' ? 'لم يتم العثور على بدائل' : 'No alternatives found')
         setMessages([
-          { role: 'user', content: t('chat.suggest3') },
-          { role: 'assistant', content: `${rec.summary || t('chat.altsHere')}\n\n${altText}` },
+          { role: 'user', content: lang === 'ar' ? 'أعطني بدائل أفضل' : 'Give me better alternatives' },
+          { role: 'assistant', content: `${r.summary || ''}\n\n${altText}` },
         ])
       }
     }
-  }, [router, searchParams])
+  }, [searchParams, lang])
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   const sendMessage = async (directMessage?: string) => {
-    const text = directMessage || input.trim()
+    const text = (directMessage || input).trim()
     if (!text || loading) return
-    const userMessage: ChatMessage = { role: 'user', content: text }
-    setMessages((prev) => [...prev, userMessage])
+    setMessages((prev) => [...prev, { role: 'user', content: text }])
     setInput('')
     setLoading(true)
     try {
       const res = await fetch('/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: userMessage.content,
+          message: text,
           product_context: product && gradeResult ? {
             product_name: product.product_name, grade: gradeResult.grade,
             score: gradeResult.score, nutrition: product.nutrition,
@@ -62,139 +80,298 @@ function ChatContent() {
         }),
       })
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        setMessages((prev) => [...prev, { role: 'assistant', content: errData.error || t('chat.errorGeneric'), isError: true }])
+        const err = await res.json().catch(() => ({}))
+        setMessages((p) => [...p, { role: 'assistant', content: err.error || (lang === 'ar' ? 'حدث خطأ' : 'Something went wrong.'), isError: true }])
         return
       }
       const data = await res.json()
       if (data.error) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.error, isError: true }])
+        setMessages((p) => [...p, { role: 'assistant', content: data.error, isError: true }])
       } else {
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.response }])
+        setMessages((p) => [...p, { role: 'assistant', content: flattenResponse(data.response || '', lang) }])
       }
-    } catch (err) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: `${t('chat.errorPrefix')}: ${err instanceof Error ? err.message : t('chat.tryAgain')}`, isError: true }])
+    } catch (e) {
+      setMessages((p) => [...p, { role: 'assistant', content: `${lang === 'ar' ? 'خطأ' : 'Error'}: ${e instanceof Error ? e.message : ''}`, isError: true }])
     } finally { setLoading(false) }
   }
 
-  const retryLastMessage = () => {
-    if (loading) return
-    // Find the last user message
-    const lastUser = [...messages].reverse().find((m) => m.role === 'user')
-    if (!lastUser) return
-    // Strip the last assistant error message + the user message that produced it,
-    // then re-send so it appears as a fresh send.
-    setMessages((prev) => {
-      const trimmed = [...prev]
-      // remove trailing assistant errors
-      while (trimmed.length && trimmed[trimmed.length - 1].role === 'assistant' && trimmed[trimmed.length - 1].isError) {
-        trimmed.pop()
-      }
-      // remove the last user message (we'll re-add it via sendMessage)
-      if (trimmed.length && trimmed[trimmed.length - 1].role === 'user') {
-        trimmed.pop()
-      }
-      return trimmed
-    })
-    sendMessage(lastUser.content)
-  }
+  const promptsGeneral = lang === 'ar'
+    ? ['اقترح بديلاً صحياً', 'هل هذا مناسب للأطفال؟', 'مقارنة سريعة']
+    : ['Suggest a healthier swap', 'Kid-friendly?', 'Quick compare']
+  const promptsProduct = lang === 'ar'
+    ? ['اعرض المكوّنات', 'بدائل أرخص', 'صفر سكر مضاف']
+    : ['Show ingredients', 'Cheaper alternatives', 'Zero added sugar']
+  const prompts = product ? promptsProduct : promptsGeneral
+
+  const showHeadline = messages.length === 0
+  const headline = lang === 'ar' ? 'وش الأفضل اليوم؟' : `What's good today?`
+  const kicker = lang === 'ar' ? 'اسأل نوتري' : 'ASK NUTRI'
+  const who = lang === 'ar' ? 'نوتري الذكي' : 'Nutri AI'
+  const placeholder = lang === 'ar' ? 'اسأل عن أي شيء…' : 'Ask anything about your food…'
+
+  // Split "What's good" so trailing word can be muted like the design
+  const headlineSplit = lang === 'en'
+    ? { head: "What's good", tail: ' today?' }
+    : { head: 'وش الأفضل', tail: ' اليوم؟' }
 
   return (
-    <div className="h-dvh flex flex-col" style={{ background: '#F5F4F0' }}>
+    <div className="nutri-app" dir={lang === 'ar' ? 'rtl' : 'ltr'} style={{
+      minHeight: '100dvh',
+      background: 'var(--cream)',
+      position: 'relative',
+      display: 'flex', flexDirection: 'column',
+    }}>
       {/* Header */}
-      <div className="px-4 py-3 flex items-center justify-between z-10" style={{ background: '#F5F4F0', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-        <button onClick={() => router.push(product ? '/result' : '/')} className="text-sm flex items-center gap-1 transition-colors min-w-[44px] min-h-[44px] -ml-2 pl-2 rounded-xl" style={{ color: '#7A7A7A' }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          {t('chat.back')}
+      <div style={{
+        padding: '12px 20px 0',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <button onClick={() => router.back()} aria-label="back" style={iconBtn}>
+          <svg width="14" height="14" viewBox="0 0 24 24" style={{ transform: lang === 'ar' ? 'rotate(180deg)' : 'none' }}>
+            <path d="M14 6l-6 6 6 6" stroke="var(--ink)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+          </svg>
         </button>
-        <h1 className="text-sm font-semibold flex items-center gap-1.5" style={{ color: '#1A1A1A' }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-          {t('chat.title')}
-        </h1>
-        <div className="w-12" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{
+            width: 22, height: 22, borderRadius: '50%',
+            background: 'var(--ink)',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <NutriChevron height={12}/>
+          </div>
+          <div style={{
+            fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+            fontWeight: 700, fontSize: 14, letterSpacing: '-0.005em',
+            color: 'var(--ink)',
+          }}>{who}</div>
+        </div>
+        <button onClick={() => setMessages([])} aria-label="new" style={iconBtn}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14M5 12h14" stroke="var(--ink)" strokeWidth="2.2" strokeLinecap="round"/>
+          </svg>
+        </button>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
+      {/* Big title when thread is empty */}
+      {showHeadline && (
+        <div style={{ padding: '14px 24px 0' }}>
+          <div className="n-mono" style={{ color: 'var(--ink-3)', marginBottom: 10 }}>{kicker}</div>
+          <h1 style={{
+            margin: 0,
+            fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+            fontWeight: 800,
+            fontSize: lang === 'ar' ? 30 : 34,
+            lineHeight: 0.95, letterSpacing: '-0.02em',
+            color: 'var(--ink)',
+          }}>
+            {headlineSplit.head}<span style={{ color: 'var(--ink-3)', fontWeight: 500 }}>{headlineSplit.tail}</span>
+          </h1>
+        </div>
+      )}
+
+      {/* Thread */}
+      <div style={{
+        flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+        padding: '16px 18px 200px',
+        display: 'flex', flexDirection: 'column', gap: 14,
+      }}>
         {messages.length === 0 && (
-          <div className="text-center text-sm mt-8 animate-fade-in" style={{ color: '#7A7A7A' }}>
-            <p>{product ? t('chat.empty') : t('chat.empty.general')}</p>
-            <div className="flex flex-wrap gap-2 justify-center mt-4">
-              {(product
-                ? [t('chat.suggest1'), t('chat.suggest2'), t('chat.suggest3')]
-                : [t('chat.suggest.general1'), t('chat.suggest.general2'), t('chat.suggest.general3')]
-              ).map((q) => (
-                <button
-                  key={q}
-                  onClick={() => sendMessage(q)}
-                  className="text-xs bg-white px-3.5 py-2.5 rounded-full transition-all min-h-[44px]"
-                  style={{ color: '#1A1A1A', border: '1px solid rgba(0,0,0,0.06)' }}
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
+          <AiBubble lang={lang} text={
+            product
+              ? (lang === 'ar' ? `مرحبًا. اسألني أي سؤال عن ${product.product_name}.` : `Hey. Ask me anything about ${product.product_name}.`)
+              : (lang === 'ar' ? 'مرحبًا خالد. اسأل عن أي منتج، أو قارن بين اثنين، أو أعطني هدفك وسأقترح بدائل.' : `Morning, Khalid. Ask me about a product, compare two, or tell me your goal and I'll suggest swaps.`)
+          }/>
         )}
-        {messages.map((msg, i) => {
-          const isLast = i === messages.length - 1
-          return (
-            <div key={i} className="flex flex-col gap-1.5">
-              <ChatMessageComponent message={msg} />
-              {msg.role === 'assistant' && msg.isError && isLast && !loading && (
-                <button
-                  onClick={retryLastMessage}
-                  className="self-start text-xs px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5"
-                  style={{ background: '#FFFFFF', color: '#1A1A1A', border: '1px solid rgba(0,0,0,0.1)' }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-                  {t('chat.retry') || 'Retry'}
-                </button>
-              )}
-            </div>
-          )
-        })}
-        {loading && (
-          <div className="flex justify-start">
-            <div className="bg-white px-5 py-3 rounded-2xl rounded-bl-md text-sm" style={{ color: '#7A7A7A', border: '1px solid rgba(0,0,0,0.06)' }}>
-              <div className="flex gap-1.5">
-                <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#ACACAC' }} />
-                <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#ACACAC', animationDelay: '0.15s' }} />
-                <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#ACACAC', animationDelay: '0.3s' }} />
-              </div>
-            </div>
-          </div>
-        )}
+        {messages.map((m, i) => (
+          m.role === 'user'
+            ? <UserBubble key={i} text={m.content} lang={lang}/>
+            : <AiBubble key={i} text={m.content} lang={lang} isError={m.isError} onRetry={i === messages.length - 1 && m.isError ? () => {
+                const lastUser = [...messages].reverse().find((x) => x.role === 'user')
+                if (!lastUser) return
+                setMessages((prev) => prev.filter((_, j) => j !== messages.length - 1).filter((_, j, arr) => !(j === arr.length - 1 && arr[j].role === 'user')))
+                sendMessage(lastUser.content)
+              } : undefined}/>
+        ))}
+        {loading && <AiBubble lang={lang} text="" loading />}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Bar */}
-      <div className="px-4 py-3 flex gap-2" style={{ background: '#F5F4F0', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') sendMessage() }}
-          placeholder={t('chat.placeholder')}
-          className="flex-1 bg-white rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 transition-all"
-          style={{ color: '#1A1A1A', border: '1px solid rgba(0,0,0,0.06)' }}
-        />
-        <button
-          onClick={() => sendMessage()}
-          disabled={loading || !input.trim()}
-          className="w-11 h-11 rounded-2xl btn-accent flex items-center justify-center disabled:opacity-40 shrink-0"
-          aria-label="Send"
+      {/* Composer overlay — prompt chips + input */}
+      <div style={{
+        position: 'fixed', left: 0, right: 0, bottom: 0,
+        zIndex: 30,
+        padding: '28px 18px 18px',
+        pointerEvents: 'none',
+        background: 'linear-gradient(to top, var(--surface) 65%, rgba(255,255,255,0))',
+        maxWidth: 448, margin: '0 auto',
+      }}>
+        <div className="hide-scrollbar" style={{
+          display: 'flex', gap: 8, overflowX: 'auto',
+          marginBottom: 10, pointerEvents: 'auto',
+          padding: '2px 2px',
+        }}>
+          {prompts.map((p, i) => (
+            <button key={i} onClick={() => sendMessage(p)} style={{
+              flexShrink: 0,
+              padding: '7px 12px',
+              background: 'var(--paper)',
+              borderRadius: 999,
+              border: 'none',
+              boxShadow: '0 0 0 0.5px rgba(0,0,0,0.06), 0 4px 10px -6px rgba(40,28,18,0.18)',
+              fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+              fontSize: 12.5, fontWeight: 700,
+              color: 'var(--ink-2)',
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              cursor: 'pointer',
+            }}>
+              <span style={{ color: 'var(--lime-deep)' }}>+</span>
+              {p}
+            </button>
+          ))}
+        </div>
+
+        <form
+          onSubmit={(e) => { e.preventDefault(); sendMessage() }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '8px 8px 8px 14px',
+            background: 'var(--paper)',
+            borderRadius: 999,
+            boxShadow: '0 14px 32px -14px rgba(0,0,0,0.18), 0 0 0 0.5px rgba(0,0,0,0.06)',
+            pointerEvents: 'auto',
+          }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-        </button>
+          <button type="button" aria-label="voice" style={{
+            width: 28, height: 28, borderRadius: '50%',
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <rect x="9" y="3" width="6" height="12" rx="3" stroke="var(--ink-3)" strokeWidth="2"/>
+              <path d="M5 11a7 7 0 0014 0M12 18v3" stroke="var(--ink-3)" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={placeholder}
+            style={{
+              flex: 1,
+              border: 'none', outline: 'none',
+              background: 'transparent',
+              fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+              fontSize: 15, fontWeight: 500,
+              color: 'var(--ink)',
+            }}
+          />
+          <button type="submit" disabled={loading || !input.trim()} aria-label="send" style={{
+            width: 38, height: 38, borderRadius: '50%',
+            background: 'var(--lime)',
+            border: 'none', cursor: input.trim() ? 'pointer' : 'default',
+            opacity: loading || !input.trim() ? 0.5 : 1,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 10px 22px -8px rgba(189,242,114,0.55), inset 0 -2px 0 rgba(0,0,0,0.08)',
+            flexShrink: 0,
+          }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style={{ transform: lang === 'ar' ? 'rotate(180deg)' : 'rotate(-90deg)' }}>
+              <path d="M5 12h14M13 6l6 6-6 6" stroke="var(--ink)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </form>
       </div>
     </div>
   )
 }
 
+// ────────────────────────────────────────────────────────
+function UserBubble({ text, lang }: { text: string; lang: 'en' | 'ar' }) {
+  return (
+    <div style={{
+      alignSelf: lang === 'ar' ? 'flex-start' : 'flex-end',
+      maxWidth: '78%',
+      padding: '10px 14px',
+      background: 'var(--ink)', color: '#fff',
+      borderRadius: 18,
+      borderEndStartRadius: lang === 'ar' ? 4 : 18,
+      borderEndEndRadius: lang === 'ar' ? 18 : 4,
+      fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+      fontSize: 14.5, fontWeight: 500, lineHeight: 1.35,
+      whiteSpace: 'pre-wrap',
+    }}>{text}</div>
+  )
+}
+
+function AiBubble({ text, lang, loading, isError, onRetry }: { text: string; lang: 'en' | 'ar'; loading?: boolean; isError?: boolean; onRetry?: () => void }) {
+  return (
+    <div style={{
+      alignSelf: lang === 'ar' ? 'flex-end' : 'flex-start',
+      maxWidth: '92%',
+      display: 'flex', flexDirection: 'column', gap: 8,
+    }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <div style={{
+          width: 26, height: 26, borderRadius: '50%',
+          background: 'var(--ink)', flexShrink: 0,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <NutriChevron height={14}/>
+        </div>
+        <div style={{
+          padding: '10px 14px',
+          background: isError ? '#ffe4dc' : 'var(--paper)',
+          borderRadius: 18,
+          borderStartStartRadius: lang === 'ar' ? 18 : 4,
+          borderStartEndRadius: lang === 'ar' ? 4 : 18,
+          boxShadow: '0 0 0 0.5px rgba(0,0,0,0.05), 0 6px 16px -10px rgba(40,28,18,0.16)',
+          fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+          fontSize: 14.5, fontWeight: 500, lineHeight: 1.4,
+          color: isError ? '#5a1810' : 'var(--ink)',
+          whiteSpace: 'pre-wrap',
+        }}>
+          {loading ? (
+            <span style={{ display: 'inline-flex', gap: 4 }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: 'var(--ink-3)', animation: 'nutri-pulse 1s linear infinite' }} />
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: 'var(--ink-3)', animation: 'nutri-pulse 1s linear infinite 0.15s' }} />
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: 'var(--ink-3)', animation: 'nutri-pulse 1s linear infinite 0.3s' }} />
+            </span>
+          ) : text}
+        </div>
+      </div>
+      {onRetry && (
+        <button onClick={onRetry} style={{
+          alignSelf: lang === 'ar' ? 'flex-end' : 'flex-start',
+          marginInlineStart: 36,
+          padding: '6px 12px',
+          background: 'var(--paper)',
+          border: '1px solid rgba(0,0,0,0.1)', borderRadius: 999,
+          fontFamily: lang === 'ar' ? 'var(--ff-ar)' : 'var(--ff-display)',
+          fontSize: 12, fontWeight: 600, color: 'var(--ink)',
+          cursor: 'pointer',
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+        }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M21 3v5h-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          {lang === 'ar' ? 'إعادة المحاولة' : 'Retry'}
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ────────────────────────────────────────────────────────
+const iconBtn: React.CSSProperties = {
+  width: 36, height: 36, borderRadius: '50%',
+  background: 'rgba(0,0,0,0.05)', border: 'none', cursor: 'pointer',
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+}
+
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F4F0' }}><div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#1A1A1A', borderTopColor: 'transparent' }} /></div>}>
+    <Suspense fallback={<div className="nutri-app" style={{ minHeight: '100dvh', background: 'var(--cream)' }} />}>
       <ChatContent />
     </Suspense>
   )
